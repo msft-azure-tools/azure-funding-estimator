@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Azure Funding Estimator</title>
+<style>* { box-sizing: border-box; } body { margin: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script>
+if (!window.storage) {
+  const LS_PREFIX = "afe_";
+  window.storage = {
+    async get(key) { const v = localStorage.getItem(LS_PREFIX + key); return v ? { key, value: v } : null; },
+    async set(key, value) { localStorage.setItem(LS_PREFIX + key, value); return { key, value }; },
+    async delete(key) { localStorage.removeItem(LS_PREFIX + key); return { key, deleted: true }; },
+    async list(prefix) { const keys = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith(LS_PREFIX + (prefix || ""))) keys.push(k.replace(LS_PREFIX, "")); } return { keys }; }
+  };
+}
+</script>
+<script type="text/babel">
+const { useState, useMemo, useRef, useEffect, Fragment } = React;
+const ITEMS = [
+  { id:"cosmos",cat:"db",name:"Cosmos DB",tag:"Data: Cosmos DB",unit:"K RU/s",up:58,dq:4 },
+  { id:"mysql",cat:"db",name:"MySQL Flexible",tag:"Data: MySQL Flexible Server",unit:"vCores",up:150,dq:4 },
+  { id:"postgres",cat:"db",name:"PostgreSQL Flexible",tag:"Data: PostgreSQL Flexible Server",unit:"vCores",up:150,dq:4 },
+  { id:"sql-mi",cat:"db",name:"SQL MI (PaaS)",tag:"Data: SQL On-prem to SQL MI",unit:"vCores",up:195,dq:8 },
+  { id:"sql-db",cat:"db",name:"Azure SQL DB + AI",tag:"Data: SQL Modernization to Azure SQL DB with AI",unit:"vCores",up:190,dq:4 },
+  { id:"sql-hyper",cat:"db",name:"SQL Hyperscale",tag:"Data: SQL to Azure SQL Hyperscale",unit:"vCores",up:380,dq:8 },
+  { id:"sql-vm",cat:"db",name:"Azure SQL VM",tag:"Data: SQL On-prem to Azure SQL VM",unit:"VMs",up:600,dq:2 },
+  { id:"sql-paygo",cat:"db",name:"SQL PayGo (Arc)",tag:"Data: SQL Billed to Azure SQL PayGo Licenses",unit:"vCores",up:195,dq:4 },
+  { id:"oracle-sql",cat:"db",name:"Oracle to SQL",tag:"Data: Oracle to Azure SQL Migration",unit:"vCores",up:190,dq:8 },
+  { id:"oracle-pg",cat:"db",name:"Oracle to PG",tag:"Data: Oracle to PostgreSQL Flexible",unit:"vCores",up:150,dq:8 },
+  { id:"fab-mig",cat:"fab",name:"Analytics Migration",tag:"Data: Analytics - Fabric - Analytics Migration",fab:true,dsku:"F16" },
+  { id:"fab-new",cat:"fab",name:"Greenfield Analytics (new build)",tag:"Data: Analytics - Fabric - New Analytics",fab:true,dsku:"F16" },
+  { id:"fab-pbi",cat:"fab",name:"Power BI",tag:"Data: Analytics - Fabric - Power BI",fab:true,dsku:"F8" },
+  { id:"fab-rti",cat:"fab",name:"Real-Time Intelligence",tag:"Data: Analytics - Fabric - Real-Time Intelligence",fab:true,dsku:"F32" },
+  { id:"fab-sql",cat:"fab",name:"Fabric SQL DB",tag:"Data: Analytics - Fabric SQL Databases",fab:true,dsku:"F8" },
+  { id:"fab-cos",cat:"fab",name:"Fabric Cosmos DB",tag:"Data: Analytics - Fabric - Cosmos Databases",fab:true,dsku:"F8" },
+  { id:"oai-std",cat:"fo",name:"OpenAI (Standard)",tag:"AI: Foundry - OpenAI Standard",unit:"M tok/mo",up:250,dq:10 },
+  { id:"oai-ptu",cat:"fo",name:"OpenAI (PTU)",tag:"AI: Foundry - OpenAI PTU",unit:"PTUs",up:800,dq:10 },
+  { id:"anthro",cat:"fo",name:"Anthropic",tag:"AI: Foundry - Anthropic",unit:"M tok/mo",up:300,dq:10 },
+  { id:"meta",cat:"fo",name:"Meta / Llama",tag:"AI: Foundry - Meta/Llama",unit:"M tok/mo",up:35,dq:30 },
+  { id:"mistral",cat:"fo",name:"Mistral AI",tag:"AI: Foundry - Mistral",unit:"M tok/mo",up:40,dq:20 },
+  { id:"other-m",cat:"fo",name:"Other (DeepSeek/Phi)",tag:"AI: Foundry - Other",unit:"M tok/mo",up:27,dq:25 },
+  { id:"xai",cat:"fo",name:"X.ai / Grok",tag:"AI: Foundry - X.ai",unit:"M tok/mo",up:100,dq:10 },
+  { id:"search",cat:"fo",name:"AI Search",tag:"AI: Search",unit:"replicas",up:250,dq:3 },
+  { id:"speech",cat:"fo",name:"Speech/Language",tag:"AI: Tools - Speech",unit:"M chars/mo",up:16,dq:20 },
+  { id:"vision",cat:"fo",name:"Vision/Content",tag:"AI: Tools - Vision",unit:"K img/mo",up:1.5,dq:300 },
+  { id:"ghc",cat:"oth",name:"GitHub Copilot (XCR, not ACR)",tag:"GitHub Copilot (GHE)",unit:"seats",up:39,dq:30,xcr:true },
+  { id:"aks",cat:"accel",name:"AKS / App Service",tag:"AI Apps: AKS, App Service, Container Apps",unit:"nodes",up:300,dq:6 },
+  { id:"infra-linux",cat:"accel",name:"Core M&M — Linux VMs",tag:"Core: Migrate & Modernize (Linux)",unit:"VMs",up:140,dq:15 },
+  { id:"infra-win",cat:"accel",name:"Core M&M — Windows VMs",tag:"Core: Migrate & Modernize (Windows)",unit:"VMs",up:240,dq:10 },
+  { id:"infra-mdc",cat:"accel",name:"Core M&M + Defender (MDC)",tag:"Core: Migrate & Modernize with MDC",unit:"VMs",up:215,dq:20 },
+  { id:"avs",cat:"accel",name:"AVS (VMware → Azure)",tag:"Core: VMware Migrate & Modernize (AVS)",unit:"nodes",up:4500,dq:3 },
+  { id:"avd",cat:"accel",name:"Azure Virtual Desktop (VDI)",tag:"Core: Virtual Desktop Infrastructure Migration",unit:"sessions",up:25,dq:100 },
+  { id:"sap",cat:"accel",name:"SAP on Azure",tag:"SAP: SAP Migration",unit:"VMs",up:2000,dq:4 },
+  { id:"def",cat:"oth",name:"Defender for Cloud (standalone)",tag:"Defender for Cloud",unit:"servers",up:15,dq:40 },
+  { id:"oth",cat:"oth",name:"Other Azure",tag:"Other Azure Services",unit:"$/mo",up:1,dq:1000 },
+];
+
+const CATS = [
+  { key: "db", label: "Databases", color: "#0078D4", elig: true, badge: "AFO ELIGIBLE" },
+  { key: "fab", label: "Fabric / Analytics", color: "#107C10", elig: true, badge: "AFO ELIGIBLE" },
+  { key: "fo", label: "AI Foundry", color: "#B4009E", elig: true, badge: "AFO ELIGIBLE" },
+  { key: "accel", label: "Azure Accelerate (non-AFO)", color: "#D83B01", elig: false, badge: "MCI ELIGIBLE" },
+  { key: "oth", label: "Other Azure Services", color: "#8B8B8B", elig: false, badge: "" },
+];
+
+const FSKU = [
+  { s: "F2", cu: 2, mo: 263 }, { s: "F4", cu: 4, mo: 526 }, { s: "F8", cu: 8, mo: 1051 },
+  { s: "F16", cu: 16, mo: 2103 }, { s: "F32", cu: 32, mo: 4205 }, { s: "F64", cu: 64, mo: 8410 },
+  { s: "F128", cu: 128, mo: 16820 }, { s: "F256", cu: 256, mo: 33640 },
+];
+
+const skuMo = (sku) => (FSKU.find((f) => f.s === sku) || FSKU[0]).mo;
+const fmt = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
+const HDR = "linear-gradient(135deg, #0078D4 0%, #5C2D91 60%, #B4009E 100%)";
+
+/* MCI: Azure Accelerate Partner Nominated — verified from MCI Guide effective March 1, 2026.
+   Market A (Sweden). Pre-sales = Assessment & POV. Post-sales = Deployment.
+   Source: Microsoft Commercial Partner Incentives Guide, 9 March 2026. */
+function getMCI(acr) {
+  let pre = 0, preL = "", post = 0, postL = "", ts = "", days = 0;
+  if (acr >= 250000) { pre = 25000; preL = "Large (>$250K)"; }
+  else if (acr >= 15000) { pre = 15000; preL = "Standard ($15K-$250K)"; }
+  if (acr >= 250000) { post = 75000; postL = "$250K-$500K+"; ts = "L"; days = 260; }
+  else if (acr >= 100000) { post = 35000; postL = "$100K-$250K"; ts = "M"; days = 200; }
+  else if (acr >= 50000) { post = 15000; postL = "$50K-$100K"; ts = "S"; days = 120; }
+  else if (acr >= 15000) { post = 6500; postL = "$15K-$50K"; ts = "XS"; days = 120; }
+  else if (acr >= 5000) { post = 2000; postL = "$5K-$15K"; ts = "XXS"; days = 120; }
+  return { pre, preL, post, postL, ts, days };
+}
+
+/* Smart Funding Recommendation Engine
+   Analyzes workload mix and suggests optimal funding strategy to maximize total funding.
+   Returns array of recommendation objects. */
+function getRecommendation(el, ot, tot, pct, ok, rows, mci, stdEcif) {
+  const recs = [];
+  if (tot === 0) return recs;
+
+  const nonEligACR = ot;
+  const eligACR = el;
+  const nonEligMci = getMCI(nonEligACR);
+
+  if (ok) {
+    const afoEcif = Math.min(tot * 0.5, 500000);
+    const afoAco = Math.min(tot * 0.5, 500000);
+    recs.push({ type: "success", title: "AFO eligible — submit as single nomination",
+      body: `All workloads qualify as one AFO project. ECIF ${fmt(afoEcif)} (cash to partner) + ACO ${fmt(afoAco)} (credits to customer).`,
+      action: "Submit via Azure Offer Navigator (field seller nominates)" });
+
+    if (mci.pre > 0) {
+      recs.push({ type: "tip", title: "Stack MCI pre-sales for additional " + fmt(mci.pre),
+        body: `Partner can self-nominate a separate Assessment+POV (${mci.preL}) for ${fmt(mci.pre)} via Partner Center. This does NOT conflict with AFO post-sales.`,
+        action: "Partner submits MCI pre-sales claim independently" });
+    }
+
+    if (rows.some(r => ITEMS.find(i => i.id === r.id && i.cat === "fo")) && !rows.some(r => ITEMS.find(i => i.id === r.id && (i.cat === "db" || i.cat === "fab")))) {
+      recs.push({ type: "warn", title: "Standalone AI Foundry — bundle recommended",
+        body: "AI Foundry without DB or Fabric is not recommended for AFO. Add at least one Database or Fabric workload to strengthen the nomination.",
+        action: "Add DB or Fabric workloads" });
+    }
+  } else if (pct > 0 && pct < 50 && nonEligACR > 0) {
+    const splitAfoEcif = Math.min(eligACR * 0.5, 500000);
+    const splitAfoAco = Math.min(eligACR * 0.5, 500000);
+    const splitStdEcif = Math.min(nonEligACR * 0.2, 250000);
+    const nonEligMciPost = nonEligMci.post;
+
+    recs.push({ type: "strategy", title: "Split into two nominations to maximize funding",
+      body: `Current mix is ${pct.toFixed(0)}% eligible — below 50% threshold. Split the project:\n` +
+        `\n• Project A (AFO): DB/Fabric/Foundry workloads only (${fmt(eligACR)} ACR = 100% eligible)\n` +
+        `  → ECIF ${fmt(splitAfoEcif)} (cash to partner)\n` +
+        `  → ACO ${fmt(splitAfoAco)} (credits to customer)\n` +
+        `\n• Project B: Non-eligible workloads (${fmt(nonEligACR)} ACR) — choose ONE:\n` +
+        `  Option 1: Standard ECIF ~${fmt(splitStdEcif)} (cash, field-led, ~5:1 ROI)\n` +
+        `  Option 2: MCI Partner Nominated ${fmt(nonEligMciPost)} (cash, partner-led, ${nonEligMci.ts || "N/A"})\n` +
+        `  ⚠ ECIF and MCI cannot be used on the same project.\n` +
+        `\nBest total cash (Option 1): ${fmt(splitAfoEcif + splitStdEcif)}` +
+        `\nBest total cash (Option 2): ${fmt(splitAfoEcif + nonEligMciPost)}` +
+        (nonEligMci.pre > 0 ? `\n+ MCI Pre-sales ${fmt(nonEligMci.pre)} can be added as separate assessment scope` : ""),
+      action: "Submit as two separate nominations with different scopes in Azure Offer Navigator" });
+
+    recs.push({ type: "alt", title: "Alternative: Single Standard ECIF (no split)",
+      body: `Submit everything as one Standard ECIF project (${fmt(tot)} ACR) via Azure Offer Navigator. Estimated ECIF: ~${fmt(stdEcif)} (cash, 5:1 ROI). No ACO. Simpler but less funding.`,
+      action: "Field seller nominates via Azure Offer Navigator" });
+  } else if (pct === 0 && tot > 0) {
+    recs.push({ type: "info", title: "No AFO-eligible workloads — choose ECIF or MCI",
+      body: `None of the selected workloads qualify for AFO (requires DB/Fabric/Foundry). Choose ONE per project:\n\n` +
+        `• Option 1 — Standard ECIF: ~${fmt(stdEcif)} (cash, field-led, ~5:1 ROI)\n` +
+        `• Option 2 — MCI Partner Nominated: ${fmt(mci.post)} (cash, partner-led, ${mci.ts || "N/A"})` +
+        (mci.pre > 0 ? `\n  + MCI Pre-sales ${fmt(mci.pre)} as separate assessment scope` : "") +
+        `\n\n⚠ ECIF and MCI cannot be used on the same customer + project.`,
+      action: "Field seller nominates ECIF via Azure Offer Navigator, OR partner submits MCI via Partner Center" });
+
+    recs.push({ type: "tip", title: "Add DB, Fabric, or AI Foundry to unlock AFO",
+      body: `Even a small eligible workload can flip the mix. Adding ${fmt(tot)} in DB/Fabric/Foundry would make this 50% eligible and unlock ECIF (cash to partner) + ACO (credits to customer).`,
+      action: "Explore data modernization or AI use cases with the customer" });
+  }
+
+  return recs;
+}
+
+function getScope(db, fab, fo, rows, tot, cust) {
+  const T = {
+    db: { p: "migrate and modernize the database estate onto Azure", a: ["Azure Database services for migration/modernization", "Azure landing zone with security controls"], d: ["Database discovery and assessment", "Migration strategy and wave plan", "Migration execution and validation", "Performance tuning and operational handover"], m: [{ n: "M1 - Assessment & Planning", d: "Database discovery, assessment, TCO, migration strategy, wave plan, landing zone" }, { n: "M2 - Migration & Testing", d: "Schema/data migration, connectivity testing, performance validation" }, { n: "M3 - Cutover & Handover", d: "Production cutover, tuning, monitoring, runbook, knowledge transfer" }] },
+    fab: { p: "establish a unified analytics platform on Microsoft Fabric", a: ["Microsoft Fabric (Lakehouse, Warehouse, Semantic Models)", "OneLake + Power BI"], d: ["Analytics architecture design", "Fabric capacity provisioning", "Data pipelines (Bronze/Silver/Gold)", "Semantic models and reports", "Governance framework"], m: [{ n: "M1 - Architecture & Setup", d: "Architecture, Fabric provisioning, workspace structure, governance" }, { n: "M2 - Pipelines & Semantic Layer", d: "Data ingestion, Bronze/Silver/Gold, semantic models, reports" }, { n: "M3 - Validation & Enablement", d: "UAT, performance optimization, knowledge transfer" }] },
+    fo: { p: "build an enterprise AI platform using Azure AI Foundry", a: ["Azure AI Foundry for model management and agents", "Azure AI Search for RAG", "Responsible AI governance"], d: ["AI reference architecture", "AI Foundry provisioning", "RAG pipeline implementation", "Pilot AI agent/Copilot scenario", "AI governance model"], m: [{ n: "M1 - AI Architecture & Setup", d: "Architecture, AI Foundry provisioning, model selection, governance" }, { n: "M2 - RAG & Agent Development", d: "RAG pipeline, data grounding, agent development, testing" }, { n: "M3 - Pilot & Enablement", d: "Pilot deployment, safety validation, monitoring, knowledge transfer" }] },
+    dbfab: { p: "modernize databases and establish Fabric as analytics layer", a: ["Azure Database services", "Microsoft Fabric with OneLake", "Integrated DB-to-Fabric pipeline"], d: ["Database assessment and migration", "Fabric provisioning", "Data integration pipelines", "Semantic models and reporting", "Governance framework"], m: [{ n: "M1 - Assessment & Platform Setup", d: "DB discovery, migration strategy, Fabric architecture, provisioning" }, { n: "M2 - Migration & Platform Build", d: "DB migration, Fabric config, ingestion pipelines, semantic models" }, { n: "M3 - Validation & Handover", d: "Reports, validation, optimization, governance, knowledge transfer" }] },
+    dbfo: { p: "migrate databases and build an AI-ready foundation with AI Foundry", a: ["Azure Database services", "Azure AI Foundry", "Azure AI Search for RAG"], d: ["Database assessment and migration", "AI Foundry setup", "RAG pipeline to operational data", "Pilot AI agent", "Data + AI governance"], m: [{ n: "M1 - Assessment & Architecture", d: "DB discovery, AI use cases, combined architecture, provisioning" }, { n: "M2 - Migration & AI Build", d: "DB migration, AI Foundry config, RAG pipeline, agent dev" }, { n: "M3 - Pilot & Enablement", d: "Agent pilot, cutover, testing, governance, knowledge transfer" }] },
+    fabfo: { p: "establish a Data & AI platform with Fabric and AI Foundry", a: ["Microsoft Fabric as analytical layer", "Azure AI Foundry for AI orchestration", "Data-to-AI pipeline"], d: ["Combined Data & AI architecture", "Fabric + AI Foundry provisioning", "AI-optimized data pipelines", "Pilot AI agent on Fabric data", "Governance model"], m: [{ n: "M1 - Architecture & Provisioning", d: "Combined architecture, Fabric setup, AI Foundry provisioning, governance" }, { n: "M2 - Data & AI Build", d: "Semantic models, AI deployment, RAG pipeline, agent dev" }, { n: "M3 - Pilot & Enablement", d: "AI pilot, validation, monitoring, governance, knowledge transfer" }] },
+    all: { p: "execute a full Data & AI transformation across databases, analytics, and AI", a: ["Azure Database services", "Microsoft Fabric", "Azure AI Foundry", "End-to-end: DB > Fabric > AI"], d: ["Database assessment and migration", "Fabric architecture and semantic models", "AI Foundry setup", "Integrated pipelines", "Pilot AI agent", "Comprehensive governance", "Scalability roadmap"], m: [{ n: "M1 - Discovery & Setup", d: "DB assessment, combined architecture, Fabric + AI Foundry provisioning" }, { n: "M2 - Migration & Build", d: "DB migration, Fabric pipelines, AI deployment, RAG, agent dev" }, { n: "M3 - Integration & Enablement", d: "End-to-end testing, AI pilot, cutover, governance, knowledge transfer" }] },
+  };
+  let t = null;
+  if (db && fab && fo) t = T.all;
+  else if (db && fab) t = T.dbfab;
+  else if (db && fo) t = T.dbfo;
+  else if (fab && fo) t = T.fabfo;
+  else if (db) t = T.db;
+  else if (fab) t = T.fab;
+  else if (fo) t = T.fo;
+  if (!t) return { scope: "[Select workloads]", ms: [] };
+  let s = "Purpose: " + t.p + " for " + cust + ".\n\nArchitecture:\n";
+  t.a.forEach((a) => { s += "- " + a + "\n"; });
+  s += "\nCommercial impact (Year 1):\n";
+  rows.forEach((r) => { s += "- " + r.name + (r.sku ? " (" + r.sku + ")" : "") + ": ~" + fmt(r.mo) + "/mo\n"; });
+  if (rows.length) s += "- Total: ~" + fmt(tot / 12) + "/mo (" + fmt(tot) + "/yr)\n";
+  s += "\nDeliverables:\n";
+  t.d.forEach((d) => { s += "- " + d + "\n"; });
+  s += "\nGoal: Help " + cust + " establish a production-ready, governed platform.";
+  return { scope: s, ms: t.m };
+}
+
+function App() {
+  const [sel, setSel] = useState({});
+  const [exCat, setExCat] = useState({ db: true, fab: false, fo: false, accel: false, oth: false });
+  const [pg, setPg] = useState("calc");
+  const [cp, setCp] = useState("");
+  const [showGuide, setShowGuide] = useState(false);
+  const [saveStatus, setSaveStatus] = useState("");
+  const [savedList, setSavedList] = useState([]);
+  const [showSaves, setShowSaves] = useState(false);
+  const ref = useRef(null);
+  const [sow, setSow] = useState({
+    cn: "[CUSTOMER NAME]", on: "FY26 - [CUSTOMER]", req: "[Name, email]",
+    cc: "[Name, email]", sup: "[Partner] (External)", sc: "[Name, email]",
+    scope: "", sd: "[START]", ed: "[END]",
+    m1n: "", m1h: "[XXX]", m1d: "[DATE]", m1x: "",
+    m2n: "", m2h: "[XXX]", m2d: "[DATE]", m2x: "",
+    m3n: "", m3h: "[XXX]", m3d: "[DATE]", m3x: "",
+  });
+  const us = (k, v) => setSow((p) => ({ ...p, [k]: v }));
+
+  // ── Save / Load via persistent storage ──
+  const saveProject = async () => {
+    const name = sow.cn === "[CUSTOMER NAME]" ? "Untitled-" + Date.now() : sow.cn;
+    const key = "afo:" + name.replace(/[^a-zA-Z0-9_-]/g, "_").substring(0, 80);
+    const payload = JSON.stringify({ sow, sel, ts: new Date().toISOString(), name });
+    try {
+      await window.storage.set(key, payload);
+      setSaveStatus("Saved: " + name);
+      setTimeout(() => setSaveStatus(""), 3000);
+      loadSavedList();
+    } catch (e) { setSaveStatus("Save failed"); setTimeout(() => setSaveStatus(""), 3000); }
+  };
+
+  const loadSavedList = async () => {
+    try {
+      const res = await window.storage.list("afo:");
+      if (res && res.keys) setSavedList(res.keys);
+    } catch (e) { setSavedList([]); }
+  };
+
+  const loadProject = async (key) => {
+    try {
+      const res = await window.storage.get(key);
+      if (res && res.value) {
+        const data = JSON.parse(res.value);
+        if (data.sow) setSow(data.sow);
+        if (data.sel) setSel(data.sel);
+        setSaveStatus("Loaded: " + (data.name || key));
+        setShowSaves(false);
+        setTimeout(() => setSaveStatus(""), 3000);
+      }
+    } catch (e) { setSaveStatus("Load failed"); setTimeout(() => setSaveStatus(""), 3000); }
+  };
+
+  const deleteProject = async (key) => {
+    try {
+      await window.storage.delete(key);
+      setSaveStatus("Deleted");
+      setTimeout(() => setSaveStatus(""), 2000);
+      loadSavedList();
+    } catch (e) {}
+  };
+
+  useEffect(() => { loadSavedList(); }, []);
+
+  const upd = (id, field, val) => {
+    setSel((prev) => {
+      const itm = ITEMS.find((x) => x.id === id);
+      if (!itm) return prev;
+      const cur = prev[id] || { on: false, qty: itm.dq || 1, mo: 0, sku: itm.dsku || "" };
+      const n = { ...cur, [field]: val };
+      if (field === "on" && val && !cur.mo) {
+        n.qty = itm.dq || 1;
+        n.sku = itm.dsku || "";
+        n.mo = itm.fab ? skuMo(itm.dsku) : (itm.dq * itm.up);
+      }
+      if (field === "qty" && !itm.fab) n.mo = val * itm.up;
+      if (field === "sku" && itm.fab) n.mo = skuMo(val) * (n.qty || 1);
+      if (field === "qty" && itm.fab) n.mo = skuMo(n.sku || itm.dsku) * val;
+      return { ...prev, [id]: n };
+    });
+  };
+
+  const C = useMemo(() => {
+    let el = 0, ot = 0, xcr = 0;
+    const rows = [];
+    ITEMS.forEach((itm) => {
+      const s = sel[itm.id];
+      if (!s || !s.on) return;
+      const cat = CATS.find((c) => c.key === itm.cat);
+      const mo = s.mo || 0;
+      const yr = mo * 12;
+      if (itm.xcr) { xcr += yr; }
+      else if (cat.elig) { el += yr; }
+      else { ot += yr; }
+      rows.push({ id: itm.id, name: itm.name, tag: itm.tag, color: cat.color, elig: cat.elig, mo, yr, sku: s.sku || "", xcr: !!itm.xcr });
+    });
+    const tot = el + ot; // ACR only (excludes XCR)
+    const pct = tot > 0 ? (el / tot) * 100 : 0, ok = pct >= 50;
+    const db = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "db"));
+    const fab = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "fab"));
+    const fo = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "fo"));
+    let sc = "";
+    if (fo && db && fab) sc = "AI Foundry + DB + Fabric";
+    else if (fo && db) sc = "AI Foundry + DB";
+    else if (fo && fab) sc = "AI Foundry + Fabric";
+    else if (db && fab) sc = "DB + Fabric";
+    else if (db) sc = "Databases";
+    else if (fab) sc = "Fabric";
+    else if (fo) sc = "Standalone Foundry";
+    const mci = getMCI(tot);
+    const ecif = ok ? Math.min(tot * 0.5, 500000) : 0;
+    const aco = ok ? Math.min(tot * 0.5, 500000) : 0;
+    // Standard ECIF (non-AFO): available for ALL Azure workloads, field-nominated, ~5:1 ROI
+    const stdEcif = tot > 0 ? Math.min(tot * 0.2, 250000) : 0; // Conservative 5:1 ROI est.
+    const recs = getRecommendation(el, ot, tot, pct, ok, rows, mci, stdEcif);
+
+    // Recommended total: the maximum achievable with correct stacking rules
+    // Rule: ECIF and MCI cannot be used on the same customer + project
+    let recCash = 0, recCredits = 0;
+    let recStrategy = "AFO";
+    if (ok) {
+      // AFO eligible: ECIF + MCI pre-sales (as separate assessment scope)
+      recCash = ecif + mci.pre; // MCI post conflicts with ECIF
+      recCredits = aco;
+      recStrategy = "AFO + MCI Pre-sales";
+    } else if (!ok && el > 0 && ot > 0) {
+      // Split: Project A = AFO (eligible), Project B = best of (Std ECIF OR MCI)
+      const splitAfoEcif = Math.min(el * 0.5, 500000);
+      const splitAfoAco = Math.min(el * 0.5, 500000);
+      const splitNonEligMci = getMCI(ot);
+      const splitStdEcif = Math.min(ot * 0.2, 250000);
+      const projBbest = Math.max(splitStdEcif, splitNonEligMci.pre + splitNonEligMci.post);
+      recCash = splitAfoEcif + projBbest;
+      recCredits = splitAfoAco;
+      recStrategy = "Split";
+    } else if (!ok) {
+      // No AFO: best of (Std ECIF) OR (MCI pre+post) — can't stack
+      recCash = Math.max(stdEcif, mci.pre + mci.post);
+      recCredits = 0;
+      recStrategy = recCash === stdEcif ? "Standard ECIF" : "MCI";
+    }
+
+    return { el, ot, xcr, tot, pct, ok, rows, sc, ecif, aco, stdEcif, db, fab, fo, mci, recs, recCash, recCredits, recStrategy };
+  }, [sel]);
+
+  const dyn = useMemo(() => getScope(C.db, C.fab, C.fo, C.rows, C.tot, sow.cn), [C.db, C.fab, C.fo, C.rows, C.tot, sow.cn]);
+
+  const prevK = useRef("");
+  useEffect(() => {
+    const k = [C.db, C.fab, C.fo].join("-");
+    if (k !== prevK.current) {
+      prevK.current = k;
+      us("scope", dyn.scope);
+      if (dyn.ms.length >= 3) {
+        us("m1n", dyn.ms[0].n); us("m1x", dyn.ms[0].d);
+        us("m2n", dyn.ms[1].n); us("m2x", dyn.ms[1].d);
+        us("m3n", dyn.ms[2].n); us("m3x", dyn.ms[2].d);
+      }
+    }
+  }, [dyn]);
+
+  const mx = Math.max(...C.rows.map((r) => r.yr), 1);
+
+  const partnerMail = useMemo(() => {
+    const wl = C.rows.map((r) => "  - " + r.name + (r.sku ? " (" + r.sku + ")" : "") + ": ~" + fmt(r.mo) + "/mo").join("\n");
+    return "Subject: Azure Funding Opportunity - " + sow.cn + " (" + fmt(C.tot) + " Y1 ACR)\n\nHi [Partner],\n\nOPPORTUNITY\n- Customer: " + sow.cn + "\n- Y1 ACR: " + fmt(C.tot) + "\n- Scenario: " + (C.sc || "TBD") + "\n- AFO Eligible: " + C.pct.toFixed(0) + "%\n\nWORKLOADS\n" + (wl || "  [None]") + "\n\nFIELD-LED FUNDING\n- ECIF (cash to partner): up to " + fmt(C.ok ? C.ecif : C.stdEcif) + (C.ok ? " (AFO, 2:1 ROI)" : " (Standard, ~5:1 ROI)") + "\n- ACO (credits to customer): " + (C.aco > 0 ? "up to " + fmt(C.aco) : "N/A (AFO only)") + "\n- Nominated by MS field seller via Azure Offer Navigator\n\nPARTNER-LED (MCI Azure Accelerate)\n- Pre-sales (Assessment+POV): " + (C.mci.pre > 0 ? fmt(C.mci.pre) + " (" + C.mci.preL + ")" : "N/A (ACR < $15K)") + "\n- Post-sales (Deployment): " + (C.mci.post > 0 ? fmt(C.mci.post) + " (" + C.mci.ts + ", " + C.mci.days + " days)" : "N/A") + "\n- Partner self-serve via Partner Center\n- Note: ECIF and MCI cannot be used on same customer + project\n\nNEXT STEPS\n1. Confirm scope with customer\n2. Prepare SOW\n3. Submit nomination via Azure Offer Navigator (field-led)\n4. Submit MCI pre-sales claim via Partner Center (partner-led)\n\nFirst come, first served — limited funding.\n\n[Your name]";
+  }, [C, sow.cn]);
+
+  const custMail = useMemo(() => {
+    const wl = C.rows.map((r) => "  - " + r.name + ": ~" + fmt(r.mo) + "/mo").join("\n");
+    return "Subject: Azure Data & AI Platform - " + sow.cn + "\n\nHi [Customer],\n\nPROPOSAL\n" + (C.db ? "- Modernize databases on Azure\n" : "") + (C.fab ? "- Unified analytics with Microsoft Fabric\n" : "") + (C.fo ? "- Enterprise AI with Azure AI Foundry\n" : "") + "\nINVESTMENT\n" + (wl || "  [TBD]") + "\n- Total: ~" + fmt(C.tot / 12) + "/mo (" + fmt(C.tot) + "/yr)\n\nMICROSOFT CO-INVESTMENT\n- Implementation services (ECIF): up to " + fmt(C.ecif) + "\n- Azure consumption credits (ACO): up to " + fmt(C.aco) + "\n\nNEXT STEPS\n1. Confirm priorities\n2. Introduce delivery partner\n3. Kick off\n\nLimited funding. Happy to discuss.\n\n[Your name]";
+  }, [C, sow.cn]);
+
+  const copy = (t, l) => { navigator.clipboard.writeText(t); setCp(l); setTimeout(() => setCp(""), 2000); };
+
+  const print = () => {
+    const el = document.getElementById("sowdoc");
+    if (!el) return;
+    const w = window.open("", "_blank");
+    w.document.write("<!DOCTYPE html><html><head><title>ECIF - " + sow.cn + "</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;padding:36px 44px;color:#1a1a2e;font-size:12px;line-height:1.6}table{width:100%;border-collapse:collapse}th,td{padding:5px 8px;text-align:left;border-bottom:1px solid #e0e0e0}th{background:#f0f4fa;font-size:11px;color:#555}h2{color:#0078D4;font-size:14px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 8px}.hd{background:linear-gradient(135deg,#0078D4,#5C2D91);color:white;padding:24px 30px;margin:-36px -44px 24px}.hd h1{font-size:17px;margin-top:4px}input,textarea{border:none!important;background:transparent!important;font:inherit;color:inherit;padding:0;outline:none}@media print{.hd{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>" + el.innerHTML + "</body></html>");
+    w.document.close(); w.print();
+  };
+
+  const Inp = ({ v, fn, st }) => <input value={v} onChange={(e) => fn(e.target.value)} style={{ border: "none", borderBottom: "1px dashed #bbb", background: "transparent", fontFamily: "inherit", fontSize: "inherit", fontWeight: "inherit", color: "inherit", padding: "0 2px", outline: "none", minWidth: 50, ...st }} />;
+  const Txt = ({ v, fn, st }) => <textarea value={v} onChange={(e) => fn(e.target.value)} style={{ border: "1px dashed #ccc", borderRadius: 4, padding: "6px 8px", background: "#fffef5", width: "100%", fontFamily: "inherit", fontSize: "inherit", lineHeight: "inherit", resize: "vertical", minHeight: 100, outline: "none", ...st }} />;
+
+  return (
+    <div style={{ fontFamily: "'Segoe UI',sans-serif", minHeight: "100vh", background: "linear-gradient(170deg,#eef2ff,#f5f0ff 40%,#fff5f0)", color: "#1a1a2e" }}>
+      <div style={{ background: HDR, padding: "22px 28px", color: "white" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
+                <svg width="20" height="20" viewBox="0 0 20 20"><rect width="9" height="9" fill="#f25022" rx="1" /><rect x="11" width="9" height="9" fill="#7fba00" rx="1" /><rect y="11" width="9" height="9" fill="#00a4ef" rx="1" /><rect x="11" y="11" width="9" height="9" fill="#ffb900" rx="1" /></svg>
+                <span style={{ fontSize: 9, opacity: 0.6, letterSpacing: 2, textTransform: "uppercase" }}>Azure Funding Estimator</span>
+              </div>
+              <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Azure Funding Estimator & SOW Generator</h1>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              {saveStatus && <span style={{ fontSize: 10, padding: "3px 8px", background: "rgba(255,255,255,0.2)", borderRadius: 4 }}>{saveStatus}</span>}
+              <button onClick={saveProject} style={{ padding: "6px 14px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>💾 Save</button>
+              <div style={{ position: "relative" }}>
+                <button onClick={() => { setShowSaves(!showSaves); if (!showSaves) loadSavedList(); }} style={{ padding: "6px 14px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>📂 Load{savedList.length > 0 ? " (" + savedList.length + ")" : ""}</button>
+                {showSaves && (
+                  <div style={{ position: "absolute", top: "110%", right: 0, width: 260, background: "white", borderRadius: 8, boxShadow: "0 8px 30px rgba(0,0,0,0.2)", zIndex: 999, overflow: "hidden" }}>
+                    <div style={{ padding: "8px 10px", background: "#f8f9fa", fontSize: 10, fontWeight: 700, color: "#555", borderBottom: "1px solid #e8e8ec" }}>Saved Projects</div>
+                    {savedList.length === 0 ? (
+                      <div style={{ padding: 12, fontSize: 11, color: "#aaa", textAlign: "center" }}>No saved projects</div>
+                    ) : savedList.map((k, i) => {
+                      const label = k.replace("afo:", "").replace(/_/g, " ");
+                      return (
+                        <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", borderBottom: "1px solid #f0f0f0", fontSize: 11 }}>
+                          <button onClick={() => loadProject(k)} style={{ flex: 1, textAlign: "left", border: "none", background: "transparent", cursor: "pointer", fontSize: 11, color: "#333", padding: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</button>
+                          <button onClick={() => deleteProject(k)} style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: 11, color: "#dc2626", padding: "0 4px" }}>✕</button>
+                        </div>
+                      );
+                    })}
+                    <button onClick={() => setShowSaves(false)} style={{ width: "100%", padding: "6px", border: "none", background: "#f8f9fa", cursor: "pointer", fontSize: 10, color: "#888" }}>Close</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "14px 12px 50px", display: "grid", gridTemplateColumns: pg === "calc" ? "1fr 310px" : "1fr", gap: 14, alignItems: "start" }}>
+
+        {pg === "calc" && (
+          <>
+            {/* LEFT */}
+            <div>
+              {CATS.map((cat) => {
+                const items = ITEMS.filter((i) => i.cat === cat.key);
+                const cnt = items.filter((i) => sel[i.id] && sel[i.id].on).length;
+                const open = exCat[cat.key];
+                return (
+                  <div key={cat.key} style={{ background: "white", borderRadius: 10, marginBottom: 8, border: "1px solid #e8e8ec", overflow: "hidden" }}>
+                    <button onClick={() => setExCat((p) => ({ ...p, [cat.key]: !p[cat.key] }))} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                        <div style={{ width: 10, height: 10, borderRadius: 3, background: cat.color }} />
+                        {cat.label}
+                        {cat.elig && <span style={{ fontSize: 8, fontWeight: 700, background: "#dcfce7", color: "#166534", padding: "1px 5px", borderRadius: 6 }}>AFO ELIGIBLE</span>}
+                        {!cat.elig && cat.badge && <span style={{ fontSize: 8, fontWeight: 700, background: cat.key === "accel" ? "#fff3e0" : "#f5f5f5", color: cat.key === "accel" ? "#e65100" : "#888", padding: "1px 5px", borderRadius: 6 }}>{cat.badge}</span>}
+                        {cnt > 0 && <span style={{ fontSize: 9, fontWeight: 600, background: cat.color + "15", color: cat.color, padding: "1px 5px", borderRadius: 6 }}>{cnt}</span>}
+                      </div>
+                      <span style={{ opacity: 0.3, transform: open ? "rotate(0)" : "rotate(-90deg)", transition: "0.2s" }}>▾</span>
+                    </button>
+                    {open && (
+                      <div style={{ padding: "0 14px 10px" }}>
+                        {items.map((itm) => {
+                          const s = sel[itm.id] || {};
+                          const on = !!s.on;
+                          const mo = s.mo || 0;
+                          const yr = mo * 12;
+                          const qt = s.qty != null ? s.qty : (itm.dq || 1);
+                          const sku = s.sku || itm.dsku || "";
+                          return (
+                            <div key={itm.id} style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 0", borderTop: "1px solid #f5f5f7", flexWrap: "wrap" }}>
+                              <label style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 145, flex: "1 1 145px", cursor: "pointer", fontSize: 12, color: on ? "#1a1a2e" : "#aaa", fontWeight: on ? 500 : 400 }}>
+                                <input type="checkbox" checked={on} onChange={(e) => upd(itm.id, "on", e.target.checked)} style={{ accentColor: cat.color }} />
+                                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{itm.name}</span>
+                              </label>
+                              {on && (
+                                <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                                  {itm.fab ? (
+                                    <>
+                                      <select value={sku} onChange={(e) => upd(itm.id, "sku", e.target.value)} style={{ padding: "2px 4px", border: "1px solid #107C1044", borderRadius: 4, fontSize: 11, background: "#f0fdf4", fontWeight: 600, color: "#166534" }}>
+                                        {FSKU.map((f) => <option key={f.s} value={f.s}>{f.s} ({f.cu}CU) {fmt(f.mo)}/mo</option>)}
+                                      </select>
+                                      <span style={{ fontSize: 9, color: "#aaa" }}>x</span>
+                                      <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 30, padding: "2px", border: "1px solid #ddd", borderRadius: 3, fontSize: 11, textAlign: "center" }} />
+                                    </>
+                                  ) : (
+                                    <div style={{ display: "flex", alignItems: "center", background: "#eff6ff", borderRadius: 4, padding: "1px 3px", gap: 2 }}>
+                                      <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 3, fontSize: 11, textAlign: "right", background: "white" }} />
+                                      <span style={{ fontSize: 9, color: "#666" }}>{itm.unit}</span>
+                                    </div>
+                                  )}
+                                  <div style={{ display: "flex", alignItems: "center", background: "#f8f8f8", borderRadius: 4, padding: "1px 3px" }}>
+                                    <span style={{ fontSize: 9, color: "#bbb" }}>$</span>
+                                    <input type="number" value={Math.round(mo)} onChange={(e) => upd(itm.id, "mo", +e.target.value)} style={{ width: 58, padding: "2px", border: "1px solid #e0e0e0", borderRadius: 3, fontSize: 11, textAlign: "right", background: "white" }} />
+                                    <span style={{ fontSize: 9, color: "#bbb" }}>/mo</span>
+                                  </div>
+                                  <div style={{ fontSize: 11, fontWeight: 600, minWidth: 58, textAlign: "right" }}>{fmt(yr)}<span style={{ fontSize: 8, color: "#bbb" }}>/yr</span></div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* RIGHT */}
+            <div style={{ position: "sticky", top: 10 }}>
+
+              {/* ── DUAL-PATH ELIGIBILITY VISUAL ── */}
+              <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", padding: 12, marginBottom: 8 }}>
+                <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: "#888", marginBottom: 8, letterSpacing: 0.5 }}>Eligibility Overview</div>
+
+                {C.tot === 0 ? <div style={{ fontSize: 11, color: "#ccc" }}>Select workloads to see eligibility...</div> : (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    {/* Field-Led (AFO) */}
+                    <div style={{ borderRadius: 8, padding: 10, background: C.ok ? "linear-gradient(135deg,#ecfdf5,#d1fae5)" : "linear-gradient(135deg,#fef2f2,#fee2e2)", border: "1.5px solid " + (C.ok ? "#6ee7b7" : "#fca5a5"), textAlign: "center", position: "relative" }}>
+                      <div style={{ fontSize: 8, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Field-Led</div>
+                      {/* Ring indicator */}
+                      <div style={{ width: 56, height: 56, borderRadius: "50%", margin: "0 auto 6px", position: "relative", background: `conic-gradient(${C.ok ? "#059669" : "#dc2626"} ${C.pct * 3.6}deg, ${C.ok ? "#d1fae5" : "#fecaca"} 0)` }}>
+                        <div style={{ position: "absolute", inset: 6, borderRadius: "50%", background: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: C.ok ? "#059669" : "#dc2626" }}>{C.pct.toFixed(0)}%</span>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: C.ok ? "#059669" : "#dc2626" }}>{C.ok ? "✓ AFO ELIGIBLE" : "✗ NOT AFO ELIGIBLE"}</div>
+                      <div style={{ fontSize: 8, color: "#888", marginTop: 2 }}>Requires ≥50% DB/Fabric/Foundry</div>
+                      <div style={{ fontSize: 8, color: "#aaa", marginTop: 1 }}>ECIF {fmt(C.ecif)} + ACO {fmt(C.aco)}</div>
+                      <div style={{ display: "flex", gap: 2, justifyContent: "center", marginTop: 4 }}>
+                        <span style={{ fontSize: 7, padding: "1px 4px", borderRadius: 3, background: "#eff6ff", color: "#0078D4", fontWeight: 600 }}>ECIF</span>
+                        <span style={{ fontSize: 7, padding: "1px 4px", borderRadius: 3, background: "#f3e8ff", color: "#7c3aed", fontWeight: 600 }}>ACO</span>
+                      </div>
+                    </div>
+
+                    {/* Partner-Led (MCI) */}
+                    <div style={{ borderRadius: 8, padding: 10, background: C.tot >= 5000 ? "linear-gradient(135deg,#eff6ff,#dbeafe)" : "#f9fafb", border: "1.5px solid " + (C.tot >= 5000 ? "#93c5fd" : "#e5e7eb"), textAlign: "center", position: "relative" }}>
+                      <div style={{ fontSize: 8, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Partner-Led</div>
+                      {/* Ring indicator */}
+                      {(() => {
+                        const tiers = [5000, 15000, 50000, 100000, 250000];
+                        const tierIdx = tiers.filter(t => C.tot >= t).length;
+                        const pctFill = Math.min((tierIdx / 5) * 100, 100);
+                        return (
+                          <div style={{ width: 56, height: 56, borderRadius: "50%", margin: "0 auto 6px", position: "relative", background: `conic-gradient(#2563eb ${pctFill * 3.6}deg, #dbeafe 0)` }}>
+                            <div style={{ position: "absolute", inset: 6, borderRadius: "50%", background: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: C.tot >= 5000 ? "#2563eb" : "#ccc" }}>{C.mci.ts || "—"}</span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+                      <div style={{ fontSize: 11, fontWeight: 700, color: C.tot >= 5000 ? "#2563eb" : "#999" }}>{C.tot >= 5000 ? "✓ MCI ELIGIBLE" : "✗ ACR < $5K"}</div>
+                      <div style={{ fontSize: 8, color: "#888", marginTop: 2 }}>Partner self-serve via PC</div>
+                      <div style={{ fontSize: 8, color: "#aaa", marginTop: 1 }}>Up to {fmt(C.mci.pre + C.mci.post)}</div>
+                      <div style={{ display: "flex", gap: 2, justifyContent: "center", marginTop: 4 }}>
+                        <span style={{ fontSize: 7, padding: "1px 4px", borderRadius: 3, background: "#eff6ff", color: "#2563eb", fontWeight: 600 }}>Pre-sales</span>
+                        <span style={{ fontSize: 7, padding: "1px 4px", borderRadius: 3, background: "#ecfdf5", color: "#059669", fontWeight: 600 }}>Post-sales</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Scenario badge */}
+                {C.sc && C.tot > 0 && <div style={{ marginTop: 8, fontSize: 10, color: "#555", padding: "4px 8px", background: "#f8f9fa", borderRadius: 6, textAlign: "center" }}>Scenario: <strong>{C.sc}</strong></div>}
+              </div>
+
+              {/* ── YEAR 1 ACR ── */}
+              <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", padding: 12, marginBottom: 8 }}>
+                <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: "#888", marginBottom: 5 }}>Year 1 ACR</div>
+                <div style={{ textAlign: "center", marginBottom: 8 }}><div style={{ fontSize: 26, fontWeight: 700, color: "#0078D4" }}>{fmt(C.tot)}</div><div style={{ fontSize: 10, color: "#bbb" }}>{fmt(C.tot / 12)}/mo{C.xcr > 0 ? " (+ " + fmt(C.xcr) + " XCR)" : ""}</div></div>
+                <div style={{ display: "grid", gridTemplateColumns: C.xcr > 0 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 4 }}>
+                  <div style={{ background: "#eff6ff", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 8 }}>AFO Eligible</div><div style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>{fmt(C.el)}</div></div>
+                  <div style={{ background: "#f5f5f5", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 8 }}>Other ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#999" }}>{fmt(C.ot)}</div></div>
+                  {C.xcr > 0 && <div style={{ background: "#fef3c7", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 8 }}>XCR (not ACR)</div><div style={{ fontSize: 13, fontWeight: 700, color: "#d97706" }}>{fmt(C.xcr)}</div></div>}
+                </div>
+                {C.rows.length > 0 && <div style={{ marginTop: 8 }}>{C.rows.sort((a, b) => b.yr - a.yr).map((r, i) => (
+                  <div key={i} style={{ marginBottom: 3 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10 }}><span style={{ color: r.xcr ? "#d97706" : "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 155 }}>{r.name}{r.sku ? " (" + r.sku + ")" : ""}{r.xcr ? " ⚡" : ""}</span><span style={{ fontWeight: 600 }}>{fmt(r.yr)}</span></div>
+                    <div style={{ height: 3, background: "#f0f0f0", borderRadius: 2 }}><div style={{ height: "100%", width: (r.yr / mx) * 100 + "%", background: r.xcr ? "#fbbf24" : r.color, borderRadius: 2, opacity: r.elig ? 1 : r.xcr ? 0.7 : 0.3 }} /></div>
+                  </div>
+                ))}</div>}
+              </div>
+
+              {/* ── YOUR FUNDING PLAN (unified) ── */}
+              {C.tot > 0 && (
+                <div style={{ borderRadius: 10, marginBottom: 8, overflow: "hidden", background: "linear-gradient(135deg,#1e1b4b,#312e81)" }}>
+                  {/* Big total */}
+                  {(() => {
+                    const lines = [];
+                    let note = "";
+                    if (C.ok) {
+                      if (C.ecif > 0) lines.push({ label: "AFO ECIF", sub: "Cash to partner (2:1 ROI)", amount: C.ecif, color: "#3b82f6" });
+                      if (C.aco > 0) lines.push({ label: "AFO ACO", sub: "Azure credits to customer", amount: C.aco, color: "#8b5cf6" });
+                      if (C.mci.pre > 0) lines.push({ label: "MCI Pre-sales", sub: "Cash to partner (" + C.mci.preL + ")", amount: C.mci.pre, color: "#22c55e" });
+                      note = C.mci.post > 0 ? "MCI Post-sales (" + fmt(C.mci.post) + ") available but cannot stack with AFO ECIF on same project." : "";
+                    }
+                    const cashLines = lines.filter(l => l.label !== "AFO ACO");
+                    const cashTotal = cashLines.reduce((s, l) => s + l.amount, 0);
+                    const acoAmount = lines.find(l => l.label === "AFO ACO");
+                    const grandTotal = lines.reduce((s, l) => s + l.amount, 0);
+
+                    // Non-AFO: show two options since ECIF and MCI can't stack
+                    const isNonAfo = !C.ok && C.tot > 0;
+                    const opt1Total = C.stdEcif; // Std ECIF path
+                    const opt2Total = C.mci.pre + C.mci.post; // MCI path
+
+                    return (
+                      <div style={{ padding: 14 }}>
+                        <div style={{ fontSize: 9, fontWeight: 700, color: "#a5b4fc", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Your Funding Plan</div>
+
+                        {C.ok ? (
+                          <>
+                            {/* AFO eligible — show stacked funding */}
+                            <div style={{ fontSize: 30, fontWeight: 700, color: "white", textAlign: "center" }}>{fmt(grandTotal)}</div>
+                            <div style={{ fontSize: 9, color: "#a5b4fc", textAlign: "center", marginBottom: 10 }}>total stackable funding</div>
+
+                            <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", height: 14, marginBottom: 12 }}>
+                              {lines.map((l, i) => (
+                                <div key={i} style={{ flex: l.amount, background: l.color, minWidth: l.amount > 0 ? 3 : 0 }} />
+                              ))}
+                            </div>
+
+                            <div style={{ fontSize: 8, fontWeight: 700, color: "#a5b4fc", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Cash to Partner</div>
+                            {cashLines.map((l, i) => (
+                              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0", borderBottom: i < cashLines.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                  <div style={{ width: 8, height: 8, borderRadius: 2, background: l.color, flexShrink: 0 }} />
+                                  <div>
+                                    <div style={{ fontSize: 10, color: "white", fontWeight: 600 }}>{l.label}</div>
+                                    <div style={{ fontSize: 8, color: "#a5b4fc" }}>{l.sub}</div>
+                                  </div>
+                                </div>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>{fmt(l.amount)}</div>
+                              </div>
+                            ))}
+                            <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", marginTop: 2, borderTop: "1px solid rgba(255,255,255,0.15)" }}>
+                              <div style={{ fontSize: 10, fontWeight: 600, color: "#a5b4fc" }}>Subtotal cash</div>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>{fmt(cashTotal)}</div>
+                            </div>
+
+                            {acoAmount && (
+                              <>
+                                <div style={{ fontSize: 8, fontWeight: 700, color: "#c4b5fd", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 12, marginBottom: 4 }}>Azure Credits to Customer</div>
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 8px", background: "rgba(139,92,246,0.15)", borderRadius: 6, border: "1px solid rgba(139,92,246,0.25)" }}>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                    <div style={{ width: 8, height: 8, borderRadius: 2, background: acoAmount.color, flexShrink: 0 }} />
+                                    <div>
+                                      <div style={{ fontSize: 10, color: "white", fontWeight: 600 }}>{acoAmount.label}</div>
+                                      <div style={{ fontSize: 8, color: "#c4b5fd" }}>Azure consumption credits (not cash)</div>
+                                    </div>
+                                  </div>
+                                  <div style={{ fontSize: 14, fontWeight: 700, color: "#c4b5fd" }}>{fmt(acoAmount.amount)}</div>
+                                </div>
+                              </>
+                            )}
+
+                            {note && <div style={{ marginTop: 10, padding: "5px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 5, fontSize: 8, color: "#a5b4fc", lineHeight: 1.5 }}>{note}</div>}
+                          </>
+                        ) : isNonAfo ? (
+                          <>
+                            {/* Not AFO eligible — show two options (can't stack) */}
+                            <div style={{ fontSize: 9, color: "#fbbf24", textAlign: "center", marginBottom: 10 }}>ECIF and MCI cannot be used on same project — choose one:</div>
+
+                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 8 }}>
+                              {/* Option 1: Std ECIF */}
+                              <div style={{ padding: "8px 6px", background: opt1Total >= opt2Total ? "rgba(249,115,22,0.15)" : "rgba(255,255,255,0.04)", borderRadius: 6, border: opt1Total >= opt2Total ? "1.5px solid #f97316" : "1px solid rgba(255,255,255,0.1)", textAlign: "center" }}>
+                                {opt1Total >= opt2Total && <div style={{ fontSize: 7, fontWeight: 700, color: "#fbbf24", marginBottom: 2 }}>★ BEST</div>}
+                                <div style={{ fontSize: 8, color: "#a5b4fc", fontWeight: 700, marginBottom: 2 }}>Standard ECIF</div>
+                                <div style={{ fontSize: 18, fontWeight: 700, color: "white" }}>~{fmt(opt1Total)}</div>
+                                <div style={{ fontSize: 8, color: "#a5b4fc", marginTop: 2 }}>Field-Led</div>
+                                <div style={{ fontSize: 7, color: "#a5b4fc" }}>Req: ~5:1 ROI</div>
+                                <div style={{ fontSize: 7, color: "#818cf8" }}>Via Azure Offer Navigator</div>
+                              </div>
+
+                              {/* Option 2: MCI */}
+                              <div style={{ padding: "8px 6px", background: opt2Total > opt1Total ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.04)", borderRadius: 6, border: opt2Total > opt1Total ? "1.5px solid #22c55e" : "1px solid rgba(255,255,255,0.1)", textAlign: "center" }}>
+                                {opt2Total > opt1Total && <div style={{ fontSize: 7, fontWeight: 700, color: "#fbbf24", marginBottom: 2 }}>★ BEST</div>}
+                                <div style={{ fontSize: 8, color: "#a5b4fc", fontWeight: 700, marginBottom: 2 }}>MCI Partner Nom.</div>
+                                <div style={{ fontSize: 18, fontWeight: 700, color: "white" }}>{fmt(opt2Total)}</div>
+                                <div style={{ fontSize: 8, color: "#a5b4fc", marginTop: 2 }}>Partner-Led · {C.mci.ts}</div>
+                                <div style={{ fontSize: 7, color: "#a5b4fc" }}>Req: ≥{fmt(C.tot)} ACR ({C.mci.postL})</div>
+                                <div style={{ fontSize: 7, color: "#818cf8" }}>Via Partner Center · {C.mci.days}d</div>
+                              </div>
+                            </div>
+
+                            <div style={{ padding: "5px 8px", background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 5, fontSize: 8, color: "#fbbf24", lineHeight: 1.5 }}>
+                              ⚠ ECIF (field-nominated) and MCI (partner-nominated) cannot be stacked on the same customer + project.
+                            </div>
+                          </>
+                        ) : null}
+
+                        {/* Split suggestion if not eligible */}
+                        {!C.ok && C.el > 0 && (
+                          <div style={{ marginTop: 8, padding: "6px 8px", background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 5, fontSize: 9, color: "#fbbf24", lineHeight: 1.5 }}>
+                            💡 <strong>Split tip:</strong> Nominate DB/Fabric/Foundry ({fmt(C.el)}) as separate AFO project → unlocks <strong>{fmt(Math.min(C.el * 0.5, 500000))}</strong> ECIF (cash to partner) + <strong>{fmt(Math.min(C.el * 0.5, 500000))}</strong> ACO (credits to customer).
+                          </div>
+                        )}
+                        {!C.ok && C.el === 0 && (
+                          <div style={{ marginTop: 8, padding: "5px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 5, fontSize: 8, color: "#fbbf24", lineHeight: 1.5 }}>
+                            Add DB, Fabric, or AI Foundry workloads to unlock AFO (ECIF cash + ACO credits).
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
+
+              <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", overflow: "hidden", marginBottom: 8 }}>
+                <button onClick={() => setShowGuide(!showGuide)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 10px", border: "none", background: "transparent", cursor: "pointer", fontSize: 10, fontWeight: 700, color: "#555" }}>
+                  <span>AFO vs ECIF vs MCI — Program Guide</span>
+                  <span style={{ opacity: 0.3, transition: "0.2s", transform: showGuide ? "rotate(0)" : "rotate(-90deg)" }}>▾</span>
+                </button>
+                {showGuide && (
+                  <div style={{ padding: "0 10px 10px", fontSize: 9.5, color: "#666", lineHeight: 1.6 }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 9, marginBottom: 6 }}>
+                      <thead><tr style={{ background: "#f8f9fa" }}>
+                        <th style={{ padding: "4px 5px", textAlign: "left", borderBottom: "2px solid #ddd", fontSize: 8, fontWeight: 700, color: "#888" }}></th>
+                        <th style={{ padding: "4px 5px", textAlign: "center", borderBottom: "2px solid #ddd", fontSize: 8, fontWeight: 700, color: "#0078D4" }}>AFO (Frontier)</th>
+                        <th style={{ padding: "4px 5px", textAlign: "center", borderBottom: "2px solid #ddd", fontSize: 8, fontWeight: 700, color: "#D83B01" }}>ECIF (Standard)</th>
+                        <th style={{ padding: "4px 5px", textAlign: "center", borderBottom: "2px solid #ddd", fontSize: 8, fontWeight: 700, color: "#107C10" }}>MCI Partner Nom.</th>
+                      </tr></thead>
+                      <tbody>
+                        {[
+                          ["Nomination", "Field (MS seller)", "Field (MS seller)", "Partner (self-serve)"],
+                          ["Type", "Post-sales only", "Pre- & Post-sales", "Pre- & Post-sales"],
+                          ["Max ECIF", "$500K", "Varies", "—"],
+                          ["Max ACO", "$500K", "—", "—"],
+                          ["ROI req.", "2:1", "Varies", "ACR threshold"],
+                          ["Eligible WL", "DB/Fabric/AI Foundry", "All Azure", "All Azure Accel."],
+                          ["50% rule", "Yes (DB/Fab/Fo)", "No", "No"],
+                          ["Time-limited", "Yes (first come)", "Quarterly budget", "FY-based"],
+                          ["Stacking", "Not w/ MCI post", "Not w/ MCI post", "Not w/ ECIF"],
+                        ].map(([l, a, b, c], i) => (
+                          <tr key={i} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                            <td style={{ padding: "3px 5px", fontWeight: 600, color: "#555" }}>{l}</td>
+                            <td style={{ padding: "3px 5px", textAlign: "center" }}>{a}</td>
+                            <td style={{ padding: "3px 5px", textAlign: "center" }}>{b}</td>
+                            <td style={{ padding: "3px 5px", textAlign: "center" }}>{c}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                    <div style={{ fontWeight: 600, color: "#333", marginTop: 6, marginBottom: 2 }}>Best strategy:</div>
+                    <div>• <strong>AFO</strong> — Customer with DB/Fabric/AI Foundry ≥50% of ACR. ECIF (cash to partner) + ACO (credits to customer).</div>
+                    <div>• <strong>Standard ECIF</strong> — All Azure workloads. More flexible, but requires field seller nomination per deal.</div>
+                    <div>• <strong>MCI Partner Nominated</strong> — Partner self-serve via Partner Center. Faster, less admin, but lower amounts ($2K–$75K).</div>
+                    <div>• <strong>Pre-sales MCI + AFO post-sales</strong> — Best combo: partner runs Assessment+POV (MCI $15-25K cash), then AFO post-sales (ECIF cash + ACO credits).</div>
+                    <div style={{ marginTop: 4, fontStyle: "italic", color: "#aaa" }}>Note: MCI post-sales and ECIF/AFO can never be used on the same customer+project.</div>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", padding: 10, fontSize: 10, color: "#888", marginBottom: 8 }}>
+                <strong style={{ color: "#555" }}>AFO Rules:</strong> ≥50% eligible (DB/Fabric/Foundry) · 2:1 ROI · ECIF max $500K · ACO max $500K · Post-sales · Field-nominated · Limited time, first come first served
+              </div>
+
+              {C.tot > 0 && (
+                <div style={{ display: "flex", gap: 5 }}>
+                  <button onClick={() => { setPg("sow"); setTimeout(() => ref.current && ref.current.scrollIntoView({ behavior: "smooth" }), 100); }} style={{ flex: 1, padding: 10, background: C.ok ? HDR : "#bbb", color: "white", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Generate SOW</button>
+                  <button onClick={() => setPg("email")} style={{ flex: 1, padding: 10, background: "white", color: "#5C2D91", border: "2px solid #5C2D91", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Email Pitch</button>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {pg === "sow" && (
+          <div ref={ref}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+              <h2 style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#5C2D91" }}>SOW — click text to edit</h2>
+              <div style={{ display: "flex", gap: 5 }}>
+                <button onClick={() => setPg("calc")} style={{ padding: "5px 12px", background: "#eee", border: "none", borderRadius: 6, fontSize: 11, cursor: "pointer" }}>Back</button>
+                <button onClick={print} style={{ padding: "5px 12px", background: HDR, color: "white", border: "none", borderRadius: 6, fontSize: 11, cursor: "pointer" }}>Print / PDF</button>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+              {[{ l: "Y1 ACR", v: fmt(C.tot), c: "#0078D4" }, { l: "AFO Elig.", v: C.pct.toFixed(0) + "%", c: C.ok ? "#059669" : "#dc2626" }, { l: "ECIF (cash)", v: C.ok ? fmt(C.ecif) : "~" + fmt(C.stdEcif), c: C.ok ? "#3b82f6" : "#f97316" }, { l: "ACO (credits)", v: fmt(C.aco), c: "#8b5cf6" }, { l: "MCI (cash)", v: fmt(C.ok ? C.mci.pre : Math.max(C.mci.pre + C.mci.post, 0)), c: "#22c55e" }].map((b, i) => (
+                <div key={i} style={{ flex: 1, background: "white", padding: "7px 4px", borderRadius: 7, textAlign: "center", border: "1px solid #e8e8ec" }}>
+                  <div style={{ fontSize: 8, color: "#888" }}>{b.l}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: b.c || "#333" }}>{b.v}</div>
+                </div>
+              ))}
+            </div>
+            <div id="sowdoc" style={{ background: "white", borderRadius: 10, border: "1px solid #e0e0e0", overflow: "hidden" }}>
+              <div className="hd" style={{ background: HDR, padding: "20px 26px", color: "white" }}>
+                <div style={{ fontSize: 9, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>Azure Funding — Workscope Details</div>
+                <h1 style={{ margin: "2px 0 0", fontSize: 16, fontWeight: 600 }}><Inp v={sow.cn} fn={(v) => us("cn", v)} st={{ color: "white", borderBottomColor: "rgba(255,255,255,.4)", width: 240 }} /> — {C.ok ? "AFO" : "Azure Accelerate"}</h1>
+              </div>
+              <div style={{ padding: "20px 26px", fontSize: 12, lineHeight: 1.6, color: "#333" }}>
+                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Project Details</h2>
+                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 18, fontSize: 11 }}><tbody>
+                  {[["Opportunity Name", "on"], ["MS Requestor", "req"], ["Customer Contact", "cc"], ["Supplier", "sup"], ["Supplier Contact", "sc"]].map(([k, f]) => (
+                    <tr key={k}><td style={{ padding: "3px 6px", fontWeight: 600, color: "#555", width: 180, borderBottom: "1px solid #f0f0f0" }}>{k}</td><td style={{ padding: "3px 6px", borderBottom: "1px solid #f0f0f0" }}><Inp v={sow[f]} fn={(v) => us(f, v)} st={{ color: "#0078D4", width: "100%" }} /></td></tr>
+                  ))}
+                </tbody></table>
+                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Project Scope</h2>
+                <Txt v={sow.scope} fn={(v) => us("scope", v)} st={{ marginBottom: 18, minHeight: 220 }} />
+                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Workload Breakdown</h2>
+                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4, fontSize: 11 }}>
+                  <thead><tr style={{ background: "#f5f7fa" }}><th style={{ padding: "5px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Workload</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>$/mo</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>Y1 Revenue</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>%</th></tr></thead>
+                  <tbody>
+                    {C.rows.filter(r => !r.xcr).sort((a, b) => b.yr - a.yr).map((r, i) => (
+                      <tr key={i} style={{ background: i % 2 ? "#fafafa" : "white" }}>
+                        <td style={{ padding: "4px 6px", borderBottom: "1px solid #f0f0f0" }}><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, background: r.color, marginRight: 4 }} />{r.tag}{r.sku ? " (" + r.sku + ")" : ""}{!r.elig && <span style={{ fontSize: 8, color: "#dc2626" }}> (not elig.)</span>}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "1px solid #f0f0f0" }}>{fmt(r.mo)}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", fontWeight: 600, borderBottom: "1px solid #f0f0f0" }}>{fmt(r.yr)}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "1px solid #f0f0f0" }}>{C.tot > 0 ? ((r.yr / C.tot) * 100).toFixed(0) + "%" : "—"}</td>
+                      </tr>
+                    ))}
+                    <tr style={{ fontWeight: 700 }}><td style={{ padding: "5px 6px", borderTop: "2px solid #333" }}>Total ACR</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{fmt(C.tot / 12)}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{fmt(C.tot)}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>100%</td></tr>
+                    {C.xcr > 0 && C.rows.filter(r => r.xcr).map((r, i) => (
+                      <tr key={"x" + i} style={{ background: "#fffbeb" }}>
+                        <td style={{ padding: "4px 6px", borderBottom: "1px solid #fef3c7" }}><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, background: "#fbbf24", marginRight: 4 }} />{r.tag} <span style={{ fontSize: 8, color: "#d97706" }}>(XCR, not ACR)</span></td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "1px solid #fef3c7", color: "#d97706" }}>{fmt(r.mo)}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", fontWeight: 600, borderBottom: "1px solid #fef3c7", color: "#d97706" }}>{fmt(r.yr)}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "1px solid #fef3c7", fontSize: 8, color: "#d97706" }}>XCR</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                <div style={{ fontSize: 10, color: "#888", marginBottom: 16 }}>AFO Eligible: {C.pct.toFixed(0)}% · Scenario: {C.sc}{C.xcr > 0 ? " · XCR (not part of ACR): " + fmt(C.xcr) : ""}</div>
+                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Timeline & Milestones</h2>
+                <p style={{ fontSize: 11, marginBottom: 6 }}>Start: <Inp v={sow.sd} fn={(v) => us("sd", v)} st={{ color: "#0078D4", width: 100 }} /> · End: <Inp v={sow.ed} fn={(v) => us("ed", v)} st={{ color: "#0078D4", width: 100 }} /></p>
+                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4, fontSize: 11 }}>
+                  <thead><tr style={{ background: "#f5f7fa" }}><th style={{ padding: "5px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Milestone</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>Hours</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>ECIF</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>Date</th></tr></thead>
+                  <tbody>
+                    {[["m1n", "m1h", "m1d", "m1x"], ["m2n", "m2h", "m2d", "m2x"], ["m3n", "m3h", "m3d", "m3x"]].map(([nk, hk, dk, xk], i) => (
+                      <Fragment key={i}>
+                        <tr>
+                          <td style={{ padding: "4px 6px", fontWeight: 600, borderBottom: "none" }}><Inp v={sow[nk]} fn={(v) => us(nk, v)} st={{ width: "100%", fontWeight: 600 }} /></td>
+                          <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none" }}><Inp v={sow[hk]} fn={(v) => us(hk, v)} st={{ color: "#0078D4", width: 45, textAlign: "right" }} /></td>
+                          <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none", color: "#0078D4" }}>[h x rate]</td>
+                          <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none" }}><Inp v={sow[dk]} fn={(v) => us(dk, v)} st={{ color: "#0078D4", width: 75, textAlign: "right" }} /></td>
+                        </tr>
+                        <tr><td colSpan={4} style={{ padding: "1px 6px 7px", borderBottom: "1px solid #f0f0f0" }}><Txt v={sow[xk]} fn={(v) => us(xk, v)} st={{ minHeight: 28, fontSize: 10, color: "#777", fontStyle: "italic", background: "transparent", border: "1px dashed transparent" }} /></td></tr>
+                      </Fragment>
+                    ))}
+                    <tr style={{ fontWeight: 700 }}><td style={{ padding: "5px 6px", borderTop: "2px solid #333" }}>Total</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333", color: "#0078D4" }}>[TOT]</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333", color: "#0078D4" }}>[ECIF]</td><td style={{ borderTop: "2px solid #333" }} /></tr>
+                  </tbody>
+                </table>
+                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Funding Summary</h2>
+
+                {/* Funding paths */}
+                <div style={{ fontSize: 10, fontWeight: 600, color: "#555", marginBottom: 4 }}>Cash to Partner:</div>
+                <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
+                  <div style={{ flex: 1, background: C.ok ? "#eff6ff" : "#f9fafb", padding: 8, borderRadius: 5, textAlign: "center", border: "1px solid " + (C.ok ? "#93c5fd" : "#e5e7eb") }}>
+                    <div style={{ fontSize: 8, color: "#3b82f6", fontWeight: 700 }}>AFO ECIF</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: C.ok ? "#3b82f6" : "#ccc" }}>{fmt(C.ecif)}</div>
+                    <div style={{ fontSize: 8, color: C.ok ? "#059669" : "#dc2626" }}>{C.ok ? "✓ Eligible (2:1 ROI)" : "✗ " + C.pct.toFixed(0) + "%"}</div>
+                  </div>
+                  {!C.ok && <div style={{ flex: 1, background: "#fff7ed", padding: 8, borderRadius: 5, textAlign: "center", border: "1px solid #fed7aa" }}>
+                    <div style={{ fontSize: 8, color: "#D83B01", fontWeight: 700 }}>Std ECIF (est.)</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: "#D83B01" }}>~{fmt(C.stdEcif)}</div>
+                    <div style={{ fontSize: 8, color: "#059669" }}>✓ ~5:1 ROI</div>
+                  </div>}
+                  <div style={{ flex: 1, background: "#ecfdf5", padding: 8, borderRadius: 5, textAlign: "center", border: "1px solid #6ee7b7" }}>
+                    <div style={{ fontSize: 8, color: "#107C10", fontWeight: 700 }}>MCI (Partner-Led)</div>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: "#107C10" }}>{fmt(C.ok ? C.mci.pre : C.mci.pre + C.mci.post)}</div>
+                    <div style={{ fontSize: 8, color: C.mci.post > 0 ? "#059669" : "#999" }}>{C.ok ? "Pre-sales only (post conflicts w/ ECIF)" : C.mci.post > 0 ? "✓ " + C.mci.ts + " tier" : "ACR < $5K"}</div>
+                  </div>
+                </div>
+
+                {C.aco > 0 && (
+                  <>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: "#555", marginBottom: 4 }}>Azure Credits to Customer:</div>
+                    <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
+                      <div style={{ flex: 1, background: "#f5f3ff", padding: 8, borderRadius: 5, textAlign: "center", border: "1px solid #c4b5fd" }}>
+                        <div style={{ fontSize: 8, color: "#7c3aed", fontWeight: 700 }}>AFO ACO</div>
+                        <div style={{ fontSize: 16, fontWeight: 700, color: "#7c3aed" }}>{fmt(C.aco)}</div>
+                        <div style={{ fontSize: 8, color: "#888" }}>Consumption credits (not cash)</div>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Recommended total */}
+                <div style={{ background: "#fffbeb", border: "1.5px solid #fbbf24", borderRadius: 6, padding: 10, marginBottom: 8 }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: "#92400e", textTransform: "uppercase", marginBottom: 3 }}>Recommended Strategy: {C.recStrategy}</div>
+                  <div style={{ fontSize: 10, color: "#555", lineHeight: 1.6 }}>
+                    <div>Cash to partner: <strong>~{fmt(C.recCash)}</strong></div>
+                    {C.recCredits > 0 && <div>Credits to customer: <strong>{fmt(C.recCredits)}</strong></div>}
+                  </div>
+                  <div style={{ fontSize: 8, color: "#888", marginTop: 3 }}>All nominations via Azure Offer Navigator (field-led) and/or Partner Center (partner-led).</div>
+                </div>
+                <div style={{ fontSize: 9, color: "#999", borderTop: "1px solid #eee", paddingTop: 8 }}>Non-binding estimate for planning purposes. All amounts subject to Microsoft internal approval. AFO nomination via Azure Offer Navigator (field-nominated). Limited time, first come first served. Anthropic counts as XCR (not ACR) but can be forecasted as 100% ACR in MSX. Agent P3 excluded from AFO eligible workloads. GitHub Copilot is per-seat (XCR, not Azure ACR). ACO not available for MCA-E Customer Led. Contact PSS/account team for formal nomination.</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {pg === "email" && (
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+              <h2 style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#5C2D91" }}>Email Pitch</h2>
+              <button onClick={() => setPg("calc")} style={{ padding: "5px 12px", background: "#eee", border: "none", borderRadius: 6, fontSize: 11, cursor: "pointer" }}>Back</button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", overflow: "hidden" }}>
+                <div style={{ background: "linear-gradient(135deg,#0078D4,#0057a8)", padding: "10px 14px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div><div style={{ fontSize: 8, opacity: 0.6, textTransform: "uppercase" }}>For Partner</div><div style={{ fontSize: 12, fontWeight: 600 }}>Opportunity briefing</div></div>
+                  <button onClick={() => copy(partnerMail, "p")} style={{ padding: "4px 10px", background: "rgba(255,255,255,.2)", color: "white", border: "1px solid rgba(255,255,255,.3)", borderRadius: 5, fontSize: 10, cursor: "pointer" }}>{cp === "p" ? "Copied!" : "Copy"}</button>
+                </div>
+                <pre style={{ padding: 14, fontSize: 10.5, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word", maxHeight: 460, overflow: "auto", margin: 0 }}>{partnerMail}</pre>
+              </div>
+              <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", overflow: "hidden" }}>
+                <div style={{ background: "linear-gradient(135deg,#5C2D91,#B4009E)", padding: "10px 14px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div><div style={{ fontSize: 8, opacity: 0.6, textTransform: "uppercase" }}>For Customer</div><div style={{ fontSize: 12, fontWeight: 600 }}>Investment overview</div></div>
+                  <button onClick={() => copy(custMail, "c")} style={{ padding: "4px 10px", background: "rgba(255,255,255,.2)", color: "white", border: "1px solid rgba(255,255,255,.3)", borderRadius: 5, fontSize: 10, cursor: "pointer" }}>{cp === "c" ? "Copied!" : "Copy"}</button>
+                </div>
+                <pre style={{ padding: 14, fontSize: 10.5, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word", maxHeight: 460, overflow: "auto", margin: 0 }}>{custMail}</pre>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      <div style={{ borderTop: "1px solid #e8e8ec", padding: "12px 28px", display: "flex", justifyContent: "center", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.6)" }}>
+        <span style={{ fontSize: 10, color: "#aaa" }}>Created by</span>
+        <span style={{ fontSize: 10, fontWeight: 600, color: "#555" }}>Rai</span>
+        <span style={{ fontSize: 10, color: "#ccc" }}>·</span>
+        <a href="mailto:rachowdhury@microsoft.com" style={{ fontSize: 10, color: "#0078D4", textDecoration: "none" }}>rachowdhury@microsoft.com</a>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
