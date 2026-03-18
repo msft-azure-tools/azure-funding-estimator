@@ -1,26 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Azure Funding Estimator</title>
-<style>* { box-sizing: border-box; } body { margin: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }</style>
-</head>
-<body>
-<div id="root"></div>
+<style>* { box-sizing: border-box; } body { margin: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }</style></head><body><div id="root"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <script>
-if (!window.storage) {
-  const LS_PREFIX = "afe_";
-  window.storage = {
-    async get(key) { const v = localStorage.getItem(LS_PREFIX + key); return v ? { key, value: v } : null; },
-    async set(key, value) { localStorage.setItem(LS_PREFIX + key, value); return { key, value }; },
-    async delete(key) { localStorage.removeItem(LS_PREFIX + key); return { key, deleted: true }; },
-    async list(prefix) { const keys = []; for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k.startsWith(LS_PREFIX + (prefix || ""))) keys.push(k.replace(LS_PREFIX, "")); } return { keys }; }
-  };
-}
+if(!window.storage){const P="afe_";window.storage={async get(k){const v=localStorage.getItem(P+k);return v?{key:k,value:v}:null},async set(k,v){localStorage.setItem(P+k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(P+k);return{key:k,deleted:true}},async list(p){const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith(P+(p||"")))keys.push(k.replace(P,""))}return{keys}}};}
 </script>
 <script type="text/babel">
 const { useState, useMemo, useRef, useEffect, Fragment } = React;
@@ -165,34 +151,139 @@ function getRecommendation(el, ot, tot, pct, ok, rows, mci, stdEcif) {
   return recs;
 }
 
-function getScope(db, fab, fo, rows, tot, cust) {
-  const T = {
-    db: { p: "migrate and modernize the database estate onto Azure", a: ["Azure Database services for migration/modernization", "Azure landing zone with security controls"], d: ["Database discovery and assessment", "Migration strategy and wave plan", "Migration execution and validation", "Performance tuning and operational handover"], m: [{ n: "M1 - Assessment & Planning", d: "Database discovery, assessment, TCO, migration strategy, wave plan, landing zone" }, { n: "M2 - Migration & Testing", d: "Schema/data migration, connectivity testing, performance validation" }, { n: "M3 - Cutover & Handover", d: "Production cutover, tuning, monitoring, runbook, knowledge transfer" }] },
-    fab: { p: "establish a unified analytics platform on Microsoft Fabric", a: ["Microsoft Fabric (Lakehouse, Warehouse, Semantic Models)", "OneLake + Power BI"], d: ["Analytics architecture design", "Fabric capacity provisioning", "Data pipelines (Bronze/Silver/Gold)", "Semantic models and reports", "Governance framework"], m: [{ n: "M1 - Architecture & Setup", d: "Architecture, Fabric provisioning, workspace structure, governance" }, { n: "M2 - Pipelines & Semantic Layer", d: "Data ingestion, Bronze/Silver/Gold, semantic models, reports" }, { n: "M3 - Validation & Enablement", d: "UAT, performance optimization, knowledge transfer" }] },
-    fo: { p: "build an enterprise AI platform using Azure AI Foundry", a: ["Azure AI Foundry for model management and agents", "Azure AI Search for RAG", "Responsible AI governance"], d: ["AI reference architecture", "AI Foundry provisioning", "RAG pipeline implementation", "Pilot AI agent/Copilot scenario", "AI governance model"], m: [{ n: "M1 - AI Architecture & Setup", d: "Architecture, AI Foundry provisioning, model selection, governance" }, { n: "M2 - RAG & Agent Development", d: "RAG pipeline, data grounding, agent development, testing" }, { n: "M3 - Pilot & Enablement", d: "Pilot deployment, safety validation, monitoring, knowledge transfer" }] },
-    dbfab: { p: "modernize databases and establish Fabric as analytics layer", a: ["Azure Database services", "Microsoft Fabric with OneLake", "Integrated DB-to-Fabric pipeline"], d: ["Database assessment and migration", "Fabric provisioning", "Data integration pipelines", "Semantic models and reporting", "Governance framework"], m: [{ n: "M1 - Assessment & Platform Setup", d: "DB discovery, migration strategy, Fabric architecture, provisioning" }, { n: "M2 - Migration & Platform Build", d: "DB migration, Fabric config, ingestion pipelines, semantic models" }, { n: "M3 - Validation & Handover", d: "Reports, validation, optimization, governance, knowledge transfer" }] },
-    dbfo: { p: "migrate databases and build an AI-ready foundation with AI Foundry", a: ["Azure Database services", "Azure AI Foundry", "Azure AI Search for RAG"], d: ["Database assessment and migration", "AI Foundry setup", "RAG pipeline to operational data", "Pilot AI agent", "Data + AI governance"], m: [{ n: "M1 - Assessment & Architecture", d: "DB discovery, AI use cases, combined architecture, provisioning" }, { n: "M2 - Migration & AI Build", d: "DB migration, AI Foundry config, RAG pipeline, agent dev" }, { n: "M3 - Pilot & Enablement", d: "Agent pilot, cutover, testing, governance, knowledge transfer" }] },
-    fabfo: { p: "establish a Data & AI platform with Fabric and AI Foundry", a: ["Microsoft Fabric as analytical layer", "Azure AI Foundry for AI orchestration", "Data-to-AI pipeline"], d: ["Combined Data & AI architecture", "Fabric + AI Foundry provisioning", "AI-optimized data pipelines", "Pilot AI agent on Fabric data", "Governance model"], m: [{ n: "M1 - Architecture & Provisioning", d: "Combined architecture, Fabric setup, AI Foundry provisioning, governance" }, { n: "M2 - Data & AI Build", d: "Semantic models, AI deployment, RAG pipeline, agent dev" }, { n: "M3 - Pilot & Enablement", d: "AI pilot, validation, monitoring, governance, knowledge transfer" }] },
-    all: { p: "execute a full Data & AI transformation across databases, analytics, and AI", a: ["Azure Database services", "Microsoft Fabric", "Azure AI Foundry", "End-to-end: DB > Fabric > AI"], d: ["Database assessment and migration", "Fabric architecture and semantic models", "AI Foundry setup", "Integrated pipelines", "Pilot AI agent", "Comprehensive governance", "Scalability roadmap"], m: [{ n: "M1 - Discovery & Setup", d: "DB assessment, combined architecture, Fabric + AI Foundry provisioning" }, { n: "M2 - Migration & Build", d: "DB migration, Fabric pipelines, AI deployment, RAG, agent dev" }, { n: "M3 - Integration & Enablement", d: "End-to-end testing, AI pilot, cutover, governance, knowledge transfer" }] },
+function getScope(db, fab, fo, accel, rows, tot, cust) {
+  // Scope blocks per category
+  const B = {
+    db: { p: "migrate and modernize the database estate onto Azure", a: ["Azure Database services for migration/modernization", "Azure landing zone with security controls"], d: ["Database discovery and assessment", "Migration strategy and wave plan", "Migration execution and validation", "Performance tuning and operational handover"] },
+    fab: { p: "establish a unified analytics platform on Microsoft Fabric", a: ["Microsoft Fabric (Lakehouse, Warehouse, Semantic Models)", "OneLake + Power BI"], d: ["Analytics architecture design", "Fabric capacity provisioning", "Data pipelines (Bronze/Silver/Gold)", "Semantic models and reports", "Governance framework"] },
+    fo: { p: "build an enterprise AI platform using Azure AI Foundry", a: ["Azure AI Foundry for model management and agents", "Azure AI Search for RAG", "Responsible AI governance"], d: ["AI reference architecture", "AI Foundry provisioning", "RAG pipeline implementation", "Pilot AI agent/Copilot scenario", "AI governance model"] },
+    infra: { p: "migrate and modernize infrastructure workloads to Azure", a: ["Azure Migrate for discovery and assessment", "Azure landing zone (Hub/Spoke or vWAN)", "Azure VM (Windows/Linux) target environment"], d: ["Infrastructure discovery and assessment", "Landing zone design and deployment", "Migration wave planning", "Server migration execution and validation", "Post-migration optimization and monitoring"] },
+    sap: { p: "migrate SAP workloads to Azure for improved performance and scalability", a: ["SAP on Azure VMs (certified SKUs)", "Azure NetApp Files or Premium SSD for HANA", "Azure landing zone with SAP-specific controls"], d: ["SAP landscape assessment", "Azure sizing and architecture design", "SAP migration execution (homogeneous/heterogeneous)", "Performance validation and cutover", "Operational handover and monitoring"] },
+    avs: { p: "migrate VMware workloads to Azure VMware Solution", a: ["Azure VMware Solution (AVS) cluster", "HCX for live migration", "NSX-T networking"], d: ["VMware estate assessment", "AVS cluster provisioning", "HCX configuration and migration waves", "Network cutover and validation", "Operational handover"] },
+    avd: { p: "migrate virtual desktop infrastructure to Azure Virtual Desktop", a: ["Azure Virtual Desktop (AVD) host pools", "FSLogix profile management", "Entra ID + Conditional Access"], d: ["VDI assessment and user profiling", "AVD architecture and host pool design", "Image management and deployment", "User acceptance testing", "Production rollout and enablement"] },
+    aks: { p: "modernize applications using Azure Kubernetes Service and cloud-native platform", a: ["Azure Kubernetes Service (AKS)", "Azure Container Registry", "Azure App Service / Container Apps"], d: ["Application portfolio assessment", "Container strategy and architecture", "AKS cluster provisioning", "Application containerization and deployment", "CI/CD pipeline setup and enablement"] },
   };
-  let t = null;
-  if (db && fab && fo) t = T.all;
-  else if (db && fab) t = T.dbfab;
-  else if (db && fo) t = T.dbfo;
-  else if (fab && fo) t = T.fabfo;
-  else if (db) t = T.db;
-  else if (fab) t = T.fab;
-  else if (fo) t = T.fo;
-  if (!t) return { scope: "[Select workloads]", ms: [] };
-  let s = "Purpose: " + t.p + " for " + cust + ".\n\nArchitecture:\n";
-  t.a.forEach((a) => { s += "- " + a + "\n"; });
+
+  // Milestone templates based on dominant category
+  const M = {
+    db: [{ n: "M1 - Assessment & Planning", d: "Database discovery, assessment, TCO, migration strategy, wave plan, landing zone" }, { n: "M2 - Migration & Testing", d: "Schema/data migration, connectivity testing, performance validation" }, { n: "M3 - Cutover & Handover", d: "Production cutover, tuning, monitoring, runbook, knowledge transfer" }],
+    fab: [{ n: "M1 - Architecture & Setup", d: "Architecture, Fabric provisioning, workspace structure, governance" }, { n: "M2 - Pipelines & Semantic Layer", d: "Data ingestion, Bronze/Silver/Gold, semantic models, reports" }, { n: "M3 - Validation & Enablement", d: "UAT, performance optimization, knowledge transfer" }],
+    fo: [{ n: "M1 - AI Architecture & Setup", d: "Architecture, AI Foundry provisioning, model selection, governance" }, { n: "M2 - RAG & Agent Development", d: "RAG pipeline, data grounding, agent development, testing" }, { n: "M3 - Pilot & Enablement", d: "Pilot deployment, safety validation, monitoring, knowledge transfer" }],
+    infra: [{ n: "M1 - Discovery & Landing Zone", d: "Infrastructure assessment, landing zone design, migration strategy" }, { n: "M2 - Migration Waves", d: "Server migration execution, testing, validation per wave" }, { n: "M3 - Optimization & Handover", d: "Post-migration tuning, monitoring, cost optimization, knowledge transfer" }],
+    sap: [{ n: "M1 - Assessment & Sizing", d: "SAP landscape assessment, Azure sizing, architecture design" }, { n: "M2 - Migration & Testing", d: "SAP system migration, performance testing, integration validation" }, { n: "M3 - Cutover & Go-Live", d: "Production cutover, go-live support, operational handover" }],
+    avs: [{ n: "M1 - Assessment & Provisioning", d: "VMware assessment, AVS cluster provisioning, HCX setup" }, { n: "M2 - Migration Waves", d: "VM migration waves via HCX, network cutover, validation" }, { n: "M3 - Optimization & Handover", d: "Performance tuning, decommission planning, operational handover" }],
+    avd: [{ n: "M1 - Assessment & Design", d: "VDI assessment, user profiling, AVD architecture design" }, { n: "M2 - Build & Pilot", d: "Host pool deployment, image management, pilot group rollout" }, { n: "M3 - Rollout & Enablement", d: "Full production rollout, user training, operational handover" }],
+    aks: [{ n: "M1 - Assessment & Architecture", d: "App portfolio assessment, container strategy, AKS architecture" }, { n: "M2 - Containerization & Deploy", d: "App containerization, AKS provisioning, CI/CD pipeline setup" }, { n: "M3 - Validation & Enablement", d: "Testing, security hardening, monitoring, knowledge transfer" }],
+    multi: [{ n: "M1 - Discovery & Architecture", d: "Assessment across all workload areas, combined architecture, landing zone" }, { n: "M2 - Build & Migration", d: "Parallel workstream execution, migration, platform build, testing" }, { n: "M3 - Validation & Enablement", d: "End-to-end validation, optimization, governance, knowledge transfer" }],
+  };
+
+  // Detect which accel sub-types are present
+  const hasInfra = rows.some(r => ["infra-linux","infra-win","infra-mdc"].includes(r.id));
+  const hasSap = rows.some(r => r.id === "sap");
+  const hasAvs = rows.some(r => r.id === "avs");
+  const hasAvd = rows.some(r => r.id === "avd");
+  const hasAks = rows.some(r => r.id === "aks");
+
+  // Collect active categories
+  const cats = [];
+  if (db) cats.push("db");
+  if (fab) cats.push("fab");
+  if (fo) cats.push("fo");
+  if (hasInfra) cats.push("infra");
+  if (hasSap) cats.push("sap");
+  if (hasAvs) cats.push("avs");
+  if (hasAvd) cats.push("avd");
+  if (hasAks) cats.push("aks");
+
+  if (cats.length === 0) return { scope: "[Select workloads to generate scope]", ms: [] };
+
+  // Build purpose
+  const purposes = cats.map(c => B[c].p);
+  let s = "Purpose: " + purposes.join("; and ") + " for " + cust + ".\n\n";
+
+  // Architecture
+  s += "Architecture:\n";
+  cats.forEach(c => { B[c].a.forEach(a => { s += "- " + a + "\n"; }); });
+
+  // Commercial impact
   s += "\nCommercial impact (Year 1):\n";
   rows.forEach((r) => { s += "- " + r.name + (r.sku ? " (" + r.sku + ")" : "") + ": ~" + fmt(r.mo) + "/mo\n"; });
   if (rows.length) s += "- Total: ~" + fmt(tot / 12) + "/mo (" + fmt(tot) + "/yr)\n";
+
+  // Deliverables
   s += "\nDeliverables:\n";
-  t.d.forEach((d) => { s += "- " + d + "\n"; });
-  s += "\nGoal: Help " + cust + " establish a production-ready, governed platform.";
-  return { scope: s, ms: t.m };
+  cats.forEach(c => { B[c].d.forEach(d => { s += "- " + d + "\n"; }); });
+
+  s += "\nGoal: Help " + cust + " establish a production-ready, governed Azure platform.";
+
+  // Pick milestones: dominant category if single, "multi" if 2+
+  const msKey = cats.length === 1 ? cats[0] : "multi";
+  const ms = M[msKey] || M.multi;
+
+  return { scope: s, ms };
+}
+
+/* Next Workload Recommendations — suggests natural follow-up projects */
+function getNextWorkloads(rows) {
+  const ids = new Set(rows.map(r => r.id));
+  const cats = new Set();
+  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.id); if (itm) cats.add(itm.cat); });
+
+  const next = [];
+
+  // DB → suggest Fabric + AI Foundry
+  if (cats.has("db") && !cats.has("fab")) {
+    next.push({ icon: "📊", title: "Microsoft Fabric", why: "Build analytics and reporting on top of your migrated databases. Natural next step to unlock business insights from operational data.", acr: "F32–F64 ($4K–$8K/mo)", funding: "AFO eligible" });
+  }
+  if (cats.has("db") && !cats.has("fo")) {
+    next.push({ icon: "🤖", title: "Azure AI Foundry", why: "Build AI agents and copilots grounded in your operational database. RAG on live transactional data for customer service, internal Q&A, or process automation.", acr: "OpenAI PTU 10–50 ($8K–$40K/mo)", funding: "AFO eligible" });
+  }
+
+  // Fabric → suggest AI Foundry + DB modernization
+  if (cats.has("fab") && !cats.has("fo")) {
+    next.push({ icon: "🤖", title: "Azure AI Foundry", why: "Add AI agents on top of Fabric semantic models. Power copilots with your curated analytics data for natural language insights.", acr: "OpenAI + AI Search ($3K–$15K/mo)", funding: "AFO eligible" });
+  }
+  if (cats.has("fab") && !cats.has("db")) {
+    next.push({ icon: "🗄️", title: "Database Modernization", why: "Modernize source databases feeding Fabric. Better source data = better analytics. Move from on-prem SQL/Oracle to Azure PaaS.", acr: "SQL MI or PostgreSQL ($1K–$5K/mo)", funding: "AFO eligible" });
+  }
+
+  // AI Foundry → suggest Fabric + DB
+  if (cats.has("fo") && !cats.has("fab")) {
+    next.push({ icon: "📊", title: "Microsoft Fabric", why: "Build a proper data foundation for your AI models. Fabric provides the governed data layer AI agents need for accurate, trustworthy responses.", acr: "F32–F64 ($4K–$8K/mo)", funding: "AFO eligible" });
+  }
+  if (cats.has("fo") && !cats.has("db")) {
+    next.push({ icon: "🗄️", title: "Database Modernization", why: "Ground your AI in real-time operational data. Migrate databases to Azure PaaS for low-latency RAG pipelines.", acr: "SQL MI or Cosmos DB ($1K–$10K/mo)", funding: "AFO eligible" });
+  }
+
+  // Infra migration → suggest DB modernization, Fabric, Defender
+  if (ids.has("infra-linux") || ids.has("infra-win") || ids.has("infra-mdc")) {
+    if (!cats.has("db")) next.push({ icon: "🗄️", title: "Database Modernization", why: "You're migrating servers — now modernize the databases running on them. Move from SQL VM to SQL MI (PaaS) for lower TCO and automatic patching.", acr: "SQL MI 8–16 vCores ($1.5K–$3K/mo)", funding: "AFO eligible" });
+    if (!cats.has("fab")) next.push({ icon: "📊", title: "Microsoft Fabric", why: "Once workloads are in Azure, connect them to Fabric for centralized analytics and Power BI dashboards across your estate.", acr: "F16–F32 ($2K–$4K/mo)", funding: "AFO eligible" });
+    if (!ids.has("infra-mdc")) next.push({ icon: "🛡️", title: "Defender for Cloud (MDC)", why: "Protect your newly migrated VMs with cloud-native security posture management and threat detection.", acr: "$15/server/mo", funding: "Azure Accelerate eligible" });
+  }
+
+  // AVS → suggest DB modernization, AVD
+  if (ids.has("avs")) {
+    if (!cats.has("db")) next.push({ icon: "🗄️", title: "Database Modernization", why: "After VMware migration, modernize databases from VMs to Azure PaaS for better performance and lower management overhead.", acr: "SQL MI or PostgreSQL ($1K–$5K/mo)", funding: "AFO eligible" });
+    if (!ids.has("avd")) next.push({ icon: "🖥️", title: "Azure Virtual Desktop", why: "Complement your AVS migration by moving VDI workloads to Azure Virtual Desktop — unified management, better user experience.", acr: "AVD sessions ($2.5K+/mo)", funding: "Azure Accelerate eligible" });
+  }
+
+  // SAP → suggest Fabric for SAP analytics
+  if (ids.has("sap") && !cats.has("fab")) {
+    next.push({ icon: "📊", title: "Fabric for SAP Analytics", why: "Connect Fabric to your SAP on Azure for real-time operational analytics. Mirroring and DirectLake eliminate the need for separate ETL.", acr: "F32–F64 ($4K–$8K/mo)", funding: "AFO eligible" });
+  }
+
+  // AKS → suggest AI Foundry
+  if (ids.has("aks") && !cats.has("fo")) {
+    next.push({ icon: "🤖", title: "Azure AI Foundry", why: "Add AI capabilities to your containerized apps. Integrate OpenAI models via AI Foundry into your AKS-hosted microservices.", acr: "OpenAI Standard ($2.5K+/mo)", funding: "AFO eligible" });
+  }
+
+  // Always suggest GitHub Copilot if not selected
+  if (!ids.has("ghc")) {
+    next.push({ icon: "👨‍💻", title: "GitHub Copilot for Dev Team", why: "Accelerate the development team building and maintaining these Azure workloads. 30-55% productivity gain per developer.", acr: "$39/seat/mo (XCR)", funding: "Per-seat license" });
+  }
+
+  return next.slice(0, 4); // Max 4 recommendations
 }
 
 function App() {
@@ -297,6 +388,7 @@ function App() {
     const db = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "db"));
     const fab = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "fab"));
     const fo = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "fo"));
+    const accel = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "accel"));
     let sc = "";
     if (fo && db && fab) sc = "AI Foundry + DB + Fabric";
     else if (fo && db) sc = "AI Foundry + DB";
@@ -305,6 +397,7 @@ function App() {
     else if (db) sc = "Databases";
     else if (fab) sc = "Fabric";
     else if (fo) sc = "Standalone Foundry";
+    if (accel) sc = sc ? sc + " + Infra" : "Infrastructure";
     const mci = getMCI(tot);
     const ecif = ok ? Math.min(tot * 0.5, 500000) : 0;
     const aco = ok ? Math.min(tot * 0.5, 500000) : 0;
@@ -338,14 +431,15 @@ function App() {
       recStrategy = recCash === stdEcif ? "Standard ECIF" : "MCI";
     }
 
-    return { el, ot, xcr, tot, pct, ok, rows, sc, ecif, aco, stdEcif, db, fab, fo, mci, recs, recCash, recCredits, recStrategy };
+    return { el, ot, xcr, tot, pct, ok, rows, sc, ecif, aco, stdEcif, db, fab, fo, accel, mci, recs, recCash, recCredits, recStrategy };
   }, [sel]);
 
-  const dyn = useMemo(() => getScope(C.db, C.fab, C.fo, C.rows, C.tot, sow.cn), [C.db, C.fab, C.fo, C.rows, C.tot, sow.cn]);
+  const dyn = useMemo(() => getScope(C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn), [C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn]);
+  const nextWL = useMemo(() => getNextWorkloads(C.rows), [C.rows]);
 
   const prevK = useRef("");
   useEffect(() => {
-    const k = [C.db, C.fab, C.fo].join("-");
+    const k = [C.db, C.fab, C.fo, C.accel].join("-");
     if (k !== prevK.current) {
       prevK.current = k;
       us("scope", dyn.scope);
@@ -744,7 +838,7 @@ function App() {
 
               {C.tot > 0 && (
                 <div style={{ display: "flex", gap: 5 }}>
-                  <button onClick={() => { setPg("sow"); setTimeout(() => ref.current && ref.current.scrollIntoView({ behavior: "smooth" }), 100); }} style={{ flex: 1, padding: 10, background: C.ok ? HDR : "#bbb", color: "white", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Generate SOW</button>
+                  <button onClick={() => { setPg("sow"); setTimeout(() => ref.current && ref.current.scrollIntoView({ behavior: "smooth" }), 100); }} style={{ flex: 1, padding: 10, background: HDR, color: "white", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Generate SOW</button>
                   <button onClick={() => setPg("email")} style={{ flex: 1, padding: 10, background: "white", color: "#5C2D91", border: "2px solid #5C2D91", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Email Pitch</button>
                 </div>
               )}
@@ -769,6 +863,7 @@ function App() {
                 </div>
               ))}
             </div>
+            <div style={{ display: "grid", gridTemplateColumns: nextWL.length > 0 ? "1fr 260px" : "1fr", gap: 12, alignItems: "start" }}>
             <div id="sowdoc" style={{ background: "white", borderRadius: 10, border: "1px solid #e0e0e0", overflow: "hidden" }}>
               <div className="hd" style={{ background: HDR, padding: "20px 26px", color: "white" }}>
                 <div style={{ fontSize: 9, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>Azure Funding — Workscope Details</div>
@@ -873,6 +968,40 @@ function App() {
                 <div style={{ fontSize: 9, color: "#999", borderTop: "1px solid #eee", paddingTop: 8 }}>Non-binding estimate for planning purposes. All amounts subject to Microsoft internal approval. AFO nomination via Azure Offer Navigator (field-nominated). Limited time, first come first served. Anthropic counts as XCR (not ACR) but can be forecasted as 100% ACR in MSX. Agent P3 excluded from AFO eligible workloads. GitHub Copilot is per-seat (XCR, not Azure ACR). ACO not available for MCA-E Customer Led. Contact PSS/account team for formal nomination.</div>
               </div>
             </div>
+
+            {/* ── NEXT WORKLOADS SIDEBAR ── */}
+            {nextWL.length > 0 && (
+              <div style={{ position: "sticky", top: 10 }}>
+                <div style={{ background: "linear-gradient(135deg,#f0f9ff,#e0f2fe)", borderRadius: 10, border: "1.5px solid #7dd3fc", overflow: "hidden" }}>
+                  <div style={{ padding: "10px 12px", background: "linear-gradient(135deg,#0284c7,#0369a1)", color: "white" }}>
+                    <div style={{ fontSize: 8, opacity: 0.7, textTransform: "uppercase", letterSpacing: 0.5 }}>After This Project</div>
+                    <div style={{ fontSize: 13, fontWeight: 700 }}>Recommended Next Workloads</div>
+                    <div style={{ fontSize: 9, opacity: 0.7, marginTop: 2 }}>Natural follow-up projects to expand this customer's Azure footprint</div>
+                  </div>
+                  <div style={{ padding: "8px 10px" }}>
+                    {nextWL.map((nw, i) => (
+                      <div key={i} style={{ padding: "8px 0", borderBottom: i < nextWL.length - 1 ? "1px solid #bae6fd" : "none" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+                          <span style={{ fontSize: 16 }}>{nw.icon}</span>
+                          <div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: "#0c4a6e" }}>{nw.title}</div>
+                            <div style={{ display: "flex", gap: 4, marginTop: 1 }}>
+                              <span style={{ fontSize: 7, padding: "1px 4px", borderRadius: 3, background: nw.funding.includes("AFO") ? "#dcfce7" : "#f0f9ff", color: nw.funding.includes("AFO") ? "#166534" : "#0369a1", fontWeight: 600 }}>{nw.funding}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 9.5, color: "#334155", lineHeight: 1.5, marginBottom: 3 }}>{nw.why}</div>
+                        <div style={{ fontSize: 8, color: "#64748b", fontStyle: "italic" }}>Est. ACR: {nw.acr}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ padding: "6px 10px 8px", background: "rgba(2,132,199,0.05)", borderTop: "1px solid #bae6fd" }}>
+                    <div style={{ fontSize: 8, color: "#64748b", lineHeight: 1.5 }}>Use these as conversation starters for the next engagement. Each represents additional ACR and potential funding.</div>
+                  </div>
+                </div>
+              </div>
+            )}
+            </div>
           </div>
         )}
 
@@ -905,6 +1034,8 @@ function App() {
         <span style={{ fontSize: 10, color: "#aaa" }}>Created by</span>
         <span style={{ fontSize: 10, fontWeight: 600, color: "#555" }}>Rai</span>
         <span style={{ fontSize: 10, color: "#ccc" }}>·</span>
+        <span style={{ fontSize: 10, color: "#888" }}>Sr Cloud & AI Specialist</span>
+        <span style={{ fontSize: 10, color: "#ccc" }}>·</span>
         <a href="mailto:rachowdhury@microsoft.com" style={{ fontSize: 10, color: "#0078D4", textDecoration: "none" }}>rachowdhury@microsoft.com</a>
       </div>
     </div>
@@ -912,6 +1043,4 @@ function App() {
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
-</script>
-</body>
-</html>
+</script></body></html>
