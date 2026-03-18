@@ -11,25 +11,25 @@ if(!window.storage){const P="afe_";window.storage={async get(k){const v=localSto
 <script type="text/babel">
 const { useState, useMemo, useRef, useEffect, Fragment } = React;
 const ITEMS = [
-  { id:"cosmos",cat:"db",name:"Cosmos DB",tag:"Data: Cosmos DB",unit:"K RU/s",up:58,dq:4 },
+  { id:"cosmos",cat:"db",name:"Cosmos DB",tag:"Data: Cosmos DB",unit:"K RU/s",up:58,dq:4,riOpts:[{k:"1yr",label:"1yr RI (–20%)",up:46},{k:"3yr",label:"3yr RI (–35%)",up:38}] },
   { id:"mysql",cat:"db",name:"MySQL Flexible",tag:"Data: MySQL Flexible Server",unit:"vCores",up:150,dq:4 },
   { id:"postgres",cat:"db",name:"PostgreSQL Flexible",tag:"Data: PostgreSQL Flexible Server",unit:"vCores",up:150,dq:4 },
-  { id:"sql-mi",cat:"db",name:"SQL MI (PaaS)",tag:"Data: SQL On-prem to SQL MI",unit:"vCores",up:195,dq:8 },
-  { id:"sql-db",cat:"db",name:"Azure SQL DB + AI",tag:"Data: SQL Modernization to Azure SQL DB with AI",unit:"vCores",up:190,dq:4 },
-  { id:"sql-hyper",cat:"db",name:"SQL Hyperscale",tag:"Data: SQL to Azure SQL Hyperscale",unit:"vCores",up:380,dq:8 },
-  { id:"sql-vm",cat:"db",name:"Azure SQL VM",tag:"Data: SQL On-prem to Azure SQL VM",unit:"VMs",up:600,dq:2 },
+  { id:"sql-mi",cat:"db",name:"SQL MI (PaaS)",tag:"Data: SQL On-prem to SQL MI",unit:"vCores",up:195,dq:8,riOpts:[{k:"1yr",label:"1yr RI (–33%)",up:131},{k:"3yr",label:"3yr RI (–55%)",up:88},{k:"ahub",label:"AHUB (–55%)",up:88},{k:"1yr-ahub",label:"1yr RI + AHUB (–68%)",up:62},{k:"3yr-ahub",label:"3yr RI + AHUB (–78%)",up:43}],note:"AHUB requires SA. Savings shown for Business Critical tier (~55%). General Purpose ~40%. Verify tier with customer" },
+  { id:"sql-db",cat:"db",name:"Azure SQL DB + AI",tag:"Data: SQL Modernization to Azure SQL DB with AI",unit:"vCores",up:190,dq:4,riOpts:[{k:"1yr",label:"1yr RI (–33%)",up:127},{k:"3yr",label:"3yr RI (–55%)",up:86},{k:"ahub",label:"AHUB (–55%)",up:86},{k:"1yr-ahub",label:"1yr RI + AHUB (–68%)",up:61},{k:"3yr-ahub",label:"3yr RI + AHUB (–78%)",up:42}],note:"AHUB requires SA. Savings shown for Business Critical (~55%). General Purpose ~40%" },
+  { id:"sql-hyper",cat:"db",name:"SQL Hyperscale",tag:"Data: SQL to Azure SQL Hyperscale",unit:"vCores",up:380,dq:8,riOpts:[{k:"1yr",label:"1yr RI (–33%)",up:255},{k:"3yr",label:"3yr RI (–55%)",up:171},{k:"ahub",label:"AHUB (–55%)",up:171},{k:"1yr-ahub",label:"1yr RI + AHUB (–68%)",up:122},{k:"3yr-ahub",label:"3yr RI + AHUB (–78%)",up:84}],note:"AHUB requires Software Assurance" },
+  { id:"sql-vm",cat:"db",name:"Azure SQL VM",tag:"Data: SQL On-prem to Azure SQL VM",unit:"VMs",up:600,dq:2,riOpts:[{k:"1yr",label:"1yr RI (–35%)",up:390},{k:"3yr",label:"3yr RI (–55%)",up:270},{k:"ahub",label:"AHUB (–55%)",up:270},{k:"1yr-ahub",label:"1yr RI + AHUB (–68%)",up:192},{k:"3yr-ahub",label:"3yr RI + AHUB (–78%)",up:132}],note:"AHUB requires Software Assurance. SQL VM = IaaS, consider SQL MI (PaaS) for better TCO" },
   { id:"sql-paygo",cat:"db",name:"SQL PayGo (Arc)",tag:"Data: SQL Billed to Azure SQL PayGo Licenses",unit:"vCores",up:195,dq:4 },
   { id:"oracle-sql",cat:"db",name:"Oracle to SQL",tag:"Data: Oracle to Azure SQL Migration",unit:"vCores",up:190,dq:8 },
   { id:"oracle-pg",cat:"db",name:"Oracle to PG",tag:"Data: Oracle to PostgreSQL Flexible",unit:"vCores",up:150,dq:8 },
   { id:"fab-mig",cat:"fab",name:"Analytics Migration",tag:"Data: Analytics - Fabric - Analytics Migration",fab:true,dsku:"F16" },
   { id:"fab-new",cat:"fab",name:"Greenfield Analytics (new build)",tag:"Data: Analytics - Fabric - New Analytics",fab:true,dsku:"F16" },
-  { id:"fab-pbi",cat:"fab",name:"Power BI",tag:"Data: Analytics - Fabric - Power BI",fab:true,dsku:"F8" },
+  { id:"fab-pbi",cat:"fab",name:"Power BI on Fabric (Premium Capacity)",tag:"Data: Analytics - Fabric - Power BI",fab:true,dsku:"F64",note:"Azure F-SKU = ACR. Funding: AFO (ECIF+ACO), Standard ECIF, or MCI Azure Accelerate. F64+ includes free viewer access" },
   { id:"fab-rti",cat:"fab",name:"Real-Time Intelligence",tag:"Data: Analytics - Fabric - Real-Time Intelligence",fab:true,dsku:"F32" },
   { id:"fab-sql",cat:"fab",name:"Fabric SQL DB",tag:"Data: Analytics - Fabric SQL Databases",fab:true,dsku:"F8" },
   { id:"fab-cos",cat:"fab",name:"Fabric Cosmos DB",tag:"Data: Analytics - Fabric - Cosmos Databases",fab:true,dsku:"F8" },
-  { id:"oai-std",cat:"fo",name:"OpenAI (Standard)",tag:"AI: Foundry - OpenAI Standard",unit:"M tok/mo",up:250,dq:10 },
+  { id:"oai-std",cat:"fo",name:"OpenAI (Standard)",tag:"AI: Foundry - OpenAI Standard",unit:"M tok/mo",up:250,dq:10,note:"Blended estimate. Actual cost varies by model (GPT-4o ~$5/M, GPT-4 Turbo ~$30/M) and input/output ratio" },
   { id:"oai-ptu",cat:"fo",name:"OpenAI (PTU)",tag:"AI: Foundry - OpenAI PTU",unit:"PTUs",up:800,dq:10 },
-  { id:"anthro",cat:"fo",name:"Anthropic",tag:"AI: Foundry - Anthropic",unit:"M tok/mo",up:300,dq:10 },
+  { id:"anthro",cat:"fo",name:"Anthropic (XCR — forecast as ACR in MSX)",tag:"AI: Foundry - Anthropic",unit:"M tok/mo",up:300,dq:10,xcr:true,note:"Anthropic = XCR per AFO rules (not ACR). Can be forecasted as 100% ACR in MSX. Does not count toward AFO 50% threshold or funding calculations in this tool" },
   { id:"meta",cat:"fo",name:"Meta / Llama",tag:"AI: Foundry - Meta/Llama",unit:"M tok/mo",up:35,dq:30 },
   { id:"mistral",cat:"fo",name:"Mistral AI",tag:"AI: Foundry - Mistral",unit:"M tok/mo",up:40,dq:20 },
   { id:"other-m",cat:"fo",name:"Other (DeepSeek/Phi)",tag:"AI: Foundry - Other",unit:"M tok/mo",up:27,dq:25 },
@@ -37,16 +37,27 @@ const ITEMS = [
   { id:"search",cat:"fo",name:"AI Search",tag:"AI: Search",unit:"replicas",up:250,dq:3 },
   { id:"speech",cat:"fo",name:"Speech/Language",tag:"AI: Tools - Speech",unit:"M chars/mo",up:16,dq:20 },
   { id:"vision",cat:"fo",name:"Vision/Content",tag:"AI: Tools - Vision",unit:"K img/mo",up:1.5,dq:300 },
-  { id:"ghc",cat:"oth",name:"GitHub Copilot (XCR, not ACR)",tag:"GitHub Copilot (GHE)",unit:"seats",up:39,dq:30,xcr:true },
+  { id:"ghc-biz",cat:"oth",name:"GitHub Copilot Business (XCR, not ACR)",tag:"GitHub Copilot Business",unit:"seats",up:19,dq:30,xcr:true,note:"Seats = XCR, no direct seat funding. Strategy: bundle with Azure infra (AKS, App Service, GitHub Actions runners) → nominate as MCI: AI Apps & Developer. Payout based on Azure ACR, not seats" },
+  { id:"ghc-ent",cat:"oth",name:"GitHub Copilot Enterprise (XCR, not ACR)",tag:"GitHub Copilot Enterprise",unit:"seats",up:39,dq:0,xcr:true,note:"Enterprise tier ($39/seat). Same funding rules as Business — seats are XCR. Bundle with Azure infra for MCI eligibility" },
+  { id:"pbi-pro-only",cat:"pbi",name:"Power BI Pro (Shared Capacity — no F-SKU needed)",tag:"Power BI Pro (shared capacity)",unit:"users",up:14,dq:50,xcr:true,note:"M365 license (XCR), no direct seat funding. Strategy: bundle with Azure data sources (SQL DB, PostgreSQL, Cosmos DB) + upgrade to Fabric F-SKU → unlocks AFO/ECIF/MCI on the Azure ACR. CSP rebate 3.75–7% on M365 billed revenue" },
+  { id:"pbi-pro-creators",cat:"pbi",name:"Power BI Pro — Report Creators",tag:"Power BI Pro (creators)",unit:"creators",up:14,dq:10,xcr:true,note:"Always required, even with Fabric F-SKU. Included in CSP transaction rebate on M365 billed revenue" },
+  { id:"pbi-pro-readers",cat:"pbi",name:"Power BI Pro — Report Viewers (only if F-SKU < F64)",tag:"Power BI Pro (readers <F64)",unit:"viewers",up:14,dq:0,xcr:true,note:"Only if F-SKU < F64. Tip: upgrading to F64 removes this cost AND generates more ACR → more Azure funding. Often cheaper total" },
   { id:"aks",cat:"accel",name:"AKS / App Service",tag:"AI Apps: AKS, App Service, Container Apps",unit:"nodes",up:300,dq:6 },
-  { id:"infra-linux",cat:"accel",name:"Core M&M — Linux VMs",tag:"Core: Migrate & Modernize (Linux)",unit:"VMs",up:140,dq:15 },
-  { id:"infra-win",cat:"accel",name:"Core M&M — Windows VMs",tag:"Core: Migrate & Modernize (Windows)",unit:"VMs",up:240,dq:10 },
-  { id:"infra-mdc",cat:"accel",name:"Core M&M + Defender (MDC)",tag:"Core: Migrate & Modernize with MDC",unit:"VMs",up:215,dq:20 },
-  { id:"avs",cat:"accel",name:"AVS (VMware → Azure)",tag:"Core: VMware Migrate & Modernize (AVS)",unit:"nodes",up:4500,dq:3 },
+  { id:"databricks",cat:"accel",name:"Azure Databricks",tag:"Data: Azure Databricks",unit:"DBUs/mo",up:0.5,dq:5000,note:"MCI eligible via Data Platform engagement. Not AFO eligible — pair with Fabric for AFO. Has own Analytics Modernization Accelerator offer (>$100K ACR)" },
+  { id:"oracle-az",cat:"accel",name:"Oracle Database@Azure",tag:"Data: Oracle Database@Azure",unit:"OCPUs",up:500,dq:10,note:"Own Azure Accelerate offer: >$100K ACR, up to $500K ECIF. Separate from AFO — contact PSS" },
+  { id:"infra-linux",cat:"accel",name:"Core M&M — Linux VMs",tag:"Core: Migrate & Modernize (Linux)",unit:"VMs",up:140,dq:15,riOpts:[{k:"1yr",label:"1yr RI (–35%)",up:91},{k:"3yr",label:"3yr RI (–55%)",up:63}],note:"Average estimate (~D4s v3). Actual cost varies by VM size ($60–$400+/VM). Use Azure Pricing Calculator for precise sizing" },
+  { id:"infra-win",cat:"accel",name:"Core M&M — Windows VMs",tag:"Core: Migrate & Modernize (Windows)",unit:"VMs",up:240,dq:10,riOpts:[{k:"1yr",label:"1yr RI (–35%)",up:156},{k:"3yr",label:"3yr RI (–55%)",up:108},{k:"ahub",label:"AHUB (–40%)",up:144},{k:"1yr-ahub",label:"1yr RI + AHUB (–61%)",up:94},{k:"3yr-ahub",label:"3yr RI + AHUB (–73%)",up:65}],note:"Average estimate (~D4s v3 + Windows). Actual cost varies by VM size. AHUB requires SA or Windows Server subscription" },
+  { id:"infra-mdc",cat:"accel",name:"Core M&M + Defender (MDC)",tag:"Core: Migrate & Modernize with MDC",unit:"VMs",up:215,dq:20,riOpts:[{k:"1yr",label:"1yr RI (–35%)",up:140},{k:"3yr",label:"3yr RI (–55%)",up:97},{k:"ahub",label:"AHUB (–40%)",up:129},{k:"1yr-ahub",label:"1yr RI + AHUB (–58%)",up:90},{k:"3yr-ahub",label:"3yr RI + AHUB (–70%)",up:65}],note:"AHUB for Windows portion. Defender for Cloud cost remains" },
+  { id:"avs",cat:"accel",name:"AVS (VMware → Azure)",tag:"Core: VMware Migrate & Modernize (AVS)",unit:"nodes",up:4500,dq:3,riOpts:[{k:"1yr",label:"1yr RI (–20%)",up:3600},{k:"3yr",label:"3yr RI (–35%)",up:2925}] },
   { id:"avd",cat:"accel",name:"Azure Virtual Desktop (VDI)",tag:"Core: Virtual Desktop Infrastructure Migration",unit:"sessions",up:25,dq:100 },
   { id:"sap",cat:"accel",name:"SAP on Azure",tag:"SAP: SAP Migration",unit:"VMs",up:2000,dq:4 },
-  { id:"def",cat:"oth",name:"Defender for Cloud (standalone)",tag:"Defender for Cloud",unit:"servers",up:15,dq:40 },
-  { id:"oth",cat:"oth",name:"Other Azure",tag:"Other Azure Services",unit:"$/mo",up:1,dq:1000 },
+  { id:"def",cat:"oth",name:"Defender for Cloud",tag:"Defender for Cloud",unit:"servers",up:15,dq:40 },
+  { id:"purview",cat:"oth",name:"Microsoft Purview",tag:"Data Governance: Microsoft Purview",unit:"flat",up:1,dq:2000,flat:true,note:"Data governance and compliance. Common in Fabric and DB deals. Generates ACR — counts toward funding thresholds" },
+  { id:"storage",cat:"oth",name:"Azure Storage (Blob / ADLS / OneLake)",tag:"Azure Storage",unit:"TB",up:23,dq:10,note:"$23/TB/mo (hot). OneLake = Fabric storage billed separately from F-SKU. ADLS for non-Fabric. All generate ACR" },
+  { id:"networking",cat:"oth",name:"Azure Networking (ExpressRoute / Firewall / VPN)",tag:"Azure Networking",unit:"flat",up:1,dq:2000,flat:true,note:"Supporting infra for all workloads. ExpressRoute alone can be $1K–$5K/mo. Generates ACR" },
+  { id:"monitor",cat:"oth",name:"Azure Monitor / Log Analytics",tag:"Azure Observability",unit:"GB/mo",up:3,dq:500,note:"~$3/GB ingested. Standard in all production deployments. Generates ACR" },
+  { id:"backup",cat:"oth",name:"Azure Backup / Site Recovery",tag:"Azure Backup & DR",unit:"instances",up:50,dq:20,note:"~$50/instance/mo average. Business continuity. Often required for production workloads. Generates ACR" },
+  { id:"oth",cat:"oth",name:"Other Azure",tag:"Other Azure Services",unit:"flat",up:1,dq:1000,flat:true },
 ];
 
 const CATS = [
@@ -54,16 +65,17 @@ const CATS = [
   { key: "fab", label: "Fabric / Analytics", color: "#107C10", elig: true, badge: "AFO ELIGIBLE" },
   { key: "fo", label: "AI Foundry", color: "#B4009E", elig: true, badge: "AFO ELIGIBLE" },
   { key: "accel", label: "Azure Accelerate (non-AFO)", color: "#D83B01", elig: false, badge: "MCI ELIGIBLE" },
+  { key: "pbi", label: "Power BI Licensing", color: "#E8B800", elig: false, badge: "M365 (XCR)" },
   { key: "oth", label: "Other Azure Services", color: "#8B8B8B", elig: false, badge: "" },
 ];
 
 const FSKU = [
-  { s: "F2", cu: 2, mo: 263 }, { s: "F4", cu: 4, mo: 526 }, { s: "F8", cu: 8, mo: 1051 },
-  { s: "F16", cu: 16, mo: 2103 }, { s: "F32", cu: 32, mo: 4205 }, { s: "F64", cu: 64, mo: 8410 },
-  { s: "F128", cu: 128, mo: 16820 }, { s: "F256", cu: 256, mo: 33640 },
+  { s: "F2", cu: 2, mo: 263, ri: 156 }, { s: "F4", cu: 4, mo: 526, ri: 313 }, { s: "F8", cu: 8, mo: 1051, ri: 625 },
+  { s: "F16", cu: 16, mo: 2103, ri: 1251 }, { s: "F32", cu: 32, mo: 4205, ri: 2502 }, { s: "F64", cu: 64, mo: 8410, ri: 5004 },
+  { s: "F128", cu: 128, mo: 16820, ri: 10008 }, { s: "F256", cu: 256, mo: 33640, ri: 20016 },
 ];
 
-const skuMo = (sku) => (FSKU.find((f) => f.s === sku) || FSKU[0]).mo;
+const skuMo = (sku, reserved) => { const f = FSKU.find((f) => f.s === sku) || FSKU[0]; return reserved ? f.ri : f.mo; };
 const fmt = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 const HDR = "linear-gradient(135deg, #0078D4 0%, #5C2D91 60%, #B4009E 100%)";
 
@@ -279,16 +291,117 @@ function getNextWorkloads(rows) {
   }
 
   // Always suggest GitHub Copilot if not selected
-  if (!ids.has("ghc")) {
+  if (!ids.has("ghc-biz") && !ids.has("ghc-ent")) {
     next.push({ icon: "👨‍💻", title: "GitHub Copilot for Dev Team", why: "Accelerate the development team building and maintaining these Azure workloads. 30-55% productivity gain per developer.", acr: "$39/seat/mo (XCR)", funding: "Per-seat license" });
   }
 
   return next.slice(0, 4); // Max 4 recommendations
 }
 
+/* Auto-generate SOW Assumptions based on active workloads */
+function getAssumptions(rows) {
+  const ids = new Set(rows.map(r => r.id));
+  const cats = new Set();
+  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.id); if (itm) cats.add(itm.cat); });
+  const a = [
+    "Customer has an active Azure subscription with sufficient quota.",
+    "Customer assigns a project contact with decision-making authority.",
+    "Timely access to environments, documentation, and stakeholders provided.",
+  ];
+  if (cats.has("db")) {
+    a.push("Access to source database environments for discovery and assessment.");
+    a.push("Database credentials and network connectivity (VPN/ExpressRoute) available before migration.");
+    if (ids.has("sql-mi") || ids.has("sql-db") || ids.has("sql-hyper") || ids.has("sql-vm")) a.push("SQL Server Software Assurance status confirmed for Azure Hybrid Benefit eligibility.");
+  }
+  if (cats.has("fab")) {
+    a.push("Customer has or will provision a Fabric capacity (F-SKU) before platform setup.");
+    a.push("Source data systems accessible for pipeline development (APIs, JDBC/ODBC, file shares).");
+  }
+  if (cats.has("fo")) {
+    a.push("Azure OpenAI access approved (if applicable) before AI development starts.");
+    a.push("Representative sample data provided for RAG pipeline development and testing.");
+    a.push("Responsible AI governance framework agreed before pilot deployment.");
+  }
+  if (ids.has("infra-linux") || ids.has("infra-win") || ids.has("infra-mdc")) {
+    a.push("Azure Migrate appliance deployed in source environment for VM discovery.");
+    if (ids.has("infra-win")) a.push("Windows Server SA status confirmed for AHUB eligibility.");
+  }
+  if (ids.has("avs")) a.push("VMware environment accessible for HCX deployment.");
+  if (ids.has("avd")) a.push("User profiles and app requirements documented for AVD design.");
+  if (ids.has("sap")) a.push("SAP Basis team available for migration coordination.");
+  a.push("Scope changes require written agreement and may impact timeline and funding.");
+  return a;
+}
+
+/* Auto-generate Acceptance Criteria per milestone */
+function getAcceptance(msNames, rows) {
+  const cats = new Set();
+  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.id); if (itm) cats.add(itm.cat); });
+  const ac = [];
+  const m1 = ["Environments discovered and documented", "Architecture design reviewed and approved"];
+  if (cats.has("db")) m1.push("Database assessment report with TCO analysis delivered");
+  if (cats.has("fab")) m1.push("Fabric workspace provisioned and accessible");
+  if (cats.has("fo")) m1.push("AI Foundry hub provisioned with models deployed");
+  if (cats.has("accel")) m1.push("Azure landing zone deployed and validated");
+  ac.push({ milestone: msNames[0] || "M1", criteria: m1 });
+
+  const m2 = ["Core workloads deployed/migrated", "Functional testing completed with results documented"];
+  if (cats.has("db")) m2.push("Database migration validated — data integrity confirmed");
+  if (cats.has("fab")) m2.push("Data pipelines operational (Bronze/Silver/Gold)");
+  if (cats.has("fo")) m2.push("RAG pipeline functional with target accuracy");
+  if (cats.has("accel")) m2.push("Migration waves completed per plan");
+  ac.push({ milestone: msNames[1] || "M2", criteria: m2 });
+
+  const m3 = ["Production environment operational", "Knowledge transfer completed — runbooks delivered", "Customer team enabled to operate independently"];
+  if (cats.has("db")) m3.push("Performance benchmarks met in production");
+  if (cats.has("fo")) m3.push("AI pilot validated with end users");
+  ac.push({ milestone: msNames[2] || "M3", criteria: m3 });
+  return ac;
+}
+
+/* Auto-generate Risks & Mitigations */
+function getRisks(rows) {
+  const cats = new Set();
+  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.id); if (itm) cats.add(itm.cat); });
+  const ids = new Set(rows.map(r => r.id));
+  const risks = [];
+  risks.push({ risk: "Scope creep extends timeline and budget", lh: "Medium", imp: "High", mit: "Formal change request process. Written approval required." });
+  if (cats.has("db")) risks.push({ risk: "Data quality issues delay migration", lh: "High", imp: "Medium", mit: "Early data profiling in M1. Remediation plan before migration." });
+  if (cats.has("fab")) risks.push({ risk: "Source system connectivity or API limitations", lh: "Medium", imp: "Medium", mit: "Validate all data source connections in M1." });
+  if (cats.has("fo")) risks.push({ risk: "AI model accuracy below expectations", lh: "Medium", imp: "High", mit: "Define success metrics upfront. Iterative prompt engineering." });
+  if (cats.has("accel")) risks.push({ risk: "Application dependencies block migration", lh: "High", imp: "High", mit: "Dependency mapping in M1. Parallel remediation track." });
+  if (ids.has("infra-win") || ids.has("infra-linux")) risks.push({ risk: "Network latency post-migration", lh: "Medium", imp: "Medium", mit: "Baseline perf testing. ExpressRoute/VPN optimization." });
+  risks.push({ risk: "Customer resource availability delays milestones", lh: "Medium", imp: "High", mit: "Named contacts per workstream. Weekly status with escalation." });
+  return risks.slice(0, 5);
+}
+
+/* Debounced input components — prevents full App re-render on every keystroke */
+function DInp({ v, fn, st }) {
+  const [local, setLocal] = useState(v);
+  const timer = useRef(null);
+  useEffect(() => { setLocal(v); }, [v]);
+  const handleChange = (e) => {
+    setLocal(e.target.value);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => fn(e.target.value), 300);
+  };
+  return <input value={local} onChange={handleChange} onBlur={() => { clearTimeout(timer.current); fn(local); }} style={{ border: "none", borderBottom: "1px dashed #bbb", background: "transparent", fontFamily: "inherit", fontSize: "inherit", fontWeight: "inherit", color: "inherit", padding: "0 2px", outline: "none", minWidth: 50, ...st }} />;
+}
+function DTxt({ v, fn, st }) {
+  const [local, setLocal] = useState(v);
+  const timer = useRef(null);
+  useEffect(() => { setLocal(v); }, [v]);
+  const handleChange = (e) => {
+    setLocal(e.target.value);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => fn(e.target.value), 400);
+  };
+  return <textarea value={local} onChange={handleChange} onBlur={() => { clearTimeout(timer.current); fn(local); }} style={{ border: "1px dashed #ccc", borderRadius: 4, padding: "6px 8px", background: "#fffef5", width: "100%", fontFamily: "inherit", fontSize: "inherit", lineHeight: "inherit", resize: "vertical", minHeight: 100, outline: "none", ...st }} />;
+}
+
 function App() {
   const [sel, setSel] = useState({});
-  const [exCat, setExCat] = useState({ db: true, fab: false, fo: false, accel: false, oth: false });
+  const [exCat, setExCat] = useState({ db: true, fab: false, fo: false, accel: false, pbi: false, oth: false });
   const [pg, setPg] = useState("calc");
   const [cp, setCp] = useState("");
   const [showGuide, setShowGuide] = useState(false);
@@ -299,18 +412,36 @@ function App() {
   const [sow, setSow] = useState({
     cn: "[CUSTOMER NAME]", on: "FY26 - [CUSTOMER]", req: "[Name, email]",
     cc: "[Name, email]", sup: "[Partner] (External)", sc: "[Name, email]",
-    scope: "", sd: "[START]", ed: "[END]",
-    m1n: "", m1h: "[XXX]", m1d: "[DATE]", m1x: "",
-    m2n: "", m2h: "[XXX]", m2d: "[DATE]", m2x: "",
-    m3n: "", m3h: "[XXX]", m3d: "[DATE]", m3x: "",
+    scope: "", sd: "", ed: "", rate: 200,
+    milestones: [
+      { n: "", h: "", d: "", x: "" },
+      { n: "", h: "", d: "", x: "" },
+      { n: "", h: "", d: "", x: "" },
+    ],
   });
   const us = (k, v) => setSow((p) => ({ ...p, [k]: v }));
+  const uMs = (idx, field, val) => setSow((p) => {
+    const ms = [...p.milestones];
+    ms[idx] = { ...ms[idx], [field]: val };
+    return { ...p, milestones: ms };
+  });
+  const addMilestone = () => {
+    const idx = sow.milestones.length;
+    const label = "M" + (idx + 1) + " - [Phase Name]";
+    setSow((p) => ({ ...p, milestones: [...p.milestones, { n: label, h: "", d: "", x: "" }] }));
+  };
+  const removeMilestone = (idx) => {
+    if (sow.milestones.length <= 1) return;
+    setSow((p) => ({ ...p, milestones: p.milestones.filter((_, i) => i !== idx) }));
+  };
 
   // ── Save / Load via persistent storage ──
-  const saveProject = async () => {
-    const name = sow.cn === "[CUSTOMER NAME]" ? "Untitled-" + Date.now() : sow.cn;
+  const saveProject = async (customName) => {
+    const defaultName = sow.cn === "[CUSTOMER NAME]" ? "Untitled-" + Date.now() : sow.cn;
+    const name = customName || prompt("Name this save:", defaultName);
+    if (!name) return;
     const key = "afo:" + name.replace(/[^a-zA-Z0-9_-]/g, "_").substring(0, 80);
-    const payload = JSON.stringify({ sow, sel, ts: new Date().toISOString(), name });
+    const payload = JSON.stringify({ sow, sel, ms: sow.milestones, ts: new Date().toISOString(), name });
     try {
       await window.storage.set(key, payload);
       setSaveStatus("Saved: " + name);
@@ -355,16 +486,26 @@ function App() {
     setSel((prev) => {
       const itm = ITEMS.find((x) => x.id === id);
       if (!itm) return prev;
-      const cur = prev[id] || { on: false, qty: itm.dq || 1, mo: 0, sku: itm.dsku || "" };
+      const cur = prev[id] || { on: false, qty: itm.dq || 1, mo: 0, sku: itm.dsku || "", ri: false };
       const n = { ...cur, [field]: val };
       if (field === "on" && val && !cur.mo) {
         n.qty = itm.dq || 1;
         n.sku = itm.dsku || "";
-        n.mo = itm.fab ? skuMo(itm.dsku) : (itm.dq * itm.up);
+        n.ri = cur.ri || false;
+        n.mo = itm.fab ? skuMo(itm.dsku, n.ri) : (itm.dq * itm.up);
       }
-      if (field === "qty" && !itm.fab) n.mo = val * itm.up;
-      if (field === "sku" && itm.fab) n.mo = skuMo(val) * (n.qty || 1);
-      if (field === "qty" && itm.fab) n.mo = skuMo(n.sku || itm.dsku) * val;
+      if (field === "qty" && !itm.fab) {
+        const activeOpt = itm.riOpts && n.riTerm && n.riTerm !== "payg" ? itm.riOpts.find(o => o.k === n.riTerm) : null;
+        n.mo = val * (activeOpt ? activeOpt.up : itm.up);
+      }
+      if (field === "sku" && itm.fab) n.mo = skuMo(val, n.ri) * (n.qty || 1);
+      if (field === "qty" && itm.fab) n.mo = skuMo(n.sku || itm.dsku, n.ri) * val;
+      if (field === "ri" && itm.fab) n.mo = skuMo(n.sku || itm.dsku, val) * (n.qty || 1);
+      if (field === "riTerm" && itm.riOpts) {
+        const opt = itm.riOpts.find(o => o.k === val);
+        n.mo = (n.qty || itm.dq) * (opt ? opt.up : itm.up);
+      }
+      if (field === "riTerm" && val === "payg" && itm.riOpts) n.mo = (n.qty || itm.dq) * itm.up;
       return { ...prev, [id]: n };
     });
   };
@@ -401,8 +542,8 @@ function App() {
     const mci = getMCI(tot);
     const ecif = ok ? Math.min(tot * 0.5, 500000) : 0;
     const aco = ok ? Math.min(tot * 0.5, 500000) : 0;
-    // Standard ECIF (non-AFO): available for ALL Azure workloads, field-nominated, ~5:1 ROI
-    const stdEcif = tot > 0 ? Math.min(tot * 0.2, 250000) : 0; // Conservative 5:1 ROI est.
+    // Standard ECIF (non-AFO): available for ALL Azure workloads, field-nominated
+    const stdEcif = tot > 0 ? Math.min(tot * 0.2, 250000) : 0; // Conservative ~5:1 ROI est. Actual varies 3:1–7:1 per deal
     const recs = getRecommendation(el, ot, tot, pct, ok, rows, mci, stdEcif);
 
     // Recommended total: the maximum achievable with correct stacking rules
@@ -436,6 +577,32 @@ function App() {
 
   const dyn = useMemo(() => getScope(C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn), [C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn]);
   const nextWL = useMemo(() => getNextWorkloads(C.rows), [C.rows]);
+  const assumptions = useMemo(() => getAssumptions(C.rows), [C.rows]);
+  const acceptance = useMemo(() => getAcceptance(sow.milestones.map(m => m.n), C.rows), [sow.milestones, C.rows]);
+  const risks = useMemo(() => getRisks(C.rows), [C.rows]);
+
+  // Milestone ECIF auto-calc
+  const mCalc = useMemo(() => {
+    const r = parseFloat(sow.rate) || 0;
+    const perMs = sow.milestones.map(m => { const h = parseFloat(m.h) || 0; return { h, e: h * r }; });
+    const totalH = perMs.reduce((s, m) => s + m.h, 0);
+    const totalE = perMs.reduce((s, m) => s + m.e, 0);
+    const budget = C.ok ? C.ecif : C.stdEcif;
+    const suggestedH = r > 0 ? Math.floor(budget / r) : 0;
+    return { perMs, totalH, totalE, budget, suggestedH, overBudget: totalE > budget && budget > 0 };
+  }, [sow.rate, sow.milestones, C.ecif, C.stdEcif, C.ok]);
+
+  // ROI calculation
+  const roi = useMemo(() => {
+    const custInvest = C.tot; // Y1 Azure spend
+    const fundCash = C.recCash;
+    const fundCredits = C.recCredits;
+    const fundTotal = fundCash + fundCredits;
+    const netCost = custInvest - fundCredits; // credits offset Azure cost
+    const partnerCost = mCalc.totalE; // partner implementation
+    const custTotalCost = netCost + partnerCost - fundCash; // customer pays: Azure + partner - ECIF cash
+    return { custInvest, fundCash, fundCredits, fundTotal, netCost, partnerCost, custTotalCost, fundPct: custInvest > 0 ? (fundTotal / custInvest * 100) : 0 };
+  }, [C.tot, C.recCash, C.recCredits, mCalc.totalE]);
 
   const prevK = useRef("");
   useEffect(() => {
@@ -443,10 +610,16 @@ function App() {
     if (k !== prevK.current) {
       prevK.current = k;
       us("scope", dyn.scope);
-      if (dyn.ms.length >= 3) {
-        us("m1n", dyn.ms[0].n); us("m1x", dyn.ms[0].d);
-        us("m2n", dyn.ms[1].n); us("m2x", dyn.ms[1].d);
-        us("m3n", dyn.ms[2].n); us("m3x", dyn.ms[2].d);
+      if (dyn.ms.length > 0) {
+        setSow(p => ({
+          ...p,
+          milestones: dyn.ms.map((m, i) => ({
+            n: m.n,
+            h: p.milestones[i] ? p.milestones[i].h : "",
+            d: p.milestones[i] ? p.milestones[i].d : "",
+            x: m.d,
+          })),
+        }));
       }
     }
   }, [dyn]);
@@ -473,8 +646,7 @@ function App() {
     w.document.close(); w.print();
   };
 
-  const Inp = ({ v, fn, st }) => <input value={v} onChange={(e) => fn(e.target.value)} style={{ border: "none", borderBottom: "1px dashed #bbb", background: "transparent", fontFamily: "inherit", fontSize: "inherit", fontWeight: "inherit", color: "inherit", padding: "0 2px", outline: "none", minWidth: 50, ...st }} />;
-  const Txt = ({ v, fn, st }) => <textarea value={v} onChange={(e) => fn(e.target.value)} style={{ border: "1px dashed #ccc", borderRadius: 4, padding: "6px 8px", background: "#fffef5", width: "100%", fontFamily: "inherit", fontSize: "inherit", lineHeight: "inherit", resize: "vertical", minHeight: 100, outline: "none", ...st }} />;
+
 
   return (
     <div style={{ fontFamily: "'Segoe UI',sans-serif", minHeight: "100vh", background: "linear-gradient(170deg,#eef2ff,#f5f0ff 40%,#fff5f0)", color: "#1a1a2e" }}>
@@ -490,7 +662,7 @@ function App() {
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               {saveStatus && <span style={{ fontSize: 10, padding: "3px 8px", background: "rgba(255,255,255,0.2)", borderRadius: 4 }}>{saveStatus}</span>}
-              <button onClick={saveProject} style={{ padding: "6px 14px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>💾 Save</button>
+              <button onClick={() => saveProject()} style={{ padding: "6px 14px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>💾 Save</button>
               <div style={{ position: "relative" }}>
                 <button onClick={() => { setShowSaves(!showSaves); if (!showSaves) loadSavedList(); }} style={{ padding: "6px 14px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>📂 Load{savedList.length > 0 ? " (" + savedList.length + ")" : ""}</button>
                 {showSaves && (
@@ -533,7 +705,7 @@ function App() {
                         <div style={{ width: 10, height: 10, borderRadius: 3, background: cat.color }} />
                         {cat.label}
                         {cat.elig && <span style={{ fontSize: 8, fontWeight: 700, background: "#dcfce7", color: "#166534", padding: "1px 5px", borderRadius: 6 }}>AFO ELIGIBLE</span>}
-                        {!cat.elig && cat.badge && <span style={{ fontSize: 8, fontWeight: 700, background: cat.key === "accel" ? "#fff3e0" : "#f5f5f5", color: cat.key === "accel" ? "#e65100" : "#888", padding: "1px 5px", borderRadius: 6 }}>{cat.badge}</span>}
+                        {!cat.elig && cat.badge && <span style={{ fontSize: 8, fontWeight: 700, background: cat.key === "accel" ? "#fff3e0" : cat.key === "pbi" ? "#fef9c3" : "#f5f5f5", color: cat.key === "accel" ? "#e65100" : cat.key === "pbi" ? "#854d0e" : "#888", padding: "1px 5px", borderRadius: 6 }}>{cat.badge}</span>}
                         {cnt > 0 && <span style={{ fontSize: 9, fontWeight: 600, background: cat.color + "15", color: cat.color, padding: "1px 5px", borderRadius: 6 }}>{cnt}</span>}
                       </div>
                       <span style={{ opacity: 0.3, transform: open ? "rotate(0)" : "rotate(-90deg)", transition: "0.2s" }}>▾</span>
@@ -547,8 +719,10 @@ function App() {
                           const yr = mo * 12;
                           const qt = s.qty != null ? s.qty : (itm.dq || 1);
                           const sku = s.sku || itm.dsku || "";
+                          const ri = !!s.ri;
                           return (
-                            <div key={itm.id} style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 0", borderTop: "1px solid #f5f5f7", flexWrap: "wrap" }}>
+                            <div key={itm.id} style={{ padding: "5px 0", borderTop: "1px solid #f5f5f7" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
                               <label style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 145, flex: "1 1 145px", cursor: "pointer", fontSize: 12, color: on ? "#1a1a2e" : "#aaa", fontWeight: on ? 500 : 400 }}>
                                 <input type="checkbox" checked={on} onChange={(e) => upd(itm.id, "on", e.target.checked)} style={{ accentColor: cat.color }} />
                                 <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{itm.name}</span>
@@ -557,18 +731,33 @@ function App() {
                                 <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
                                   {itm.fab ? (
                                     <>
-                                      <select value={sku} onChange={(e) => upd(itm.id, "sku", e.target.value)} style={{ padding: "2px 4px", border: "1px solid #107C1044", borderRadius: 4, fontSize: 11, background: "#f0fdf4", fontWeight: 600, color: "#166534" }}>
-                                        {FSKU.map((f) => <option key={f.s} value={f.s}>{f.s} ({f.cu}CU) {fmt(f.mo)}/mo</option>)}
+                                      <select value={sku} onChange={(e) => upd(itm.id, "sku", e.target.value)} style={{ padding: "2px 4px", border: "1px solid #107C1044", borderRadius: 4, fontSize: 11, background: ri ? "#eff6ff" : "#f0fdf4", fontWeight: 600, color: ri ? "#0078D4" : "#166534" }}>
+                                        {FSKU.map((f) => <option key={f.s} value={f.s}>{f.s} ({f.cu}CU) {fmt(ri ? f.ri : f.mo)}/mo</option>)}
                                       </select>
                                       <span style={{ fontSize: 9, color: "#aaa" }}>x</span>
                                       <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 30, padding: "2px", border: "1px solid #ddd", borderRadius: 3, fontSize: 11, textAlign: "center" }} />
+                                      <select value={ri ? "1yr" : "payg"} onChange={(e) => upd(itm.id, "ri", e.target.value === "1yr")} style={{ padding: "2px 4px", border: "1px solid " + (ri ? "#0078D4" : "#ddd"), borderRadius: 4, fontSize: 10, fontWeight: 600, background: ri ? "#0078D4" : "#f5f5f5", color: ri ? "white" : "#888", cursor: "pointer" }}>
+                                        <option value="payg">PAYG</option>
+                                        <option value="1yr">1yr Reserved (–41%)</option>
+                                      </select>
                                     </>
-                                  ) : (
+                                  ) : itm.riOpts ? (
+                                    <>
+                                      <div style={{ display: "flex", alignItems: "center", background: "#eff6ff", borderRadius: 4, padding: "1px 3px", gap: 2 }}>
+                                        <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 3, fontSize: 11, textAlign: "right", background: "white" }} />
+                                        <span style={{ fontSize: 9, color: "#666" }}>{itm.unit}</span>
+                                      </div>
+                                      <select value={s.riTerm || "payg"} onChange={(e) => upd(itm.id, "riTerm", e.target.value)} style={{ padding: "2px 4px", border: "1px solid " + (s.riTerm && s.riTerm !== "payg" ? "#0078D4" : "#ddd"), borderRadius: 4, fontSize: 10, fontWeight: 600, background: s.riTerm && s.riTerm !== "payg" ? "#0078D4" : "#f5f5f5", color: s.riTerm && s.riTerm !== "payg" ? "white" : "#888", cursor: "pointer" }}>
+                                        <option value="payg">PAYG</option>
+                                        {itm.riOpts.map(o => <option key={o.k} value={o.k}>{o.label}</option>)}
+                                      </select>
+                                    </>
+                                  ) : !itm.flat ? (
                                     <div style={{ display: "flex", alignItems: "center", background: "#eff6ff", borderRadius: 4, padding: "1px 3px", gap: 2 }}>
                                       <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 3, fontSize: 11, textAlign: "right", background: "white" }} />
                                       <span style={{ fontSize: 9, color: "#666" }}>{itm.unit}</span>
                                     </div>
-                                  )}
+                                  ) : null}
                                   <div style={{ display: "flex", alignItems: "center", background: "#f8f8f8", borderRadius: 4, padding: "1px 3px" }}>
                                     <span style={{ fontSize: 9, color: "#bbb" }}>$</span>
                                     <input type="number" value={Math.round(mo)} onChange={(e) => upd(itm.id, "mo", +e.target.value)} style={{ width: 58, padding: "2px", border: "1px solid #e0e0e0", borderRadius: 3, fontSize: 11, textAlign: "right", background: "white" }} />
@@ -577,6 +766,10 @@ function App() {
                                   <div style={{ fontSize: 11, fontWeight: 600, minWidth: 58, textAlign: "right" }}>{fmt(yr)}<span style={{ fontSize: 8, color: "#bbb" }}>/yr</span></div>
                                 </div>
                               )}
+                              </div>
+                              {on && itm.note && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 9, color: "#888", fontStyle: "italic", background: "#f8f9fa", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>ℹ {itm.note}</div>}
+                              {on && itm.fab && ri && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 9, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>1yr reserved: ~41% savings vs PAYG. Lower ACR = lower funding, but customer saves more.</div>}
+                              {on && itm.riOpts && s.riTerm && s.riTerm !== "payg" && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 9, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>Reserved pricing: lower ACR = lower funding thresholds, but customer saves on monthly cost.</div>}
                             </div>
                           );
                         })}
@@ -828,12 +1021,21 @@ function App() {
                     <div>• <strong>MCI Partner Nominated</strong> — Partner self-serve via Partner Center. Faster, less admin, but lower amounts ($2K–$75K).</div>
                     <div>• <strong>Pre-sales MCI + AFO post-sales</strong> — Best combo: partner runs Assessment+POV (MCI $15-25K cash), then AFO post-sales (ECIF cash + ACO credits).</div>
                     <div style={{ marginTop: 4, fontStyle: "italic", color: "#aaa" }}>Note: MCI post-sales and ECIF/AFO can never be used on the same customer+project.</div>
+                    <div style={{ marginTop: 6, paddingTop: 6, borderTop: "1px solid #eee" }}>
+                      <a href="https://partner.microsoft.com/en-us/partnership/azure-for-partners" target="_blank" rel="noopener" style={{ fontSize: 9, color: "#0078D4", textDecoration: "none", fontWeight: 600 }}>Azure Accelerate — Official Partner Portal ↗</a>
+                      <span style={{ fontSize: 9, color: "#ccc" }}> · </span>
+                      <a href="https://azure.microsoft.com/en-us/solutions/azure-accelerate/" target="_blank" rel="noopener" style={{ fontSize: 9, color: "#0078D4", textDecoration: "none" }}>Azure Accelerate Overview ↗</a>
+                    </div>
                   </div>
                 )}
               </div>
 
               <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", padding: 10, fontSize: 10, color: "#888", marginBottom: 8 }}>
                 <strong style={{ color: "#555" }}>AFO Rules:</strong> ≥50% eligible (DB/Fabric/Foundry) · 2:1 ROI · ECIF max $500K · ACO max $500K · Post-sales · Field-nominated · Limited time, first come first served
+              </div>
+
+              <div style={{ background: "#eff6ff", borderRadius: 10, border: "1px solid #bfdbfe", padding: 10, fontSize: 10, color: "#1e40af", marginBottom: 8 }}>
+                <strong>MACC eligible:</strong> All Azure F-SKU, compute, and PaaS workloads in this tool count toward Microsoft Azure Consumption Commitment (MACC). Customers with MACC can draw down Fabric, VMs, SQL, AI Foundry, and all Azure services against their existing commitment.
               </div>
 
               {C.tot > 0 && (
@@ -853,6 +1055,23 @@ function App() {
               <div style={{ display: "flex", gap: 5 }}>
                 <button onClick={() => setPg("calc")} style={{ padding: "5px 12px", background: "#eee", border: "none", borderRadius: 6, fontSize: 11, cursor: "pointer" }}>Back</button>
                 <button onClick={print} style={{ padding: "5px 12px", background: HDR, color: "white", border: "none", borderRadius: 6, fontSize: 11, cursor: "pointer" }}>Print / PDF</button>
+                <button onClick={() => {
+                  const el = document.getElementById("sowdoc");
+                  if (!el) return;
+                  const clone = el.cloneNode(true);
+                  clone.querySelectorAll("input, textarea").forEach(inp => {
+                    const span = document.createElement("span");
+                    span.textContent = inp.value;
+                    span.setAttribute("style", inp.getAttribute("style") || "");
+                    inp.parentNode.replaceChild(span, inp);
+                  });
+                  const html = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;padding:36px 44px;color:#1a1a2e;font-size:12px;line-height:1.6}table{width:100%;border-collapse:collapse}th,td{padding:5px 8px;text-align:left;border-bottom:1px solid #e0e0e0}th{background:#f0f4fa;font-size:11px;color:#555}h2{color:#0078D4;font-size:14px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 8px}span{font:inherit;color:inherit}</style></head><body>" + clone.innerHTML + "</body></html>";
+                  const blob = new Blob(["\ufeff" + html], { type: "application/msword;charset=utf-8" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url; a.download = "SOW-" + sow.cn.replace(/[^a-zA-Z0-9]/g, "_") + ".doc"; a.click();
+                  URL.revokeObjectURL(url);
+                }} style={{ padding: "5px 12px", background: "#5C2D91", color: "white", border: "none", borderRadius: 6, fontSize: 11, cursor: "pointer" }}>Export Word</button>
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
@@ -867,17 +1086,17 @@ function App() {
             <div id="sowdoc" style={{ background: "white", borderRadius: 10, border: "1px solid #e0e0e0", overflow: "hidden" }}>
               <div className="hd" style={{ background: HDR, padding: "20px 26px", color: "white" }}>
                 <div style={{ fontSize: 9, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>Azure Funding — Workscope Details</div>
-                <h1 style={{ margin: "2px 0 0", fontSize: 16, fontWeight: 600 }}><Inp v={sow.cn} fn={(v) => us("cn", v)} st={{ color: "white", borderBottomColor: "rgba(255,255,255,.4)", width: 240 }} /> — {C.ok ? "AFO" : "Azure Accelerate"}</h1>
+                <h1 style={{ margin: "2px 0 0", fontSize: 16, fontWeight: 600 }}><DInp v={sow.cn} fn={(v) => us("cn", v)} st={{ color: "white", borderBottomColor: "rgba(255,255,255,.4)", width: 240 }} /> — {C.ok ? "AFO" : "Azure Accelerate"}</h1>
               </div>
               <div style={{ padding: "20px 26px", fontSize: 12, lineHeight: 1.6, color: "#333" }}>
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Project Details</h2>
                 <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 18, fontSize: 11 }}><tbody>
                   {[["Opportunity Name", "on"], ["MS Requestor", "req"], ["Customer Contact", "cc"], ["Supplier", "sup"], ["Supplier Contact", "sc"]].map(([k, f]) => (
-                    <tr key={k}><td style={{ padding: "3px 6px", fontWeight: 600, color: "#555", width: 180, borderBottom: "1px solid #f0f0f0" }}>{k}</td><td style={{ padding: "3px 6px", borderBottom: "1px solid #f0f0f0" }}><Inp v={sow[f]} fn={(v) => us(f, v)} st={{ color: "#0078D4", width: "100%" }} /></td></tr>
+                    <tr key={k}><td style={{ padding: "3px 6px", fontWeight: 600, color: "#555", width: 180, borderBottom: "1px solid #f0f0f0" }}>{k}</td><td style={{ padding: "3px 6px", borderBottom: "1px solid #f0f0f0" }}><DInp v={sow[f]} fn={(v) => us(f, v)} st={{ color: "#0078D4", width: "100%" }} /></td></tr>
                   ))}
                 </tbody></table>
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Project Scope</h2>
-                <Txt v={sow.scope} fn={(v) => us("scope", v)} st={{ marginBottom: 18, minHeight: 220 }} />
+                <DTxt v={sow.scope} fn={(v) => us("scope", v)} st={{ marginBottom: 18, minHeight: 220 }} />
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Workload Breakdown</h2>
                 <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4, fontSize: 11 }}>
                   <thead><tr style={{ background: "#f5f7fa" }}><th style={{ padding: "5px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Workload</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>$/mo</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>Y1 Revenue</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>%</th></tr></thead>
@@ -903,24 +1122,39 @@ function App() {
                 </table>
                 <div style={{ fontSize: 10, color: "#888", marginBottom: 16 }}>AFO Eligible: {C.pct.toFixed(0)}% · Scenario: {C.sc}{C.xcr > 0 ? " · XCR (not part of ACR): " + fmt(C.xcr) : ""}</div>
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Timeline & Milestones</h2>
-                <p style={{ fontSize: 11, marginBottom: 6 }}>Start: <Inp v={sow.sd} fn={(v) => us("sd", v)} st={{ color: "#0078D4", width: 100 }} /> · End: <Inp v={sow.ed} fn={(v) => us("ed", v)} st={{ color: "#0078D4", width: 100 }} /></p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                  <p style={{ fontSize: 11, margin: 0 }}>Start: <input type="date" value={sow.sd} onChange={(e) => us("sd", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 6px", fontSize: 11, color: "#0078D4", fontFamily: "inherit" }} /> · End: <input type="date" value={sow.ed} onChange={(e) => us("ed", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 6px", fontSize: 11, color: "#0078D4", fontFamily: "inherit" }} /></p>
+                  <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 4, background: "#f8f9fa", padding: "3px 8px", borderRadius: 5 }}>
+                    <span style={{ fontSize: 9, color: "#888" }}>Partner rate:</span>
+                    <span style={{ fontSize: 9, color: "#bbb" }}>$</span>
+                    <input type="number" value={sow.rate} onChange={(e) => us("rate", e.target.value)} style={{ width: 45, padding: "2px", border: "1px solid #ddd", borderRadius: 3, fontSize: 11, textAlign: "right", background: "white" }} />
+                    <span style={{ fontSize: 9, color: "#bbb" }}>/hr</span>
+                  </div>
+                </div>
                 <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4, fontSize: 11 }}>
-                  <thead><tr style={{ background: "#f5f7fa" }}><th style={{ padding: "5px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Milestone</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>Hours</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>ECIF</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>Date</th></tr></thead>
+                  <thead><tr style={{ background: "#f5f7fa" }}><th style={{ padding: "5px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Milestone</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 60 }}>Hours</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 80 }}>ECIF</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 120 }}>Date</th><th style={{ width: 24, borderBottom: "2px solid #ddd" }} /></tr></thead>
                   <tbody>
-                    {[["m1n", "m1h", "m1d", "m1x"], ["m2n", "m2h", "m2d", "m2x"], ["m3n", "m3h", "m3d", "m3x"]].map(([nk, hk, dk, xk], i) => (
-                      <Fragment key={i}>
-                        <tr>
-                          <td style={{ padding: "4px 6px", fontWeight: 600, borderBottom: "none" }}><Inp v={sow[nk]} fn={(v) => us(nk, v)} st={{ width: "100%", fontWeight: 600 }} /></td>
-                          <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none" }}><Inp v={sow[hk]} fn={(v) => us(hk, v)} st={{ color: "#0078D4", width: 45, textAlign: "right" }} /></td>
-                          <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none", color: "#0078D4" }}>[h x rate]</td>
-                          <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none" }}><Inp v={sow[dk]} fn={(v) => us(dk, v)} st={{ color: "#0078D4", width: 75, textAlign: "right" }} /></td>
-                        </tr>
-                        <tr><td colSpan={4} style={{ padding: "1px 6px 7px", borderBottom: "1px solid #f0f0f0" }}><Txt v={sow[xk]} fn={(v) => us(xk, v)} st={{ minHeight: 28, fontSize: 10, color: "#777", fontStyle: "italic", background: "transparent", border: "1px dashed transparent" }} /></td></tr>
-                      </Fragment>
-                    ))}
-                    <tr style={{ fontWeight: 700 }}><td style={{ padding: "5px 6px", borderTop: "2px solid #333" }}>Total</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333", color: "#0078D4" }}>[TOT]</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333", color: "#0078D4" }}>[ECIF]</td><td style={{ borderTop: "2px solid #333" }} /></tr>
+                    {sow.milestones.map((m, i) => {
+                      const ecifAmt = mCalc.perMs[i] ? mCalc.perMs[i].e : 0;
+                      return (
+                        <Fragment key={i}>
+                          <tr>
+                            <td style={{ padding: "4px 6px", fontWeight: 600, borderBottom: "none" }}><DInp v={m.n} fn={(v) => uMs(i, "n", v)} st={{ width: "100%", fontWeight: 600 }} /></td>
+                            <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none" }}><DInp v={m.h} fn={(v) => uMs(i, "h", v)} st={{ color: "#0078D4", width: 45, textAlign: "right" }} /></td>
+                            <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none", color: ecifAmt > 0 ? "#0078D4" : "#ccc", fontWeight: 600 }}>{ecifAmt > 0 ? fmt(ecifAmt) : "—"}</td>
+                            <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none" }}><input type="date" value={m.d} onChange={(e) => uMs(i, "d", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 4px", fontSize: 10, color: "#0078D4", fontFamily: "inherit", width: 110 }} /></td>
+                            <td style={{ padding: "4px 6px", borderBottom: "none", textAlign: "center" }}>{sow.milestones.length > 1 && <button onClick={() => removeMilestone(i)} style={{ border: "none", background: "transparent", color: "#ccc", cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }} title="Remove milestone">×</button>}</td>
+                          </tr>
+                          <tr><td colSpan={5} style={{ padding: "1px 6px 7px", borderBottom: "1px solid #f0f0f0" }}><DTxt v={m.x} fn={(v) => uMs(i, "x", v)} st={{ minHeight: 28, fontSize: 10, color: "#777", fontStyle: "italic", background: "transparent", border: "1px dashed transparent" }} /></td></tr>
+                        </Fragment>
+                      );
+                    })}
+                    <tr style={{ fontWeight: 700 }}><td style={{ padding: "5px 6px", borderTop: "2px solid #333" }}>Total</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333", color: "#0078D4" }}>{mCalc.totalH > 0 ? mCalc.totalH + "h" : "—"}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333", color: mCalc.overBudget ? "#dc2626" : "#0078D4" }}>{mCalc.totalE > 0 ? fmt(mCalc.totalE) : "—"}</td><td style={{ borderTop: "2px solid #333" }} /><td style={{ borderTop: "2px solid #333" }} /></tr>
                   </tbody>
                 </table>
+                <button onClick={addMilestone} style={{ padding: "4px 12px", background: "#f0f4fa", border: "1px dashed #93c5fd", borderRadius: 5, fontSize: 10, color: "#0078D4", cursor: "pointer", marginBottom: 6, fontWeight: 600 }}>+ Add Milestone</button>
+                {mCalc.overBudget && <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 5, padding: "4px 8px", fontSize: 9, color: "#dc2626", marginBottom: 6 }}>⚠ Total ECIF ({fmt(mCalc.totalE)}) exceeds estimated budget ({fmt(mCalc.budget)}). Reduce hours or adjust rate. Budget allows ~{mCalc.suggestedH} hours at ${sow.rate}/hr.</div>}
+                {!mCalc.overBudget && mCalc.totalE > 0 && <div style={{ background: "#ecfdf5", border: "1px solid #6ee7b7", borderRadius: 5, padding: "4px 8px", fontSize: 9, color: "#059669", marginBottom: 6 }}>✓ Within budget. {fmt(mCalc.totalE)} of {fmt(mCalc.budget)} ({(mCalc.totalE / mCalc.budget * 100).toFixed(0)}% utilization)</div>}
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Funding Summary</h2>
 
                 {/* Funding paths */}
@@ -965,6 +1199,79 @@ function App() {
                   </div>
                   <div style={{ fontSize: 8, color: "#888", marginTop: 3 }}>All nominations via Azure Offer Navigator (field-led) and/or Partner Center (partner-led).</div>
                 </div>
+                {/* ── ROI / BUSINESS CASE ── */}
+                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Business Case Summary</h2>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 8 }}>
+                  <div style={{ background: "#eff6ff", padding: 10, borderRadius: 6, textAlign: "center" }}>
+                    <div style={{ fontSize: 8, color: "#64748b" }}>Customer Y1 Azure Spend</div>
+                    <div style={{ fontSize: 20, fontWeight: 700, color: "#0078D4" }}>{fmt(roi.custInvest)}</div>
+                    <div style={{ fontSize: 8, color: "#93c5fd" }}>{fmt(roi.custInvest / 12)}/mo</div>
+                  </div>
+                  <div style={{ background: "#f5f3ff", padding: 10, borderRadius: 6, textAlign: "center" }}>
+                    <div style={{ fontSize: 8, color: "#64748b" }}>Partner Implementation</div>
+                    <div style={{ fontSize: 20, fontWeight: 700, color: "#7c3aed" }}>{mCalc.totalE > 0 ? fmt(roi.partnerCost) : "TBD"}</div>
+                    <div style={{ fontSize: 8, color: "#a78bfa" }}>{mCalc.totalH > 0 ? mCalc.totalH + "h × $" + sow.rate + "/hr" : "Set rate + hours above"}</div>
+                  </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: roi.fundCredits > 0 ? "1fr 1fr" : "1fr", gap: 6, marginBottom: 12 }}>
+                  <div style={{ background: "#ecfdf5", padding: 10, borderRadius: 6, textAlign: "center", border: "1px solid #6ee7b7" }}>
+                    <div style={{ fontSize: 8, color: "#64748b" }}>ECIF — Cash to Partner</div>
+                    <div style={{ fontSize: 20, fontWeight: 700, color: "#059669" }}>{fmt(roi.fundCash)}</div>
+                    <div style={{ fontSize: 8, color: "#059669" }}>Offsets implementation cost</div>
+                  </div>
+                  {roi.fundCredits > 0 && (
+                    <div style={{ background: "#f5f3ff", padding: 10, borderRadius: 6, textAlign: "center", border: "1px solid #c4b5fd" }}>
+                      <div style={{ fontSize: 8, color: "#64748b" }}>ACO — Azure Credits to Customer</div>
+                      <div style={{ fontSize: 20, fontWeight: 700, color: "#7c3aed" }}>{fmt(roi.fundCredits)}</div>
+                      <div style={{ fontSize: 8, color: "#7c3aed" }}>Offsets Azure consumption cost</div>
+                    </div>
+                  )}
+                </div>
+                {mCalc.totalE > 0 && (
+                  <div style={{ background: "#fffbeb", border: "1px solid #fbbf24", borderRadius: 6, padding: 10, marginBottom: 16, fontSize: 10, lineHeight: 1.6, color: "#555" }}>
+                    <strong style={{ color: "#92400e" }}>Customer Investment Overview:</strong><br/>
+                    Azure consumption: {fmt(roi.custInvest)}/yr{roi.fundCredits > 0 ? " minus " + fmt(roi.fundCredits) + " ACO credits = " + fmt(roi.netCost) + " net Azure cost" : ""}<br/>
+                    Implementation: {fmt(roi.partnerCost)}{roi.fundCash > 0 ? " minus " + fmt(roi.fundCash) + " ECIF cash = " + fmt(Math.max(0, roi.partnerCost - roi.fundCash)) + " net implementation cost" : ""}<br/>
+                    <strong>Estimated net customer cost Y1: {fmt(Math.max(0, roi.custTotalCost))}</strong> (after all funding applied)
+                  </div>
+                )}
+
+                {/* ── ASSUMPTIONS ── */}
+                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Assumptions & Dependencies</h2>
+                <div style={{ marginBottom: 16, fontSize: 11, lineHeight: 1.7, color: "#555" }}>
+                  {assumptions.map((a, i) => <div key={i} style={{ padding: "2px 0", paddingLeft: 12, position: "relative" }}><span style={{ position: "absolute", left: 0, color: "#0078D4" }}>•</span>{a}</div>)}
+                </div>
+
+                {/* ── ACCEPTANCE CRITERIA ── */}
+                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Acceptance Criteria</h2>
+                <div style={{ marginBottom: 16 }}>
+                  {acceptance.map((ac, i) => (
+                    <div key={i} style={{ marginBottom: 8 }}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "#333", marginBottom: 3 }}>{ac.milestone}</div>
+                      {ac.criteria.map((c, j) => <div key={j} style={{ fontSize: 10, color: "#555", paddingLeft: 12, position: "relative", lineHeight: 1.6 }}><span style={{ position: "absolute", left: 0, color: "#059669" }}>✓</span>{c}</div>)}
+                    </div>
+                  ))}
+                </div>
+
+                {/* ── RISKS & MITIGATIONS ── */}
+                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Risks & Mitigations</h2>
+                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 16, fontSize: 10 }}>
+                  <thead><tr style={{ background: "#f5f7fa" }}>
+                    <th style={{ padding: "4px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Risk</th>
+                    <th style={{ padding: "4px 6px", textAlign: "center", borderBottom: "2px solid #ddd", width: 60 }}>Likelihood</th>
+                    <th style={{ padding: "4px 6px", textAlign: "center", borderBottom: "2px solid #ddd", width: 50 }}>Impact</th>
+                    <th style={{ padding: "4px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Mitigation</th>
+                  </tr></thead>
+                  <tbody>{risks.map((r, i) => (
+                    <tr key={i} style={{ borderBottom: "1px solid #f0f0f0" }}>
+                      <td style={{ padding: "4px 6px", color: "#333" }}>{r.risk}</td>
+                      <td style={{ padding: "4px 6px", textAlign: "center" }}><span style={{ fontSize: 8, fontWeight: 600, padding: "1px 5px", borderRadius: 3, background: r.lh === "High" ? "#fef2f2" : "#fefce8", color: r.lh === "High" ? "#dc2626" : "#ca8a04" }}>{r.lh}</span></td>
+                      <td style={{ padding: "4px 6px", textAlign: "center" }}><span style={{ fontSize: 8, fontWeight: 600, padding: "1px 5px", borderRadius: 3, background: r.imp === "High" ? "#fef2f2" : "#fefce8", color: r.imp === "High" ? "#dc2626" : "#ca8a04" }}>{r.imp}</span></td>
+                      <td style={{ padding: "4px 6px", color: "#555" }}>{r.mit}</td>
+                    </tr>
+                  ))}</tbody>
+                </table>
+
                 <div style={{ fontSize: 9, color: "#999", borderTop: "1px solid #eee", paddingTop: 8 }}>Non-binding estimate for planning purposes. All amounts subject to Microsoft internal approval. AFO nomination via Azure Offer Navigator (field-nominated). Limited time, first come first served. Anthropic counts as XCR (not ACR) but can be forecasted as 100% ACR in MSX. Agent P3 excluded from AFO eligible workloads. GitHub Copilot is per-seat (XCR, not Azure ACR). ACO not available for MCA-E Customer Led. Contact PSS/account team for formal nomination.</div>
               </div>
             </div>
@@ -1029,6 +1336,11 @@ function App() {
             </div>
           </div>
         )}
+      </div>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "16px 28px 8px" }}>
+        <div style={{ background: "#f8f9fa", borderRadius: 8, border: "1px solid #e5e7eb", padding: "10px 14px", fontSize: 9, color: "#6b7280", lineHeight: 1.6 }}>
+          <strong style={{ color: "#374151" }}>Important:</strong> This tool provides indicative estimates for planning purposes only. All amounts, eligibility, and funding recommendations are non-binding and subject to Microsoft internal approval, program availability, and regional variations. Always verify against the latest official Microsoft documentation, Azure Pricing Calculator, and your Microsoft PSS/account team before submitting nominations. Program rules, funding caps, and eligibility criteria may change without notice. Conduct a thorough assessment using official Microsoft tools (Azure Migrate, Fabric Capacity Estimator, Azure Pricing Calculator) before finalizing any customer proposal.
+        </div>
       </div>
       <div style={{ borderTop: "1px solid #e8e8ec", padding: "12px 28px", display: "flex", justifyContent: "center", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.6)" }}>
         <span style={{ fontSize: 10, color: "#aaa" }}>Created by</span>
