@@ -405,6 +405,7 @@ function App() {
   const [pg, setPg] = useState("calc");
   const [cp, setCp] = useState("");
   const [showGuide, setShowGuide] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const [saveStatus, setSaveStatus] = useState("");
   const [savedList, setSavedList] = useState([]);
   const [showSaves, setShowSaves] = useState(false);
@@ -650,40 +651,55 @@ function App() {
 
   return (
     <div style={{ fontFamily: "'Segoe UI',sans-serif", minHeight: "100vh", background: "linear-gradient(170deg,#eef2ff,#f5f0ff 40%,#fff5f0)", color: "#1a1a2e" }}>
-      <div style={{ background: HDR, padding: "22px 28px", color: "white" }}>
+      <div style={{ background: HDR, padding: "16px 28px 0", color: "white" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                <svg width="20" height="20" viewBox="0 0 20 20"><rect width="9" height="9" fill="#f25022" rx="1" /><rect x="11" width="9" height="9" fill="#7fba00" rx="1" /><rect y="11" width="9" height="9" fill="#00a4ef" rx="1" /><rect x="11" y="11" width="9" height="9" fill="#ffb900" rx="1" /></svg>
-                <span style={{ fontSize: 9, opacity: 0.6, letterSpacing: 2, textTransform: "uppercase" }}>Azure Funding Estimator</span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <svg width="20" height="20" viewBox="0 0 20 20"><rect width="9" height="9" fill="#f25022" rx="1" /><rect x="11" width="9" height="9" fill="#7fba00" rx="1" /><rect y="11" width="9" height="9" fill="#00a4ef" rx="1" /><rect x="11" y="11" width="9" height="9" fill="#ffb900" rx="1" /></svg>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 600 }}>Azure Funding Estimator</div>
               </div>
-              <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>Azure Funding Estimator & SOW Generator</h1>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              {saveStatus && <span style={{ fontSize: 10, padding: "3px 8px", background: "rgba(255,255,255,0.2)", borderRadius: 4 }}>{saveStatus}</span>}
-              <button onClick={() => saveProject()} style={{ padding: "6px 14px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>💾 Save</button>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.12)", borderRadius: 6, padding: "4px 10px" }}>
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Customer:</span>
+                <input value={sow.cn} onChange={(e) => us("cn", e.target.value)} placeholder="Enter name..." style={{ background: "transparent", border: "none", color: "white", fontSize: 12, fontWeight: 600, fontFamily: "inherit", outline: "none", width: 160 }} />
+              </div>
+              {saveStatus && <span style={{ fontSize: 12, padding: "3px 8px", background: "rgba(255,255,255,0.2)", borderRadius: 4 }}>{saveStatus}</span>}
+              <button onClick={() => saveProject()} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>💾 Save</button>
               <div style={{ position: "relative" }}>
-                <button onClick={() => { setShowSaves(!showSaves); if (!showSaves) loadSavedList(); }} style={{ padding: "6px 14px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: "pointer" }}>📂 Load{savedList.length > 0 ? " (" + savedList.length + ")" : ""}</button>
+                <button onClick={() => { setShowSaves(!showSaves); if (!showSaves) loadSavedList(); }} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>📂{savedList.length > 0 ? " " + savedList.length : ""}</button>
                 {showSaves && (
                   <div style={{ position: "absolute", top: "110%", right: 0, width: 260, background: "white", borderRadius: 8, boxShadow: "0 8px 30px rgba(0,0,0,0.2)", zIndex: 999, overflow: "hidden" }}>
-                    <div style={{ padding: "8px 10px", background: "#f8f9fa", fontSize: 10, fontWeight: 700, color: "#555", borderBottom: "1px solid #e8e8ec" }}>Saved Projects</div>
+                    <div style={{ padding: "8px 10px", background: "#f8f9fa", fontSize: 13, fontWeight: 700, color: "#555", borderBottom: "1px solid #e8e8ec" }}>Saved Projects</div>
                     {savedList.length === 0 ? (
-                      <div style={{ padding: 12, fontSize: 11, color: "#aaa", textAlign: "center" }}>No saved projects</div>
+                      <div style={{ padding: 12, fontSize: 12, color: "#aaa", textAlign: "center" }}>No saved projects</div>
                     ) : savedList.map((k, i) => {
                       const label = k.replace("afo:", "").replace(/_/g, " ");
                       return (
-                        <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", borderBottom: "1px solid #f0f0f0", fontSize: 11 }}>
-                          <button onClick={() => loadProject(k)} style={{ flex: 1, textAlign: "left", border: "none", background: "transparent", cursor: "pointer", fontSize: 11, color: "#333", padding: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</button>
-                          <button onClick={() => deleteProject(k)} style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: 11, color: "#dc2626", padding: "0 4px" }}>✕</button>
+                        <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", borderBottom: "1px solid #f0f0f0", fontSize: 12 }}>
+                          <button onClick={() => loadProject(k)} style={{ flex: 1, textAlign: "left", border: "none", background: "transparent", cursor: "pointer", fontSize: 12, color: "#333", padding: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{label}</button>
+                          <button onClick={() => deleteProject(k)} style={{ border: "none", background: "transparent", cursor: "pointer", fontSize: 12, color: "#dc2626", padding: "0 4px" }}>✕</button>
                         </div>
                       );
                     })}
-                    <button onClick={() => setShowSaves(false)} style={{ width: "100%", padding: "6px", border: "none", background: "#f8f9fa", cursor: "pointer", fontSize: 10, color: "#888" }}>Close</button>
+                    <button onClick={() => setShowSaves(false)} style={{ width: "100%", padding: "6px", border: "none", background: "#f8f9fa", cursor: "pointer", fontSize: 13, color: "#888" }}>Close</button>
                   </div>
                 )}
               </div>
             </div>
+          </div>
+          {/* Tab navigation */}
+          <div style={{ display: "flex", gap: 0 }}>
+            {[
+              { k: "calc", label: "Calculator" },
+              { k: "sow", label: "SOW & Email" },
+              { k: "cust", label: "Customer Summary" },
+            ].map(t => (
+              <button key={t.k} onClick={() => { if (t.k !== "calc" && C.tot === 0) return; setPg(t.k); }} style={{ padding: "8px 18px", border: "none", background: pg === t.k ? "rgba(255,255,255,0.15)" : "transparent", color: pg === t.k ? "white" : "rgba(255,255,255,0.5)", fontSize: 12, fontWeight: pg === t.k ? 600 : 400, cursor: t.k !== "calc" && C.tot === 0 ? "default" : "pointer", borderBottom: pg === t.k ? "2px solid white" : "2px solid transparent", borderRadius: "6px 6px 0 0", opacity: t.k !== "calc" && C.tot === 0 ? 0.3 : 1 }}>
+                {t.label}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -704,9 +720,9 @@ function App() {
                       <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                         <div style={{ width: 10, height: 10, borderRadius: 3, background: cat.color }} />
                         {cat.label}
-                        {cat.elig && <span style={{ fontSize: 8, fontWeight: 700, background: "#dcfce7", color: "#166534", padding: "1px 5px", borderRadius: 6 }}>AFO ELIGIBLE</span>}
-                        {!cat.elig && cat.badge && <span style={{ fontSize: 8, fontWeight: 700, background: cat.key === "accel" ? "#fff3e0" : cat.key === "pbi" ? "#fef9c3" : "#f5f5f5", color: cat.key === "accel" ? "#e65100" : cat.key === "pbi" ? "#854d0e" : "#888", padding: "1px 5px", borderRadius: 6 }}>{cat.badge}</span>}
-                        {cnt > 0 && <span style={{ fontSize: 9, fontWeight: 600, background: cat.color + "15", color: cat.color, padding: "1px 5px", borderRadius: 6 }}>{cnt}</span>}
+                        {cat.elig && <span style={{ fontSize: 10, fontWeight: 700, background: "#dcfce7", color: "#166534", padding: "1px 5px", borderRadius: 6 }}>AFO ELIGIBLE</span>}
+                        {!cat.elig && cat.badge && <span style={{ fontSize: 10, fontWeight: 700, background: cat.key === "accel" ? "#fff3e0" : cat.key === "pbi" ? "#fef9c3" : "#f5f5f5", color: cat.key === "accel" ? "#e65100" : cat.key === "pbi" ? "#854d0e" : "#888", padding: "1px 5px", borderRadius: 6 }}>{cat.badge}</span>}
+                        {cnt > 0 && <span style={{ fontSize: 11, fontWeight: 600, background: cat.color + "15", color: cat.color, padding: "1px 5px", borderRadius: 6 }}>{cnt}</span>}
                       </div>
                       <span style={{ opacity: 0.3, transform: open ? "rotate(0)" : "rotate(-90deg)", transition: "0.2s" }}>▾</span>
                     </button>
@@ -731,12 +747,12 @@ function App() {
                                 <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
                                   {itm.fab ? (
                                     <>
-                                      <select value={sku} onChange={(e) => upd(itm.id, "sku", e.target.value)} style={{ padding: "2px 4px", border: "1px solid #107C1044", borderRadius: 4, fontSize: 11, background: ri ? "#eff6ff" : "#f0fdf4", fontWeight: 600, color: ri ? "#0078D4" : "#166534" }}>
+                                      <select value={sku} onChange={(e) => upd(itm.id, "sku", e.target.value)} style={{ padding: "2px 4px", border: "1px solid #107C1044", borderRadius: 4, fontSize: 13, background: ri ? "#eff6ff" : "#f0fdf4", fontWeight: 600, color: ri ? "#0078D4" : "#166534" }}>
                                         {FSKU.map((f) => <option key={f.s} value={f.s}>{f.s} ({f.cu}CU) {fmt(ri ? f.ri : f.mo)}/mo</option>)}
                                       </select>
-                                      <span style={{ fontSize: 9, color: "#aaa" }}>x</span>
-                                      <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 30, padding: "2px", border: "1px solid #ddd", borderRadius: 3, fontSize: 11, textAlign: "center" }} />
-                                      <select value={ri ? "1yr" : "payg"} onChange={(e) => upd(itm.id, "ri", e.target.value === "1yr")} style={{ padding: "2px 4px", border: "1px solid " + (ri ? "#0078D4" : "#ddd"), borderRadius: 4, fontSize: 10, fontWeight: 600, background: ri ? "#0078D4" : "#f5f5f5", color: ri ? "white" : "#888", cursor: "pointer" }}>
+                                      <span style={{ fontSize: 11, color: "#aaa" }}>x</span>
+                                      <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 30, padding: "2px", border: "1px solid #ddd", borderRadius: 3, fontSize: 13, textAlign: "center" }} />
+                                      <select value={ri ? "1yr" : "payg"} onChange={(e) => upd(itm.id, "ri", e.target.value === "1yr")} style={{ padding: "2px 4px", border: "1px solid " + (ri ? "#0078D4" : "#ddd"), borderRadius: 4, fontSize: 12, fontWeight: 600, background: ri ? "#0078D4" : "#f5f5f5", color: ri ? "white" : "#888", cursor: "pointer" }}>
                                         <option value="payg">PAYG</option>
                                         <option value="1yr">1yr Reserved (–41%)</option>
                                       </select>
@@ -744,32 +760,32 @@ function App() {
                                   ) : itm.riOpts ? (
                                     <>
                                       <div style={{ display: "flex", alignItems: "center", background: "#eff6ff", borderRadius: 4, padding: "1px 3px", gap: 2 }}>
-                                        <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 3, fontSize: 11, textAlign: "right", background: "white" }} />
-                                        <span style={{ fontSize: 9, color: "#666" }}>{itm.unit}</span>
+                                        <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 3, fontSize: 13, textAlign: "right", background: "white" }} />
+                                        <span style={{ fontSize: 11, color: "#666" }}>{itm.unit}</span>
                                       </div>
-                                      <select value={s.riTerm || "payg"} onChange={(e) => upd(itm.id, "riTerm", e.target.value)} style={{ padding: "2px 4px", border: "1px solid " + (s.riTerm && s.riTerm !== "payg" ? "#0078D4" : "#ddd"), borderRadius: 4, fontSize: 10, fontWeight: 600, background: s.riTerm && s.riTerm !== "payg" ? "#0078D4" : "#f5f5f5", color: s.riTerm && s.riTerm !== "payg" ? "white" : "#888", cursor: "pointer" }}>
+                                      <select value={s.riTerm || "payg"} onChange={(e) => upd(itm.id, "riTerm", e.target.value)} style={{ padding: "2px 4px", border: "1px solid " + (s.riTerm && s.riTerm !== "payg" ? "#0078D4" : "#ddd"), borderRadius: 4, fontSize: 12, fontWeight: 600, background: s.riTerm && s.riTerm !== "payg" ? "#0078D4" : "#f5f5f5", color: s.riTerm && s.riTerm !== "payg" ? "white" : "#888", cursor: "pointer" }}>
                                         <option value="payg">PAYG</option>
                                         {itm.riOpts.map(o => <option key={o.k} value={o.k}>{o.label}</option>)}
                                       </select>
                                     </>
                                   ) : !itm.flat ? (
                                     <div style={{ display: "flex", alignItems: "center", background: "#eff6ff", borderRadius: 4, padding: "1px 3px", gap: 2 }}>
-                                      <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 3, fontSize: 11, textAlign: "right", background: "white" }} />
-                                      <span style={{ fontSize: 9, color: "#666" }}>{itm.unit}</span>
+                                      <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 3, fontSize: 13, textAlign: "right", background: "white" }} />
+                                      <span style={{ fontSize: 11, color: "#666" }}>{itm.unit}</span>
                                     </div>
                                   ) : null}
                                   <div style={{ display: "flex", alignItems: "center", background: "#f8f8f8", borderRadius: 4, padding: "1px 3px" }}>
-                                    <span style={{ fontSize: 9, color: "#bbb" }}>$</span>
-                                    <input type="number" value={Math.round(mo)} onChange={(e) => upd(itm.id, "mo", +e.target.value)} style={{ width: 58, padding: "2px", border: "1px solid #e0e0e0", borderRadius: 3, fontSize: 11, textAlign: "right", background: "white" }} />
-                                    <span style={{ fontSize: 9, color: "#bbb" }}>/mo</span>
+                                    <span style={{ fontSize: 11, color: "#bbb" }}>$</span>
+                                    <input type="number" value={Math.round(mo)} onChange={(e) => upd(itm.id, "mo", +e.target.value)} style={{ width: 58, padding: "2px", border: "1px solid #e0e0e0", borderRadius: 3, fontSize: 13, textAlign: "right", background: "white" }} />
+                                    <span style={{ fontSize: 11, color: "#bbb" }}>/mo</span>
                                   </div>
-                                  <div style={{ fontSize: 11, fontWeight: 600, minWidth: 58, textAlign: "right" }}>{fmt(yr)}<span style={{ fontSize: 8, color: "#bbb" }}>/yr</span></div>
+                                  <div style={{ fontSize: 13, fontWeight: 600, minWidth: 58, textAlign: "right" }}>{fmt(yr)}<span style={{ fontSize: 10, color: "#bbb" }}>/yr</span></div>
                                 </div>
                               )}
                               </div>
-                              {on && itm.note && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 9, color: "#888", fontStyle: "italic", background: "#f8f9fa", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>ℹ {itm.note}</div>}
-                              {on && itm.fab && ri && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 9, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>1yr reserved: ~41% savings vs PAYG. Lower ACR = lower funding, but customer saves more.</div>}
-                              {on && itm.riOpts && s.riTerm && s.riTerm !== "payg" && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 9, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>Reserved pricing: lower ACR = lower funding thresholds, but customer saves on monthly cost.</div>}
+                              {on && itm.note && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#888", fontStyle: "italic", background: "#f8f9fa", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>ℹ {itm.note}</div>}
+                              {on && itm.fab && ri && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>1yr reserved: ~41% savings vs PAYG. Lower ACR = lower funding, but customer saves more.</div>}
+                              {on && itm.riOpts && s.riTerm && s.riTerm !== "payg" && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>Reserved pricing: lower ACR = lower funding thresholds, but customer saves on monthly cost.</div>}
                             </div>
                           );
                         })}
@@ -785,31 +801,31 @@ function App() {
 
               {/* ── DUAL-PATH ELIGIBILITY VISUAL ── */}
               <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", padding: 12, marginBottom: 8 }}>
-                <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: "#888", marginBottom: 8, letterSpacing: 0.5 }}>Eligibility Overview</div>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#888", marginBottom: 8, letterSpacing: 0.5 }}>Eligibility Overview</div>
 
-                {C.tot === 0 ? <div style={{ fontSize: 11, color: "#ccc" }}>Select workloads to see eligibility...</div> : (
+                {C.tot === 0 ? <div style={{ fontSize: 13, color: "#ccc" }}>Select workloads to see eligibility...</div> : (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                     {/* Field-Led (AFO) */}
-                    <div style={{ borderRadius: 8, padding: 10, background: C.ok ? "linear-gradient(135deg,#ecfdf5,#d1fae5)" : "linear-gradient(135deg,#fef2f2,#fee2e2)", border: "1.5px solid " + (C.ok ? "#6ee7b7" : "#fca5a5"), textAlign: "center", position: "relative" }}>
-                      <div style={{ fontSize: 8, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Field-Led</div>
+                    <div style={{ borderRadius: 8, padding: 10, background: C.ok ? "linear-gradient(135deg,#ecfdf5,#d1fae5)" : "linear-gradient(135deg,#f8f9fa,#f0f1f3)", border: "1.5px solid " + (C.ok ? "#6ee7b7" : "#d1d5db"), textAlign: "center", position: "relative" }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Field-Led</div>
                       {/* Ring indicator */}
-                      <div style={{ width: 56, height: 56, borderRadius: "50%", margin: "0 auto 6px", position: "relative", background: `conic-gradient(${C.ok ? "#059669" : "#dc2626"} ${C.pct * 3.6}deg, ${C.ok ? "#d1fae5" : "#fecaca"} 0)` }}>
+                      <div style={{ width: 56, height: 56, borderRadius: "50%", margin: "0 auto 6px", position: "relative", background: `conic-gradient(${C.ok ? "#059669" : "#94a3b8"} ${C.pct * 3.6}deg, ${C.ok ? "#d1fae5" : "#e2e8f0"} 0)` }}>
                         <div style={{ position: "absolute", inset: 6, borderRadius: "50%", background: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: C.ok ? "#059669" : "#dc2626" }}>{C.pct.toFixed(0)}%</span>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: C.ok ? "#059669" : "#64748b" }}>{C.pct.toFixed(0)}%</span>
                         </div>
                       </div>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: C.ok ? "#059669" : "#dc2626" }}>{C.ok ? "✓ AFO ELIGIBLE" : "✗ NOT AFO ELIGIBLE"}</div>
-                      <div style={{ fontSize: 8, color: "#888", marginTop: 2 }}>Requires ≥50% DB/Fabric/Foundry</div>
-                      <div style={{ fontSize: 8, color: "#aaa", marginTop: 1 }}>ECIF {fmt(C.ecif)} + ACO {fmt(C.aco)}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: C.ok ? "#059669" : "#64748b" }}>{C.ok ? "✓ AFO ELIGIBLE" : "Standard ECIF / MCI path"}</div>
+                      <div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>{C.ok ? "Requires ≥50% DB/Fabric/Foundry" : C.pct > 0 ? C.pct.toFixed(0) + "% eligible — add Data/AI to unlock AFO" : "Add DB, Fabric, or AI Foundry for AFO"}</div>
+                      <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>ECIF {fmt(C.ecif)} + ACO {fmt(C.aco)}</div>
                       <div style={{ display: "flex", gap: 2, justifyContent: "center", marginTop: 4 }}>
-                        <span style={{ fontSize: 7, padding: "1px 4px", borderRadius: 3, background: "#eff6ff", color: "#0078D4", fontWeight: 600 }}>ECIF</span>
-                        <span style={{ fontSize: 7, padding: "1px 4px", borderRadius: 3, background: "#f3e8ff", color: "#7c3aed", fontWeight: 600 }}>ACO</span>
+                        <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 3, background: "#eff6ff", color: "#0078D4", fontWeight: 600 }}>ECIF</span>
+                        <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 3, background: "#f3e8ff", color: "#7c3aed", fontWeight: 600 }}>ACO</span>
                       </div>
                     </div>
 
                     {/* Partner-Led (MCI) */}
                     <div style={{ borderRadius: 8, padding: 10, background: C.tot >= 5000 ? "linear-gradient(135deg,#eff6ff,#dbeafe)" : "#f9fafb", border: "1.5px solid " + (C.tot >= 5000 ? "#93c5fd" : "#e5e7eb"), textAlign: "center", position: "relative" }}>
-                      <div style={{ fontSize: 8, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Partner-Led</div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Partner-Led</div>
                       {/* Ring indicator */}
                       {(() => {
                         const tiers = [5000, 15000, 50000, 100000, 250000];
@@ -818,39 +834,39 @@ function App() {
                         return (
                           <div style={{ width: 56, height: 56, borderRadius: "50%", margin: "0 auto 6px", position: "relative", background: `conic-gradient(#2563eb ${pctFill * 3.6}deg, #dbeafe 0)` }}>
                             <div style={{ position: "absolute", inset: 6, borderRadius: "50%", background: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                              <span style={{ fontSize: 11, fontWeight: 700, color: C.tot >= 5000 ? "#2563eb" : "#ccc" }}>{C.mci.ts || "—"}</span>
+                              <span style={{ fontSize: 13, fontWeight: 700, color: C.tot >= 5000 ? "#2563eb" : "#ccc" }}>{C.mci.ts || "—"}</span>
                             </div>
                           </div>
                         );
                       })()}
-                      <div style={{ fontSize: 11, fontWeight: 700, color: C.tot >= 5000 ? "#2563eb" : "#999" }}>{C.tot >= 5000 ? "✓ MCI ELIGIBLE" : "✗ ACR < $5K"}</div>
-                      <div style={{ fontSize: 8, color: "#888", marginTop: 2 }}>Partner self-serve via PC</div>
-                      <div style={{ fontSize: 8, color: "#aaa", marginTop: 1 }}>Up to {fmt(C.mci.pre + C.mci.post)}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: C.tot >= 5000 ? "#2563eb" : "#999" }}>{C.tot >= 5000 ? "✓ MCI ELIGIBLE" : "✗ ACR < $5K"}</div>
+                      <div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>Partner self-serve via PC</div>
+                      <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>Up to {fmt(C.mci.pre + C.mci.post)}</div>
                       <div style={{ display: "flex", gap: 2, justifyContent: "center", marginTop: 4 }}>
-                        <span style={{ fontSize: 7, padding: "1px 4px", borderRadius: 3, background: "#eff6ff", color: "#2563eb", fontWeight: 600 }}>Pre-sales</span>
-                        <span style={{ fontSize: 7, padding: "1px 4px", borderRadius: 3, background: "#ecfdf5", color: "#059669", fontWeight: 600 }}>Post-sales</span>
+                        <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 3, background: "#eff6ff", color: "#2563eb", fontWeight: 600 }}>Pre-sales</span>
+                        <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 3, background: "#ecfdf5", color: "#059669", fontWeight: 600 }}>Post-sales</span>
                       </div>
                     </div>
                   </div>
                 )}
 
                 {/* Scenario badge */}
-                {C.sc && C.tot > 0 && <div style={{ marginTop: 8, fontSize: 10, color: "#555", padding: "4px 8px", background: "#f8f9fa", borderRadius: 6, textAlign: "center" }}>Scenario: <strong>{C.sc}</strong></div>}
+                {C.sc && C.tot > 0 && <div style={{ marginTop: 8, fontSize: 12, color: "#555", padding: "4px 8px", background: "#f8f9fa", borderRadius: 6, textAlign: "center" }}>Scenario: <strong>{C.sc}</strong></div>}
               </div>
 
               {/* ── YEAR 1 ACR ── */}
               <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", padding: 12, marginBottom: 8 }}>
-                <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", color: "#888", marginBottom: 5 }}>Year 1 ACR</div>
-                <div style={{ textAlign: "center", marginBottom: 8 }}><div style={{ fontSize: 26, fontWeight: 700, color: "#0078D4" }}>{fmt(C.tot)}</div><div style={{ fontSize: 10, color: "#bbb" }}>{fmt(C.tot / 12)}/mo{C.xcr > 0 ? " (+ " + fmt(C.xcr) + " XCR)" : ""}</div></div>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#888", marginBottom: 5 }}>Year 1 ACR</div>
+                <div style={{ textAlign: "center", marginBottom: 8 }}><div style={{ fontSize: 26, fontWeight: 700, color: "#0078D4" }}>{fmt(C.tot)}</div><div style={{ fontSize: 12, color: "#bbb" }}>{fmt(C.tot / 12)}/mo{C.xcr > 0 ? " (+ " + fmt(C.xcr) + " XCR)" : ""}</div></div>
                 <div style={{ display: "grid", gridTemplateColumns: C.xcr > 0 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 4 }}>
-                  <div style={{ background: "#eff6ff", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 8 }}>AFO Eligible</div><div style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>{fmt(C.el)}</div></div>
-                  <div style={{ background: "#f5f5f5", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 8 }}>Other ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#999" }}>{fmt(C.ot)}</div></div>
-                  {C.xcr > 0 && <div style={{ background: "#fef3c7", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 8 }}>XCR (not ACR)</div><div style={{ fontSize: 13, fontWeight: 700, color: "#d97706" }}>{fmt(C.xcr)}</div></div>}
+                  <div style={{ background: "#eff6ff", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 10 }}>AFO Eligible ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>{fmt(C.el)}</div></div>
+                  <div style={{ background: "#fff7ed", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 10 }}>ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#D83B01" }}>{fmt(C.ot)}</div></div>
+                  {C.xcr > 0 && <div style={{ background: "#fef3c7", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 10 }}>XCR (not ACR)</div><div style={{ fontSize: 13, fontWeight: 700, color: "#d97706" }}>{fmt(C.xcr)}</div></div>}
                 </div>
                 {C.rows.length > 0 && <div style={{ marginTop: 8 }}>{C.rows.sort((a, b) => b.yr - a.yr).map((r, i) => (
                   <div key={i} style={{ marginBottom: 3 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10 }}><span style={{ color: r.xcr ? "#d97706" : "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 155 }}>{r.name}{r.sku ? " (" + r.sku + ")" : ""}{r.xcr ? " ⚡" : ""}</span><span style={{ fontWeight: 600 }}>{fmt(r.yr)}</span></div>
-                    <div style={{ height: 3, background: "#f0f0f0", borderRadius: 2 }}><div style={{ height: "100%", width: (r.yr / mx) * 100 + "%", background: r.xcr ? "#fbbf24" : r.color, borderRadius: 2, opacity: r.elig ? 1 : r.xcr ? 0.7 : 0.3 }} /></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}><span style={{ color: r.xcr ? "#d97706" : "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 155 }}>{r.name}{r.sku ? " (" + r.sku + ")" : ""}{r.xcr ? " ⚡" : ""}</span><span style={{ fontWeight: 600 }}>{fmt(r.yr)}</span></div>
+                    <div style={{ height: 3, background: "#f0f0f0", borderRadius: 2 }}><div style={{ height: "100%", width: (r.yr / mx) * 100 + "%", background: r.xcr ? "#fbbf24" : r.color, borderRadius: 2, opacity: r.elig ? 1 : r.xcr ? 0.7 : 0.6 }} /></div>
                   </div>
                 ))}</div>}
               </div>
@@ -880,13 +896,13 @@ function App() {
 
                     return (
                       <div style={{ padding: 14 }}>
-                        <div style={{ fontSize: 9, fontWeight: 700, color: "#a5b4fc", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Your Funding Plan</div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#a5b4fc", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Your Funding Plan</div>
 
                         {C.ok ? (
                           <>
                             {/* AFO eligible — show stacked funding */}
                             <div style={{ fontSize: 30, fontWeight: 700, color: "white", textAlign: "center" }}>{fmt(grandTotal)}</div>
-                            <div style={{ fontSize: 9, color: "#a5b4fc", textAlign: "center", marginBottom: 10 }}>total stackable funding</div>
+                            <div style={{ fontSize: 11, color: "#a5b4fc", textAlign: "center", marginBottom: 10 }}>total stackable funding</div>
 
                             <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", height: 14, marginBottom: 12 }}>
                               {lines.map((l, i) => (
@@ -894,33 +910,33 @@ function App() {
                               ))}
                             </div>
 
-                            <div style={{ fontSize: 8, fontWeight: 700, color: "#a5b4fc", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Cash to Partner</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: "#a5b4fc", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Cash to Partner</div>
                             {cashLines.map((l, i) => (
                               <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0", borderBottom: i < cashLines.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                   <div style={{ width: 8, height: 8, borderRadius: 2, background: l.color, flexShrink: 0 }} />
                                   <div>
-                                    <div style={{ fontSize: 10, color: "white", fontWeight: 600 }}>{l.label}</div>
-                                    <div style={{ fontSize: 8, color: "#a5b4fc" }}>{l.sub}</div>
+                                    <div style={{ fontSize: 12, color: "white", fontWeight: 600 }}>{l.label}</div>
+                                    <div style={{ fontSize: 10, color: "#a5b4fc" }}>{l.sub}</div>
                                   </div>
                                 </div>
                                 <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>{fmt(l.amount)}</div>
                               </div>
                             ))}
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", marginTop: 2, borderTop: "1px solid rgba(255,255,255,0.15)" }}>
-                              <div style={{ fontSize: 10, fontWeight: 600, color: "#a5b4fc" }}>Subtotal cash</div>
+                              <div style={{ fontSize: 12, fontWeight: 600, color: "#a5b4fc" }}>Subtotal cash</div>
                               <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>{fmt(cashTotal)}</div>
                             </div>
 
                             {acoAmount && (
                               <>
-                                <div style={{ fontSize: 8, fontWeight: 700, color: "#c4b5fd", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 12, marginBottom: 4 }}>Azure Credits to Customer</div>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: "#c4b5fd", textTransform: "uppercase", letterSpacing: 0.5, marginTop: 12, marginBottom: 4 }}>Azure Credits to Customer</div>
                                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 8px", background: "rgba(139,92,246,0.15)", borderRadius: 6, border: "1px solid rgba(139,92,246,0.25)" }}>
                                   <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                     <div style={{ width: 8, height: 8, borderRadius: 2, background: acoAmount.color, flexShrink: 0 }} />
                                     <div>
-                                      <div style={{ fontSize: 10, color: "white", fontWeight: 600 }}>{acoAmount.label}</div>
-                                      <div style={{ fontSize: 8, color: "#c4b5fd" }}>Azure consumption credits (not cash)</div>
+                                      <div style={{ fontSize: 12, color: "white", fontWeight: 600 }}>{acoAmount.label}</div>
+                                      <div style={{ fontSize: 10, color: "#c4b5fd" }}>Azure consumption credits (not cash)</div>
                                     </div>
                                   </div>
                                   <div style={{ fontSize: 14, fontWeight: 700, color: "#c4b5fd" }}>{fmt(acoAmount.amount)}</div>
@@ -928,49 +944,72 @@ function App() {
                               </>
                             )}
 
-                            {note && <div style={{ marginTop: 10, padding: "5px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 5, fontSize: 8, color: "#a5b4fc", lineHeight: 1.5 }}>{note}</div>}
+                            {note && <div style={{ marginTop: 10, padding: "5px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 5, fontSize: 10, color: "#a5b4fc", lineHeight: 1.5 }}>{note}</div>}
                           </>
                         ) : isNonAfo ? (
                           <>
-                            {/* Not AFO eligible — show two options (can't stack) */}
-                            <div style={{ fontSize: 9, color: "#fbbf24", textAlign: "center", marginBottom: 10 }}>ECIF and MCI cannot be used on same project — choose one:</div>
+                            {/* Not AFO eligible — show best option as primary with alternative */}
+                            {(() => {
+                              const best = opt2Total > opt1Total ? "MCI" : "ECIF";
+                              const bestTotal = Math.max(opt1Total, opt2Total);
+                              const bestLines = best === "MCI" ? [
+                                ...(C.mci.post > 0 ? [{ label: "Implementation Support", sub: "Partner-led · " + C.mci.ts + " tier · " + C.mci.days + " days", amount: C.mci.post, color: "#22c55e" }] : []),
+                                ...(C.mci.pre > 0 ? [{ label: "Assessment & POV", sub: "Partner-led · Pre-sales", amount: C.mci.pre, color: "#0ea5e9" }] : []),
+                              ] : [
+                                { label: "Standard ECIF", sub: "Field-led · ~5:1 ROI · Azure Offer Navigator", amount: opt1Total, color: "#f97316" },
+                              ];
+                              const altLabel = best === "MCI" ? "Standard ECIF (~" + fmt(opt1Total) + ", field-led)" : "MCI Partner Nominated (" + fmt(opt2Total) + ", partner-led)";
 
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 8 }}>
-                              {/* Option 1: Std ECIF */}
-                              <div style={{ padding: "8px 6px", background: opt1Total >= opt2Total ? "rgba(249,115,22,0.15)" : "rgba(255,255,255,0.04)", borderRadius: 6, border: opt1Total >= opt2Total ? "1.5px solid #f97316" : "1px solid rgba(255,255,255,0.1)", textAlign: "center" }}>
-                                {opt1Total >= opt2Total && <div style={{ fontSize: 7, fontWeight: 700, color: "#fbbf24", marginBottom: 2 }}>★ BEST</div>}
-                                <div style={{ fontSize: 8, color: "#a5b4fc", fontWeight: 700, marginBottom: 2 }}>Standard ECIF</div>
-                                <div style={{ fontSize: 18, fontWeight: 700, color: "white" }}>~{fmt(opt1Total)}</div>
-                                <div style={{ fontSize: 8, color: "#a5b4fc", marginTop: 2 }}>Field-Led</div>
-                                <div style={{ fontSize: 7, color: "#a5b4fc" }}>Req: ~5:1 ROI</div>
-                                <div style={{ fontSize: 7, color: "#818cf8" }}>Via Azure Offer Navigator</div>
-                              </div>
+                              return (
+                                <>
+                                  <div style={{ fontSize: 30, fontWeight: 700, color: "white", textAlign: "center" }}>{fmt(bestTotal)}</div>
+                                  <div style={{ fontSize: 11, color: "#a5b4fc", textAlign: "center", marginBottom: 10 }}>recommended co-investment</div>
 
-                              {/* Option 2: MCI */}
-                              <div style={{ padding: "8px 6px", background: opt2Total > opt1Total ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.04)", borderRadius: 6, border: opt2Total > opt1Total ? "1.5px solid #22c55e" : "1px solid rgba(255,255,255,0.1)", textAlign: "center" }}>
-                                {opt2Total > opt1Total && <div style={{ fontSize: 7, fontWeight: 700, color: "#fbbf24", marginBottom: 2 }}>★ BEST</div>}
-                                <div style={{ fontSize: 8, color: "#a5b4fc", fontWeight: 700, marginBottom: 2 }}>MCI Partner Nom.</div>
-                                <div style={{ fontSize: 18, fontWeight: 700, color: "white" }}>{fmt(opt2Total)}</div>
-                                <div style={{ fontSize: 8, color: "#a5b4fc", marginTop: 2 }}>Partner-Led · {C.mci.ts}</div>
-                                <div style={{ fontSize: 7, color: "#a5b4fc" }}>Req: ≥{fmt(C.tot)} ACR ({C.mci.postL})</div>
-                                <div style={{ fontSize: 7, color: "#818cf8" }}>Via Partner Center · {C.mci.days}d</div>
-                              </div>
-                            </div>
+                                  <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", height: 14, marginBottom: 12 }}>
+                                    {bestLines.map((l, i) => (
+                                      <div key={i} style={{ flex: l.amount, background: l.color, minWidth: l.amount > 0 ? 3 : 0 }} />
+                                    ))}
+                                  </div>
 
-                            <div style={{ padding: "5px 8px", background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 5, fontSize: 8, color: "#fbbf24", lineHeight: 1.5 }}>
-                              ⚠ ECIF (field-nominated) and MCI (partner-nominated) cannot be stacked on the same customer + project.
-                            </div>
+                                  <div style={{ fontSize: 10, fontWeight: 700, color: "#a5b4fc", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Cash to Partner · {best === "MCI" ? "Partner-Led" : "Field-Led"}</div>
+                                  {bestLines.map((l, i) => (
+                                    <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0", borderBottom: i < bestLines.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
+                                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                        <div style={{ width: 8, height: 8, borderRadius: 2, background: l.color, flexShrink: 0 }} />
+                                        <div>
+                                          <div style={{ fontSize: 12, color: "white", fontWeight: 600 }}>{l.label}</div>
+                                          <div style={{ fontSize: 10, color: "#a5b4fc" }}>{l.sub}</div>
+                                        </div>
+                                      </div>
+                                      <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>{fmt(l.amount)}</div>
+                                    </div>
+                                  ))}
+                                  <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", marginTop: 2, borderTop: "1px solid rgba(255,255,255,0.15)" }}>
+                                    <div style={{ fontSize: 12, fontWeight: 600, color: "#a5b4fc" }}>Total cash</div>
+                                    <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>{fmt(bestTotal)}</div>
+                                  </div>
+
+                                  {/* Alternative option */}
+                                  <div style={{ marginTop: 10, padding: "6px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 5 }}>
+                                    <div style={{ fontSize: 10, color: "#a5b4fc", lineHeight: 1.5 }}>
+                                      <strong>Alternative:</strong> {altLabel}
+                                    </div>
+                                    <div style={{ fontSize: 9, color: "#818cf8", marginTop: 2 }}>ECIF and MCI cannot be used on same project — choose one path.</div>
+                                  </div>
+                                </>
+                              );
+                            })()}
                           </>
                         ) : null}
 
                         {/* Split suggestion if not eligible */}
                         {!C.ok && C.el > 0 && (
-                          <div style={{ marginTop: 8, padding: "6px 8px", background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 5, fontSize: 9, color: "#fbbf24", lineHeight: 1.5 }}>
+                          <div style={{ marginTop: 8, padding: "6px 8px", background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 5, fontSize: 11, color: "#fbbf24", lineHeight: 1.5 }}>
                             💡 <strong>Split tip:</strong> Nominate DB/Fabric/Foundry ({fmt(C.el)}) as separate AFO project → unlocks <strong>{fmt(Math.min(C.el * 0.5, 500000))}</strong> ECIF (cash to partner) + <strong>{fmt(Math.min(C.el * 0.5, 500000))}</strong> ACO (credits to customer).
                           </div>
                         )}
                         {!C.ok && C.el === 0 && (
-                          <div style={{ marginTop: 8, padding: "5px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 5, fontSize: 8, color: "#fbbf24", lineHeight: 1.5 }}>
+                          <div style={{ marginTop: 8, padding: "5px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 5, fontSize: 10, color: "#fbbf24", lineHeight: 1.5 }}>
                             Add DB, Fabric, or AI Foundry workloads to unlock AFO (ECIF cash + ACO credits).
                           </div>
                         )}
@@ -981,18 +1020,18 @@ function App() {
               )}
 
               <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", overflow: "hidden", marginBottom: 8 }}>
-                <button onClick={() => setShowGuide(!showGuide)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 10px", border: "none", background: "transparent", cursor: "pointer", fontSize: 10, fontWeight: 700, color: "#555" }}>
+                <button onClick={() => setShowGuide(!showGuide)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 10px", border: "none", background: "transparent", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#555" }}>
                   <span>AFO vs ECIF vs MCI — Program Guide</span>
                   <span style={{ opacity: 0.3, transition: "0.2s", transform: showGuide ? "rotate(0)" : "rotate(-90deg)" }}>▾</span>
                 </button>
                 {showGuide && (
                   <div style={{ padding: "0 10px 10px", fontSize: 9.5, color: "#666", lineHeight: 1.6 }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 9, marginBottom: 6 }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, marginBottom: 6 }}>
                       <thead><tr style={{ background: "#f8f9fa" }}>
-                        <th style={{ padding: "4px 5px", textAlign: "left", borderBottom: "2px solid #ddd", fontSize: 8, fontWeight: 700, color: "#888" }}></th>
-                        <th style={{ padding: "4px 5px", textAlign: "center", borderBottom: "2px solid #ddd", fontSize: 8, fontWeight: 700, color: "#0078D4" }}>AFO (Frontier)</th>
-                        <th style={{ padding: "4px 5px", textAlign: "center", borderBottom: "2px solid #ddd", fontSize: 8, fontWeight: 700, color: "#D83B01" }}>ECIF (Standard)</th>
-                        <th style={{ padding: "4px 5px", textAlign: "center", borderBottom: "2px solid #ddd", fontSize: 8, fontWeight: 700, color: "#107C10" }}>MCI Partner Nom.</th>
+                        <th style={{ padding: "4px 5px", textAlign: "left", borderBottom: "2px solid #ddd", fontSize: 10, fontWeight: 700, color: "#888" }}></th>
+                        <th style={{ padding: "4px 5px", textAlign: "center", borderBottom: "2px solid #ddd", fontSize: 10, fontWeight: 700, color: "#0078D4" }}>AFO (Frontier)</th>
+                        <th style={{ padding: "4px 5px", textAlign: "center", borderBottom: "2px solid #ddd", fontSize: 10, fontWeight: 700, color: "#D83B01" }}>ECIF (Standard)</th>
+                        <th style={{ padding: "4px 5px", textAlign: "center", borderBottom: "2px solid #ddd", fontSize: 10, fontWeight: 700, color: "#107C10" }}>MCI Partner Nom.</th>
                       </tr></thead>
                       <tbody>
                         {[
@@ -1022,26 +1061,44 @@ function App() {
                     <div>• <strong>Pre-sales MCI + AFO post-sales</strong> — Best combo: partner runs Assessment+POV (MCI $15-25K cash), then AFO post-sales (ECIF cash + ACO credits).</div>
                     <div style={{ marginTop: 4, fontStyle: "italic", color: "#aaa" }}>Note: MCI post-sales and ECIF/AFO can never be used on the same customer+project.</div>
                     <div style={{ marginTop: 6, paddingTop: 6, borderTop: "1px solid #eee" }}>
-                      <a href="https://partner.microsoft.com/en-us/partnership/azure-for-partners" target="_blank" rel="noopener" style={{ fontSize: 9, color: "#0078D4", textDecoration: "none", fontWeight: 600 }}>Azure Accelerate — Official Partner Portal ↗</a>
-                      <span style={{ fontSize: 9, color: "#ccc" }}> · </span>
-                      <a href="https://azure.microsoft.com/en-us/solutions/azure-accelerate/" target="_blank" rel="noopener" style={{ fontSize: 9, color: "#0078D4", textDecoration: "none" }}>Azure Accelerate Overview ↗</a>
+                      <a href="https://partner.microsoft.com/en-us/partnership/azure-for-partners" target="_blank" rel="noopener" style={{ fontSize: 11, color: "#0078D4", textDecoration: "none", fontWeight: 600 }}>Azure Accelerate — Official Partner Portal ↗</a>
+                      <span style={{ fontSize: 11, color: "#ccc" }}> · </span>
+                      <a href="https://azure.microsoft.com/en-us/solutions/azure-accelerate/" target="_blank" rel="noopener" style={{ fontSize: 11, color: "#0078D4", textDecoration: "none" }}>Azure Accelerate Overview ↗</a>
                     </div>
                   </div>
                 )}
               </div>
 
-              <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", padding: 10, fontSize: 10, color: "#888", marginBottom: 8 }}>
+              <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", padding: 10, fontSize: 12, color: "#888", marginBottom: 8 }}>
                 <strong style={{ color: "#555" }}>AFO Rules:</strong> ≥50% eligible (DB/Fabric/Foundry) · 2:1 ROI · ECIF max $500K · ACO max $500K · Post-sales · Field-nominated · Limited time, first come first served
               </div>
 
-              <div style={{ background: "#eff6ff", borderRadius: 10, border: "1px solid #bfdbfe", padding: 10, fontSize: 10, color: "#1e40af", marginBottom: 8 }}>
+              <div style={{ background: "#eff6ff", borderRadius: 10, border: "1px solid #bfdbfe", padding: 10, fontSize: 12, color: "#1e40af", marginBottom: 8 }}>
                 <strong>MACC eligible:</strong> All Azure F-SKU, compute, and PaaS workloads in this tool count toward Microsoft Azure Consumption Commitment (MACC). Customers with MACC can draw down Fabric, VMs, SQL, AI Foundry, and all Azure services against their existing commitment.
               </div>
 
-              {C.tot > 0 && (
-                <div style={{ display: "flex", gap: 5 }}>
-                  <button onClick={() => { setPg("sow"); setTimeout(() => ref.current && ref.current.scrollIntoView({ behavior: "smooth" }), 100); }} style={{ flex: 1, padding: 10, background: HDR, color: "white", border: "none", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Generate SOW</button>
-                  <button onClick={() => setPg("email")} style={{ flex: 1, padding: 10, background: "white", color: "#5C2D91", border: "2px solid #5C2D91", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Email Pitch</button>
+              {/* About This Tool */}
+              <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", marginBottom: 8, overflow: "hidden" }}>
+                <button onClick={() => setShowAbout(!showAbout)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 10px", border: "none", background: "transparent", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#555" }}>
+                  <span>About This Tool</span>
+                  <span style={{ opacity: 0.3, transition: "0.2s", transform: showAbout ? "rotate(0)" : "rotate(-90deg)" }}>▾</span>
+                </button>
+                {showAbout && (
+                  <div style={{ padding: "0 12px 12px", fontSize: 12, color: "#555", lineHeight: 1.7 }}>
+                    <p style={{ margin: "0 0 8px" }}>This tool is an <strong>independently authored estimation aid</strong> and is not an official Microsoft pricing or funding calculator.</p>
+                    <p style={{ margin: "0 0 8px" }}><strong>What it does:</strong> Estimates Azure workload costs across 47 services, calculates potential funding through AFO (ECIF + ACO), Standard ECIF, and MCI Partner Nominated programs, generates Statements of Work, and produces customer-facing investment summaries.</p>
+                    <p style={{ margin: "0 0 8px" }}><strong>Data sources:</strong> Azure list pricing (approximate, March 2026), Microsoft Commercial Partner Incentives Guide (9 March 2026, Market A), and Azure Frontier Offer partner documentation.</p>
+                    <p style={{ margin: "0 0 8px" }}><strong>Limitations:</strong> All prices are planning estimates — actual Azure pricing varies by region, tier, and negotiated discounts. Funding amounts are indicative and subject to Microsoft internal approval, program availability, and eligibility verification. Always validate with Azure Pricing Calculator and your Microsoft PSS/account team before submitting nominations.</p>
+                    <p style={{ margin: "0 0 4px" }}><strong>Coverage:</strong> 47 workloads · 6 categories · Fabric F-SKU pricing (F2–F256) · RI and AHUB options · MCI Market A tiers (XXS–L) · AFO 50% eligibility engine · Smart split recommendations · Dynamic SOW with milestones · Customer-facing summary view</p>
+                  </div>
+                )}
+              </div>
+
+              {C.tot === 0 && (
+                <div style={{ background: "white", borderRadius: 10, border: "1px dashed #c4b5fd", padding: 16, textAlign: "center" }}>
+                  <div style={{ fontSize: 22, marginBottom: 6 }}>👈</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#5C2D91", marginBottom: 4 }}>Get started</div>
+                  <div style={{ fontSize: 12, color: "#888", lineHeight: 1.5 }}>Select workloads on the left to build your Azure estimate. The funding calculator updates automatically.</div>
                 </div>
               )}
             </div>
@@ -1051,10 +1108,10 @@ function App() {
         {pg === "sow" && (
           <div ref={ref}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-              <h2 style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#5C2D91" }}>SOW — click text to edit</h2>
+              <h2 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#5C2D91" }}>Statement of Work — click text to edit</h2>
               <div style={{ display: "flex", gap: 5 }}>
-                <button onClick={() => setPg("calc")} style={{ padding: "5px 12px", background: "#eee", border: "none", borderRadius: 6, fontSize: 11, cursor: "pointer" }}>Back</button>
-                <button onClick={print} style={{ padding: "5px 12px", background: HDR, color: "white", border: "none", borderRadius: 6, fontSize: 11, cursor: "pointer" }}>Print / PDF</button>
+                <button onClick={() => setPg("email")} style={{ padding: "5px 12px", background: "#5C2D91", color: "white", border: "none", borderRadius: 6, fontSize: 12, cursor: "pointer" }}>Email Pitch</button>
+                <button onClick={print} style={{ padding: "5px 12px", background: HDR, color: "white", border: "none", borderRadius: 6, fontSize: 13, cursor: "pointer" }}>Print / PDF</button>
                 <button onClick={() => {
                   const el = document.getElementById("sowdoc");
                   if (!el) return;
@@ -1071,13 +1128,13 @@ function App() {
                   const a = document.createElement("a");
                   a.href = url; a.download = "SOW-" + sow.cn.replace(/[^a-zA-Z0-9]/g, "_") + ".doc"; a.click();
                   URL.revokeObjectURL(url);
-                }} style={{ padding: "5px 12px", background: "#5C2D91", color: "white", border: "none", borderRadius: 6, fontSize: 11, cursor: "pointer" }}>Export Word</button>
+                }} style={{ padding: "5px 12px", background: "#5C2D91", color: "white", border: "none", borderRadius: 6, fontSize: 13, cursor: "pointer" }}>Export Word</button>
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
-              {[{ l: "Y1 ACR", v: fmt(C.tot), c: "#0078D4" }, { l: "AFO Elig.", v: C.pct.toFixed(0) + "%", c: C.ok ? "#059669" : "#dc2626" }, { l: "ECIF (cash)", v: C.ok ? fmt(C.ecif) : "~" + fmt(C.stdEcif), c: C.ok ? "#3b82f6" : "#f97316" }, { l: "ACO (credits)", v: fmt(C.aco), c: "#8b5cf6" }, { l: "MCI (cash)", v: fmt(C.ok ? C.mci.pre : Math.max(C.mci.pre + C.mci.post, 0)), c: "#22c55e" }].map((b, i) => (
+              {[{ l: "Y1 ACR", v: fmt(C.tot), c: "#0078D4" }, { l: "AFO Elig.", v: C.pct.toFixed(0) + "%", c: C.ok ? "#059669" : "#64748b" }, { l: "ECIF (cash)", v: C.ok ? fmt(C.ecif) : "~" + fmt(C.stdEcif), c: C.ok ? "#3b82f6" : "#f97316" }, { l: "ACO (credits)", v: fmt(C.aco), c: "#8b5cf6" }, { l: "MCI (cash)", v: fmt(C.ok ? C.mci.pre : Math.max(C.mci.pre + C.mci.post, 0)), c: "#22c55e" }].map((b, i) => (
                 <div key={i} style={{ flex: 1, background: "white", padding: "7px 4px", borderRadius: 7, textAlign: "center", border: "1px solid #e8e8ec" }}>
-                  <div style={{ fontSize: 8, color: "#888" }}>{b.l}</div>
+                  <div style={{ fontSize: 10, color: "#888" }}>{b.l}</div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: b.c || "#333" }}>{b.v}</div>
                 </div>
               ))}
@@ -1085,12 +1142,12 @@ function App() {
             <div style={{ display: "grid", gridTemplateColumns: nextWL.length > 0 ? "1fr 260px" : "1fr", gap: 12, alignItems: "start" }}>
             <div id="sowdoc" style={{ background: "white", borderRadius: 10, border: "1px solid #e0e0e0", overflow: "hidden" }}>
               <div className="hd" style={{ background: HDR, padding: "20px 26px", color: "white" }}>
-                <div style={{ fontSize: 9, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>Azure Funding — Workscope Details</div>
+                <div style={{ fontSize: 11, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>Azure Funding — Workscope Details</div>
                 <h1 style={{ margin: "2px 0 0", fontSize: 16, fontWeight: 600 }}><DInp v={sow.cn} fn={(v) => us("cn", v)} st={{ color: "white", borderBottomColor: "rgba(255,255,255,.4)", width: 240 }} /> — {C.ok ? "AFO" : "Azure Accelerate"}</h1>
               </div>
               <div style={{ padding: "20px 26px", fontSize: 12, lineHeight: 1.6, color: "#333" }}>
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Project Details</h2>
-                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 18, fontSize: 11 }}><tbody>
+                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 18, fontSize: 13 }}><tbody>
                   {[["Opportunity Name", "on"], ["MS Requestor", "req"], ["Customer Contact", "cc"], ["Supplier", "sup"], ["Supplier Contact", "sc"]].map(([k, f]) => (
                     <tr key={k}><td style={{ padding: "3px 6px", fontWeight: 600, color: "#555", width: 180, borderBottom: "1px solid #f0f0f0" }}>{k}</td><td style={{ padding: "3px 6px", borderBottom: "1px solid #f0f0f0" }}><DInp v={sow[f]} fn={(v) => us(f, v)} st={{ color: "#0078D4", width: "100%" }} /></td></tr>
                   ))}
@@ -1098,12 +1155,12 @@ function App() {
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Project Scope</h2>
                 <DTxt v={sow.scope} fn={(v) => us("scope", v)} st={{ marginBottom: 18, minHeight: 220 }} />
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Workload Breakdown</h2>
-                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4, fontSize: 11 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4, fontSize: 13 }}>
                   <thead><tr style={{ background: "#f5f7fa" }}><th style={{ padding: "5px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Workload</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>$/mo</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>Y1 Revenue</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd" }}>%</th></tr></thead>
                   <tbody>
                     {C.rows.filter(r => !r.xcr).sort((a, b) => b.yr - a.yr).map((r, i) => (
                       <tr key={i} style={{ background: i % 2 ? "#fafafa" : "white" }}>
-                        <td style={{ padding: "4px 6px", borderBottom: "1px solid #f0f0f0" }}><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, background: r.color, marginRight: 4 }} />{r.tag}{r.sku ? " (" + r.sku + ")" : ""}{!r.elig && <span style={{ fontSize: 8, color: "#dc2626" }}> (not elig.)</span>}</td>
+                        <td style={{ padding: "4px 6px", borderBottom: "1px solid #f0f0f0" }}><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, background: r.color, marginRight: 4 }} />{r.tag}{r.sku ? " (" + r.sku + ")" : ""}{!r.elig && <span style={{ fontSize: 10, color: "#94a3b8" }}> (Accelerate)</span>}</td>
                         <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "1px solid #f0f0f0" }}>{fmt(r.mo)}</td>
                         <td style={{ padding: "4px 6px", textAlign: "right", fontWeight: 600, borderBottom: "1px solid #f0f0f0" }}>{fmt(r.yr)}</td>
                         <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "1px solid #f0f0f0" }}>{C.tot > 0 ? ((r.yr / C.tot) * 100).toFixed(0) + "%" : "—"}</td>
@@ -1112,26 +1169,26 @@ function App() {
                     <tr style={{ fontWeight: 700 }}><td style={{ padding: "5px 6px", borderTop: "2px solid #333" }}>Total ACR</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{fmt(C.tot / 12)}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{fmt(C.tot)}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>100%</td></tr>
                     {C.xcr > 0 && C.rows.filter(r => r.xcr).map((r, i) => (
                       <tr key={"x" + i} style={{ background: "#fffbeb" }}>
-                        <td style={{ padding: "4px 6px", borderBottom: "1px solid #fef3c7" }}><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, background: "#fbbf24", marginRight: 4 }} />{r.tag} <span style={{ fontSize: 8, color: "#d97706" }}>(XCR, not ACR)</span></td>
+                        <td style={{ padding: "4px 6px", borderBottom: "1px solid #fef3c7" }}><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, background: "#fbbf24", marginRight: 4 }} />{r.tag} <span style={{ fontSize: 10, color: "#d97706" }}>(XCR, not ACR)</span></td>
                         <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "1px solid #fef3c7", color: "#d97706" }}>{fmt(r.mo)}</td>
                         <td style={{ padding: "4px 6px", textAlign: "right", fontWeight: 600, borderBottom: "1px solid #fef3c7", color: "#d97706" }}>{fmt(r.yr)}</td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "1px solid #fef3c7", fontSize: 8, color: "#d97706" }}>XCR</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "1px solid #fef3c7", fontSize: 10, color: "#d97706" }}>XCR</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-                <div style={{ fontSize: 10, color: "#888", marginBottom: 16 }}>AFO Eligible: {C.pct.toFixed(0)}% · Scenario: {C.sc}{C.xcr > 0 ? " · XCR (not part of ACR): " + fmt(C.xcr) : ""}</div>
+                <div style={{ fontSize: 12, color: "#888", marginBottom: 16 }}>AFO Eligible: {C.pct.toFixed(0)}% · Scenario: {C.sc}{C.xcr > 0 ? " · XCR (not part of ACR): " + fmt(C.xcr) : ""}</div>
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Timeline & Milestones</h2>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <p style={{ fontSize: 11, margin: 0 }}>Start: <input type="date" value={sow.sd} onChange={(e) => us("sd", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 6px", fontSize: 11, color: "#0078D4", fontFamily: "inherit" }} /> · End: <input type="date" value={sow.ed} onChange={(e) => us("ed", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 6px", fontSize: 11, color: "#0078D4", fontFamily: "inherit" }} /></p>
+                  <p style={{ fontSize: 13, margin: 0 }}>Start: <input type="date" lang="en" value={sow.sd} onChange={(e) => us("sd", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 6px", fontSize: 13, color: "#0078D4", fontFamily: "inherit" }} /> · End: <input type="date" lang="en" value={sow.ed} onChange={(e) => us("ed", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 6px", fontSize: 13, color: "#0078D4", fontFamily: "inherit" }} /></p>
                   <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 4, background: "#f8f9fa", padding: "3px 8px", borderRadius: 5 }}>
-                    <span style={{ fontSize: 9, color: "#888" }}>Partner rate:</span>
-                    <span style={{ fontSize: 9, color: "#bbb" }}>$</span>
-                    <input type="number" value={sow.rate} onChange={(e) => us("rate", e.target.value)} style={{ width: 45, padding: "2px", border: "1px solid #ddd", borderRadius: 3, fontSize: 11, textAlign: "right", background: "white" }} />
-                    <span style={{ fontSize: 9, color: "#bbb" }}>/hr</span>
+                    <span style={{ fontSize: 11, color: "#888" }}>Partner rate:</span>
+                    <span style={{ fontSize: 11, color: "#bbb" }}>$</span>
+                    <input type="number" value={sow.rate} onChange={(e) => us("rate", e.target.value)} style={{ width: 45, padding: "2px", border: "1px solid #ddd", borderRadius: 3, fontSize: 13, textAlign: "right", background: "white" }} />
+                    <span style={{ fontSize: 11, color: "#bbb" }}>/hr</span>
                   </div>
                 </div>
-                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4, fontSize: 11 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4, fontSize: 13 }}>
                   <thead><tr style={{ background: "#f5f7fa" }}><th style={{ padding: "5px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Milestone</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 60 }}>Hours</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 80 }}>ECIF</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 120 }}>Date</th><th style={{ width: 24, borderBottom: "2px solid #ddd" }} /></tr></thead>
                   <tbody>
                     {sow.milestones.map((m, i) => {
@@ -1142,49 +1199,79 @@ function App() {
                             <td style={{ padding: "4px 6px", fontWeight: 600, borderBottom: "none" }}><DInp v={m.n} fn={(v) => uMs(i, "n", v)} st={{ width: "100%", fontWeight: 600 }} /></td>
                             <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none" }}><DInp v={m.h} fn={(v) => uMs(i, "h", v)} st={{ color: "#0078D4", width: 45, textAlign: "right" }} /></td>
                             <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none", color: ecifAmt > 0 ? "#0078D4" : "#ccc", fontWeight: 600 }}>{ecifAmt > 0 ? fmt(ecifAmt) : "—"}</td>
-                            <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none" }}><input type="date" value={m.d} onChange={(e) => uMs(i, "d", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 4px", fontSize: 10, color: "#0078D4", fontFamily: "inherit", width: 110 }} /></td>
+                            <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none" }}><input type="date" lang="en" value={m.d} onChange={(e) => uMs(i, "d", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 4px", fontSize: 12, color: "#0078D4", fontFamily: "inherit", width: 110 }} /></td>
                             <td style={{ padding: "4px 6px", borderBottom: "none", textAlign: "center" }}>{sow.milestones.length > 1 && <button onClick={() => removeMilestone(i)} style={{ border: "none", background: "transparent", color: "#ccc", cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }} title="Remove milestone">×</button>}</td>
                           </tr>
-                          <tr><td colSpan={5} style={{ padding: "1px 6px 7px", borderBottom: "1px solid #f0f0f0" }}><DTxt v={m.x} fn={(v) => uMs(i, "x", v)} st={{ minHeight: 28, fontSize: 10, color: "#777", fontStyle: "italic", background: "transparent", border: "1px dashed transparent" }} /></td></tr>
+                          <tr><td colSpan={5} style={{ padding: "1px 6px 7px", borderBottom: "1px solid #f0f0f0" }}><DTxt v={m.x} fn={(v) => uMs(i, "x", v)} st={{ minHeight: 28, fontSize: 12, color: "#777", fontStyle: "italic", background: "transparent", border: "1px dashed transparent" }} /></td></tr>
                         </Fragment>
                       );
                     })}
                     <tr style={{ fontWeight: 700 }}><td style={{ padding: "5px 6px", borderTop: "2px solid #333" }}>Total</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333", color: "#0078D4" }}>{mCalc.totalH > 0 ? mCalc.totalH + "h" : "—"}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333", color: mCalc.overBudget ? "#dc2626" : "#0078D4" }}>{mCalc.totalE > 0 ? fmt(mCalc.totalE) : "—"}</td><td style={{ borderTop: "2px solid #333" }} /><td style={{ borderTop: "2px solid #333" }} /></tr>
                   </tbody>
                 </table>
-                <button onClick={addMilestone} style={{ padding: "4px 12px", background: "#f0f4fa", border: "1px dashed #93c5fd", borderRadius: 5, fontSize: 10, color: "#0078D4", cursor: "pointer", marginBottom: 6, fontWeight: 600 }}>+ Add Milestone</button>
-                {mCalc.overBudget && <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 5, padding: "4px 8px", fontSize: 9, color: "#dc2626", marginBottom: 6 }}>⚠ Total ECIF ({fmt(mCalc.totalE)}) exceeds estimated budget ({fmt(mCalc.budget)}). Reduce hours or adjust rate. Budget allows ~{mCalc.suggestedH} hours at ${sow.rate}/hr.</div>}
-                {!mCalc.overBudget && mCalc.totalE > 0 && <div style={{ background: "#ecfdf5", border: "1px solid #6ee7b7", borderRadius: 5, padding: "4px 8px", fontSize: 9, color: "#059669", marginBottom: 6 }}>✓ Within budget. {fmt(mCalc.totalE)} of {fmt(mCalc.budget)} ({(mCalc.totalE / mCalc.budget * 100).toFixed(0)}% utilization)</div>}
+                <button onClick={addMilestone} style={{ padding: "4px 12px", background: "#f0f4fa", border: "1px dashed #93c5fd", borderRadius: 5, fontSize: 12, color: "#0078D4", cursor: "pointer", marginBottom: 6, fontWeight: 600 }}>+ Add Milestone</button>
+                {mCalc.overBudget && <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 5, padding: "4px 8px", fontSize: 11, color: "#dc2626", marginBottom: 6 }}>⚠ Total ECIF ({fmt(mCalc.totalE)}) exceeds estimated budget ({fmt(mCalc.budget)}). Reduce hours or adjust rate. Budget allows ~{mCalc.suggestedH} hours at ${sow.rate}/hr.</div>}
+                {!mCalc.overBudget && mCalc.totalE > 0 && <div style={{ background: "#ecfdf5", border: "1px solid #6ee7b7", borderRadius: 5, padding: "4px 8px", fontSize: 11, color: "#059669", marginBottom: 6 }}>✓ Within budget. {fmt(mCalc.totalE)} of {fmt(mCalc.budget)} ({(mCalc.totalE / mCalc.budget * 100).toFixed(0)}% utilization)</div>}
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Funding Summary</h2>
 
-                {/* Funding paths */}
-                <div style={{ fontSize: 10, fontWeight: 600, color: "#555", marginBottom: 4 }}>Cash to Partner:</div>
-                <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
-                  <div style={{ flex: 1, background: C.ok ? "#eff6ff" : "#f9fafb", padding: 8, borderRadius: 5, textAlign: "center", border: "1px solid " + (C.ok ? "#93c5fd" : "#e5e7eb") }}>
-                    <div style={{ fontSize: 8, color: "#3b82f6", fontWeight: 700 }}>AFO ECIF</div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: C.ok ? "#3b82f6" : "#ccc" }}>{fmt(C.ecif)}</div>
-                    <div style={{ fontSize: 8, color: C.ok ? "#059669" : "#dc2626" }}>{C.ok ? "✓ Eligible (2:1 ROI)" : "✗ " + C.pct.toFixed(0) + "%"}</div>
-                  </div>
-                  {!C.ok && <div style={{ flex: 1, background: "#fff7ed", padding: 8, borderRadius: 5, textAlign: "center", border: "1px solid #fed7aa" }}>
-                    <div style={{ fontSize: 8, color: "#D83B01", fontWeight: 700 }}>Std ECIF (est.)</div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: "#D83B01" }}>~{fmt(C.stdEcif)}</div>
-                    <div style={{ fontSize: 8, color: "#059669" }}>✓ ~5:1 ROI</div>
-                  </div>}
-                  <div style={{ flex: 1, background: "#ecfdf5", padding: 8, borderRadius: 5, textAlign: "center", border: "1px solid #6ee7b7" }}>
-                    <div style={{ fontSize: 8, color: "#107C10", fontWeight: 700 }}>MCI (Partner-Led)</div>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: "#107C10" }}>{fmt(C.ok ? C.mci.pre : C.mci.pre + C.mci.post)}</div>
-                    <div style={{ fontSize: 8, color: C.mci.post > 0 ? "#059669" : "#999" }}>{C.ok ? "Pre-sales only (post conflicts w/ ECIF)" : C.mci.post > 0 ? "✓ " + C.mci.ts + " tier" : "ACR < $5K"}</div>
-                  </div>
+                {/* Funding options with clear labels */}
+                <div style={{ fontSize: 12, color: "#555", marginBottom: 6 }}>{C.ok ? <span>AFO recommended. MCI pre-sales <strong>can be stacked</strong> as separate assessment scope.</span> : <span>Choose <strong>one</strong> path per project — ECIF and MCI cannot be combined on the same customer + project.</span>}</div>
+                <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+                  {/* AFO ECIF */}
+                  {(() => {
+                    const isRec = C.recStrategy === "AFO + MCI Pre-sales" || C.recStrategy === "AFO";
+                    const available = C.ok;
+                    return (
+                      <div style={{ flex: 1, padding: 10, borderRadius: 6, textAlign: "center", border: isRec ? "2px solid #3b82f6" : "1px solid " + (available ? "#dbeafe" : "#e5e7eb"), background: isRec ? "#eff6ff" : available ? "#fafbff" : "#f9fafb", position: "relative", opacity: available ? 1 : 0.45 }}>
+                        {isRec && <div style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", background: "#3b82f6", color: "white", fontSize: 9, fontWeight: 700, padding: "1px 8px", borderRadius: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Recommended</div>}
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#888", marginBottom: 2 }}>{available ? "Option 1 · Field-Led" : "Not available"}</div>
+                        <div style={{ fontSize: 10, color: "#3b82f6", fontWeight: 700 }}>AFO ECIF</div>
+                        <div style={{ fontSize: 18, fontWeight: 700, color: available ? "#3b82f6" : "#ccc" }}>{available ? fmt(C.ecif) : "—"}</div>
+                        <div style={{ fontSize: 10, color: available ? "#059669" : "#94a3b8" }}>{available ? "✓ Eligible (2:1 ROI)" : "Requires ≥50% Data/AI (" + C.pct.toFixed(0) + "%)"}</div>
+                        {available && C.mci.pre > 0 && <div style={{ fontSize: 10, color: "#0078D4", marginTop: 3 }}>+ MCI Pre-sales {fmt(C.mci.pre)} (stackable)</div>}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Standard ECIF */}
+                  {!C.ok && (() => {
+                    const isRec = C.recStrategy === "Standard ECIF";
+                    return (
+                      <div style={{ flex: 1, padding: 10, borderRadius: 6, textAlign: "center", border: isRec ? "2px solid #D83B01" : "1px solid #fed7aa", background: isRec ? "#fff7ed" : "#fffbf5", position: "relative" }}>
+                        {isRec && <div style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", background: "#D83B01", color: "white", fontSize: 9, fontWeight: 700, padding: "1px 8px", borderRadius: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Recommended</div>}
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#888", marginBottom: 2 }}>Option 1 · Field-Led</div>
+                        <div style={{ fontSize: 10, color: "#D83B01", fontWeight: 700 }}>Standard ECIF</div>
+                        <div style={{ fontSize: 18, fontWeight: 700, color: "#D83B01" }}>~{fmt(C.stdEcif)}</div>
+                        <div style={{ fontSize: 10, color: "#059669" }}>✓ ~5:1 ROI · Azure Offer Navigator</div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* MCI Partner-Led */}
+                  {(() => {
+                    const isRec = C.recStrategy === "MCI";
+                    const mciTotal = C.ok ? C.mci.pre : C.mci.pre + C.mci.post;
+                    return (
+                      <div style={{ flex: 1, padding: 10, borderRadius: 6, textAlign: "center", border: isRec ? "2px solid #107C10" : "1px solid #bbf7d0", background: isRec ? "#ecfdf5" : "#f7fdf9", position: "relative" }}>
+                        {isRec && <div style={{ position: "absolute", top: -8, left: "50%", transform: "translateX(-50%)", background: "#107C10", color: "white", fontSize: 9, fontWeight: 700, padding: "1px 8px", borderRadius: 8, textTransform: "uppercase", letterSpacing: 0.5 }}>Recommended</div>}
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#888", marginBottom: 2 }}>{C.ok ? "Option 2 · Partner-Led" : "Option 2 · Partner-Led"}</div>
+                        <div style={{ fontSize: 10, color: "#107C10", fontWeight: 700 }}>MCI Partner Nominated</div>
+                        <div style={{ fontSize: 18, fontWeight: 700, color: "#107C10" }}>{fmt(mciTotal)}</div>
+                        <div style={{ fontSize: 10, color: mciTotal > 0 ? "#059669" : "#999" }}>{C.ok ? "Pre-sales only (post conflicts w/ ECIF)" : mciTotal > 0 ? "✓ " + C.mci.ts + " tier · Partner Center" : "ACR < $5K"}</div>
+                        {!C.ok && C.mci.pre > 0 && C.mci.post > 0 && <div style={{ fontSize: 9, color: "#888", marginTop: 2 }}>Pre: {fmt(C.mci.pre)} + Post: {fmt(C.mci.post)}</div>}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {C.aco > 0 && (
                   <>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: "#555", marginBottom: 4 }}>Azure Credits to Customer:</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: "#555", marginBottom: 4 }}>Azure Credits to Customer (AFO only):</div>
                     <div style={{ display: "flex", gap: 5, marginBottom: 8 }}>
                       <div style={{ flex: 1, background: "#f5f3ff", padding: 8, borderRadius: 5, textAlign: "center", border: "1px solid #c4b5fd" }}>
-                        <div style={{ fontSize: 8, color: "#7c3aed", fontWeight: 700 }}>AFO ACO</div>
+                        <div style={{ fontSize: 10, color: "#7c3aed", fontWeight: 700 }}>ACO — Azure Credits</div>
                         <div style={{ fontSize: 16, fontWeight: 700, color: "#7c3aed" }}>{fmt(C.aco)}</div>
-                        <div style={{ fontSize: 8, color: "#888" }}>Consumption credits (not cash)</div>
+                        <div style={{ fontSize: 10, color: "#888" }}>Consumption credits to customer (not cash)</div>
                       </div>
                     </div>
                   </>
@@ -1192,43 +1279,43 @@ function App() {
 
                 {/* Recommended total */}
                 <div style={{ background: "#fffbeb", border: "1.5px solid #fbbf24", borderRadius: 6, padding: 10, marginBottom: 8 }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: "#92400e", textTransform: "uppercase", marginBottom: 3 }}>Recommended Strategy: {C.recStrategy}</div>
-                  <div style={{ fontSize: 10, color: "#555", lineHeight: 1.6 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#92400e", textTransform: "uppercase", marginBottom: 3 }}>Recommended Strategy: {C.recStrategy}</div>
+                  <div style={{ fontSize: 12, color: "#555", lineHeight: 1.6 }}>
                     <div>Cash to partner: <strong>~{fmt(C.recCash)}</strong></div>
                     {C.recCredits > 0 && <div>Credits to customer: <strong>{fmt(C.recCredits)}</strong></div>}
                   </div>
-                  <div style={{ fontSize: 8, color: "#888", marginTop: 3 }}>All nominations via Azure Offer Navigator (field-led) and/or Partner Center (partner-led).</div>
+                  <div style={{ fontSize: 10, color: "#888", marginTop: 3 }}>All nominations via Azure Offer Navigator (field-led) and/or Partner Center (partner-led).</div>
                 </div>
                 {/* ── ROI / BUSINESS CASE ── */}
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Business Case Summary</h2>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 8 }}>
                   <div style={{ background: "#eff6ff", padding: 10, borderRadius: 6, textAlign: "center" }}>
-                    <div style={{ fontSize: 8, color: "#64748b" }}>Customer Y1 Azure Spend</div>
+                    <div style={{ fontSize: 10, color: "#64748b" }}>Customer Y1 Azure Spend</div>
                     <div style={{ fontSize: 20, fontWeight: 700, color: "#0078D4" }}>{fmt(roi.custInvest)}</div>
-                    <div style={{ fontSize: 8, color: "#93c5fd" }}>{fmt(roi.custInvest / 12)}/mo</div>
+                    <div style={{ fontSize: 10, color: "#93c5fd" }}>{fmt(roi.custInvest / 12)}/mo</div>
                   </div>
                   <div style={{ background: "#f5f3ff", padding: 10, borderRadius: 6, textAlign: "center" }}>
-                    <div style={{ fontSize: 8, color: "#64748b" }}>Partner Implementation</div>
+                    <div style={{ fontSize: 10, color: "#64748b" }}>Partner Implementation</div>
                     <div style={{ fontSize: 20, fontWeight: 700, color: "#7c3aed" }}>{mCalc.totalE > 0 ? fmt(roi.partnerCost) : "TBD"}</div>
-                    <div style={{ fontSize: 8, color: "#a78bfa" }}>{mCalc.totalH > 0 ? mCalc.totalH + "h × $" + sow.rate + "/hr" : "Set rate + hours above"}</div>
+                    <div style={{ fontSize: 10, color: "#a78bfa" }}>{mCalc.totalH > 0 ? mCalc.totalH + "h × $" + sow.rate + "/hr" : "Set rate + hours above"}</div>
                   </div>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: roi.fundCredits > 0 ? "1fr 1fr" : "1fr", gap: 6, marginBottom: 12 }}>
                   <div style={{ background: "#ecfdf5", padding: 10, borderRadius: 6, textAlign: "center", border: "1px solid #6ee7b7" }}>
-                    <div style={{ fontSize: 8, color: "#64748b" }}>ECIF — Cash to Partner</div>
+                    <div style={{ fontSize: 10, color: "#64748b" }}>{C.recStrategy === "MCI" ? "MCI" : "ECIF"} — Cash to Partner</div>
                     <div style={{ fontSize: 20, fontWeight: 700, color: "#059669" }}>{fmt(roi.fundCash)}</div>
-                    <div style={{ fontSize: 8, color: "#059669" }}>Offsets implementation cost</div>
+                    <div style={{ fontSize: 10, color: "#059669" }}>Offsets implementation cost</div>
                   </div>
                   {roi.fundCredits > 0 && (
                     <div style={{ background: "#f5f3ff", padding: 10, borderRadius: 6, textAlign: "center", border: "1px solid #c4b5fd" }}>
-                      <div style={{ fontSize: 8, color: "#64748b" }}>ACO — Azure Credits to Customer</div>
+                      <div style={{ fontSize: 10, color: "#64748b" }}>ACO — Azure Credits to Customer</div>
                       <div style={{ fontSize: 20, fontWeight: 700, color: "#7c3aed" }}>{fmt(roi.fundCredits)}</div>
-                      <div style={{ fontSize: 8, color: "#7c3aed" }}>Offsets Azure consumption cost</div>
+                      <div style={{ fontSize: 10, color: "#7c3aed" }}>Offsets Azure consumption cost</div>
                     </div>
                   )}
                 </div>
                 {mCalc.totalE > 0 && (
-                  <div style={{ background: "#fffbeb", border: "1px solid #fbbf24", borderRadius: 6, padding: 10, marginBottom: 16, fontSize: 10, lineHeight: 1.6, color: "#555" }}>
+                  <div style={{ background: "#fffbeb", border: "1px solid #fbbf24", borderRadius: 6, padding: 10, marginBottom: 16, fontSize: 12, lineHeight: 1.6, color: "#555" }}>
                     <strong style={{ color: "#92400e" }}>Customer Investment Overview:</strong><br/>
                     Azure consumption: {fmt(roi.custInvest)}/yr{roi.fundCredits > 0 ? " minus " + fmt(roi.fundCredits) + " ACO credits = " + fmt(roi.netCost) + " net Azure cost" : ""}<br/>
                     Implementation: {fmt(roi.partnerCost)}{roi.fundCash > 0 ? " minus " + fmt(roi.fundCash) + " ECIF cash = " + fmt(Math.max(0, roi.partnerCost - roi.fundCash)) + " net implementation cost" : ""}<br/>
@@ -1238,7 +1325,7 @@ function App() {
 
                 {/* ── ASSUMPTIONS ── */}
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Assumptions & Dependencies</h2>
-                <div style={{ marginBottom: 16, fontSize: 11, lineHeight: 1.7, color: "#555" }}>
+                <div style={{ marginBottom: 16, fontSize: 13, lineHeight: 1.7, color: "#555" }}>
                   {assumptions.map((a, i) => <div key={i} style={{ padding: "2px 0", paddingLeft: 12, position: "relative" }}><span style={{ position: "absolute", left: 0, color: "#0078D4" }}>•</span>{a}</div>)}
                 </div>
 
@@ -1247,15 +1334,15 @@ function App() {
                 <div style={{ marginBottom: 16 }}>
                   {acceptance.map((ac, i) => (
                     <div key={i} style={{ marginBottom: 8 }}>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: "#333", marginBottom: 3 }}>{ac.milestone}</div>
-                      {ac.criteria.map((c, j) => <div key={j} style={{ fontSize: 10, color: "#555", paddingLeft: 12, position: "relative", lineHeight: 1.6 }}><span style={{ position: "absolute", left: 0, color: "#059669" }}>✓</span>{c}</div>)}
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#333", marginBottom: 3 }}>{ac.milestone}</div>
+                      {ac.criteria.map((c, j) => <div key={j} style={{ fontSize: 12, color: "#555", paddingLeft: 12, position: "relative", lineHeight: 1.6 }}><span style={{ position: "absolute", left: 0, color: "#059669" }}>✓</span>{c}</div>)}
                     </div>
                   ))}
                 </div>
 
                 {/* ── RISKS & MITIGATIONS ── */}
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Risks & Mitigations</h2>
-                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 16, fontSize: 10 }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 16, fontSize: 12 }}>
                   <thead><tr style={{ background: "#f5f7fa" }}>
                     <th style={{ padding: "4px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Risk</th>
                     <th style={{ padding: "4px 6px", textAlign: "center", borderBottom: "2px solid #ddd", width: 60 }}>Likelihood</th>
@@ -1265,14 +1352,14 @@ function App() {
                   <tbody>{risks.map((r, i) => (
                     <tr key={i} style={{ borderBottom: "1px solid #f0f0f0" }}>
                       <td style={{ padding: "4px 6px", color: "#333" }}>{r.risk}</td>
-                      <td style={{ padding: "4px 6px", textAlign: "center" }}><span style={{ fontSize: 8, fontWeight: 600, padding: "1px 5px", borderRadius: 3, background: r.lh === "High" ? "#fef2f2" : "#fefce8", color: r.lh === "High" ? "#dc2626" : "#ca8a04" }}>{r.lh}</span></td>
-                      <td style={{ padding: "4px 6px", textAlign: "center" }}><span style={{ fontSize: 8, fontWeight: 600, padding: "1px 5px", borderRadius: 3, background: r.imp === "High" ? "#fef2f2" : "#fefce8", color: r.imp === "High" ? "#dc2626" : "#ca8a04" }}>{r.imp}</span></td>
+                      <td style={{ padding: "4px 6px", textAlign: "center" }}><span style={{ fontSize: 10, fontWeight: 600, padding: "1px 5px", borderRadius: 3, background: r.lh === "High" ? "#fef2f2" : "#fefce8", color: r.lh === "High" ? "#dc2626" : "#ca8a04" }}>{r.lh}</span></td>
+                      <td style={{ padding: "4px 6px", textAlign: "center" }}><span style={{ fontSize: 10, fontWeight: 600, padding: "1px 5px", borderRadius: 3, background: r.imp === "High" ? "#fef2f2" : "#fefce8", color: r.imp === "High" ? "#dc2626" : "#ca8a04" }}>{r.imp}</span></td>
                       <td style={{ padding: "4px 6px", color: "#555" }}>{r.mit}</td>
                     </tr>
                   ))}</tbody>
                 </table>
 
-                <div style={{ fontSize: 9, color: "#999", borderTop: "1px solid #eee", paddingTop: 8 }}>Non-binding estimate for planning purposes. All amounts subject to Microsoft internal approval. AFO nomination via Azure Offer Navigator (field-nominated). Limited time, first come first served. Anthropic counts as XCR (not ACR) but can be forecasted as 100% ACR in MSX. Agent P3 excluded from AFO eligible workloads. GitHub Copilot is per-seat (XCR, not Azure ACR). ACO not available for MCA-E Customer Led. Contact PSS/account team for formal nomination.</div>
+                <div style={{ fontSize: 11, color: "#999", borderTop: "1px solid #eee", paddingTop: 8 }}>Non-binding estimate for planning purposes. All amounts subject to Microsoft internal approval. AFO nomination via Azure Offer Navigator (field-nominated). Limited time, first come first served. Anthropic counts as XCR (not ACR) but can be forecasted as 100% ACR in MSX. Agent P3 excluded from AFO eligible workloads. GitHub Copilot is per-seat (XCR, not Azure ACR). ACO not available for MCA-E Customer Led. Contact PSS/account team for formal nomination.</div>
               </div>
             </div>
 
@@ -1281,9 +1368,9 @@ function App() {
               <div style={{ position: "sticky", top: 10 }}>
                 <div style={{ background: "linear-gradient(135deg,#f0f9ff,#e0f2fe)", borderRadius: 10, border: "1.5px solid #7dd3fc", overflow: "hidden" }}>
                   <div style={{ padding: "10px 12px", background: "linear-gradient(135deg,#0284c7,#0369a1)", color: "white" }}>
-                    <div style={{ fontSize: 8, opacity: 0.7, textTransform: "uppercase", letterSpacing: 0.5 }}>After This Project</div>
+                    <div style={{ fontSize: 10, opacity: 0.7, textTransform: "uppercase", letterSpacing: 0.5 }}>After This Project</div>
                     <div style={{ fontSize: 13, fontWeight: 700 }}>Recommended Next Workloads</div>
-                    <div style={{ fontSize: 9, opacity: 0.7, marginTop: 2 }}>Natural follow-up projects to expand this customer's Azure footprint</div>
+                    <div style={{ fontSize: 11, opacity: 0.7, marginTop: 2 }}>Natural follow-up projects to expand this customer's Azure footprint</div>
                   </div>
                   <div style={{ padding: "8px 10px" }}>
                     {nextWL.map((nw, i) => (
@@ -1291,19 +1378,19 @@ function App() {
                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
                           <span style={{ fontSize: 16 }}>{nw.icon}</span>
                           <div>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: "#0c4a6e" }}>{nw.title}</div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#0c4a6e" }}>{nw.title}</div>
                             <div style={{ display: "flex", gap: 4, marginTop: 1 }}>
-                              <span style={{ fontSize: 7, padding: "1px 4px", borderRadius: 3, background: nw.funding.includes("AFO") ? "#dcfce7" : "#f0f9ff", color: nw.funding.includes("AFO") ? "#166534" : "#0369a1", fontWeight: 600 }}>{nw.funding}</span>
+                              <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 3, background: nw.funding.includes("AFO") ? "#dcfce7" : "#f0f9ff", color: nw.funding.includes("AFO") ? "#166534" : "#0369a1", fontWeight: 600 }}>{nw.funding}</span>
                             </div>
                           </div>
                         </div>
                         <div style={{ fontSize: 9.5, color: "#334155", lineHeight: 1.5, marginBottom: 3 }}>{nw.why}</div>
-                        <div style={{ fontSize: 8, color: "#64748b", fontStyle: "italic" }}>Est. ACR: {nw.acr}</div>
+                        <div style={{ fontSize: 10, color: "#64748b", fontStyle: "italic" }}>Est. ACR: {nw.acr}</div>
                       </div>
                     ))}
                   </div>
                   <div style={{ padding: "6px 10px 8px", background: "rgba(2,132,199,0.05)", borderTop: "1px solid #bae6fd" }}>
-                    <div style={{ fontSize: 8, color: "#64748b", lineHeight: 1.5 }}>Use these as conversation starters for the next engagement. Each represents additional ACR and potential funding.</div>
+                    <div style={{ fontSize: 10, color: "#64748b", lineHeight: 1.5 }}>Use these as conversation starters for the next engagement. Each represents additional ACR and potential funding.</div>
                   </div>
                 </div>
               </div>
@@ -1315,41 +1402,262 @@ function App() {
         {pg === "email" && (
           <div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-              <h2 style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#5C2D91" }}>Email Pitch</h2>
-              <button onClick={() => setPg("calc")} style={{ padding: "5px 12px", background: "#eee", border: "none", borderRadius: 6, fontSize: 11, cursor: "pointer" }}>Back</button>
+              <h2 style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#5C2D91" }}>Email Pitch Templates</h2>
+              <div />
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
               <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", overflow: "hidden" }}>
                 <div style={{ background: "linear-gradient(135deg,#0078D4,#0057a8)", padding: "10px 14px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div><div style={{ fontSize: 8, opacity: 0.6, textTransform: "uppercase" }}>For Partner</div><div style={{ fontSize: 12, fontWeight: 600 }}>Opportunity briefing</div></div>
-                  <button onClick={() => copy(partnerMail, "p")} style={{ padding: "4px 10px", background: "rgba(255,255,255,.2)", color: "white", border: "1px solid rgba(255,255,255,.3)", borderRadius: 5, fontSize: 10, cursor: "pointer" }}>{cp === "p" ? "Copied!" : "Copy"}</button>
+                  <div><div style={{ fontSize: 10, opacity: 0.6, textTransform: "uppercase" }}>For Partner</div><div style={{ fontSize: 12, fontWeight: 600 }}>Opportunity briefing</div></div>
+                  <button onClick={() => copy(partnerMail, "p")} style={{ padding: "4px 10px", background: "rgba(255,255,255,.2)", color: "white", border: "1px solid rgba(255,255,255,.3)", borderRadius: 5, fontSize: 12, cursor: "pointer" }}>{cp === "p" ? "Copied!" : "Copy"}</button>
                 </div>
                 <pre style={{ padding: 14, fontSize: 10.5, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word", maxHeight: 460, overflow: "auto", margin: 0 }}>{partnerMail}</pre>
               </div>
               <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", overflow: "hidden" }}>
                 <div style={{ background: "linear-gradient(135deg,#5C2D91,#B4009E)", padding: "10px 14px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div><div style={{ fontSize: 8, opacity: 0.6, textTransform: "uppercase" }}>For Customer</div><div style={{ fontSize: 12, fontWeight: 600 }}>Investment overview</div></div>
-                  <button onClick={() => copy(custMail, "c")} style={{ padding: "4px 10px", background: "rgba(255,255,255,.2)", color: "white", border: "1px solid rgba(255,255,255,.3)", borderRadius: 5, fontSize: 10, cursor: "pointer" }}>{cp === "c" ? "Copied!" : "Copy"}</button>
+                  <div><div style={{ fontSize: 10, opacity: 0.6, textTransform: "uppercase" }}>For Customer</div><div style={{ fontSize: 12, fontWeight: 600 }}>Investment overview</div></div>
+                  <button onClick={() => copy(custMail, "c")} style={{ padding: "4px 10px", background: "rgba(255,255,255,.2)", color: "white", border: "1px solid rgba(255,255,255,.3)", borderRadius: 5, fontSize: 12, cursor: "pointer" }}>{cp === "c" ? "Copied!" : "Copy"}</button>
                 </div>
                 <pre style={{ padding: 14, fontSize: 10.5, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word", maxHeight: 460, overflow: "auto", margin: 0 }}>{custMail}</pre>
               </div>
             </div>
           </div>
         )}
+
+        {/* ══════════════ CUSTOMER VIEW ══════════════ */}
+        {pg === "cust" && (
+          <div style={{ maxWidth: 900, margin: "0 auto" }}>
+            {/* Top bar */}
+            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", marginBottom: 12, gap: 5 }}>
+              <div style={{ display: "flex", gap: 5 }}>
+                <button onClick={() => {
+                  const el = document.getElementById("custview");
+                  if (!el) return;
+                  const w = window.open("", "_blank");
+                  w.document.write("<!DOCTYPE html><html><head><title>Azure Investment Overview - " + sow.cn + "</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;padding:40px 50px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white}h2{color:#0078D4;font-size:15px;margin:24px 0 10px;padding-bottom:4px;border-bottom:2px solid #0078D4}h3{font-size:13px;color:#333;margin:14px 0 6px}@media print{body{padding:20px 30px}}</style></head><body>" + el.innerHTML + "</body></html>");
+                  w.document.close(); w.print();
+                }} style={{ padding: "5px 14px", background: "#0078D4", color: "white", border: "none", borderRadius: 6, fontSize: 13, cursor: "pointer" }}>Print / PDF</button>
+                <button onClick={() => {
+                  const el = document.getElementById("custview");
+                  if (!el) return;
+                  const html = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;padding:36px 44px;color:#1a1a2e;font-size:12px;line-height:1.6}h2{color:#0078D4;font-size:15px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 10px}</style></head><body>" + el.innerHTML + "</body></html>";
+                  const blob = new Blob(["\ufeff" + html], { type: "application/msword;charset=utf-8" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url; a.download = "Azure-Investment-" + sow.cn.replace(/[^a-zA-Z0-9]/g, "_") + ".doc"; a.click();
+                  URL.revokeObjectURL(url);
+                }} style={{ padding: "5px 14px", background: "#5C2D91", color: "white", border: "none", borderRadius: 6, fontSize: 13, cursor: "pointer" }}>Export Word</button>
+              </div>
+            </div>
+
+            <div id="custview">
+              {/* ── HEADER ── */}
+              <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: "32px 36px", marginBottom: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                  <svg width="24" height="24" viewBox="0 0 20 20"><rect width="9" height="9" fill="#f25022" rx="1" /><rect x="11" width="9" height="9" fill="#7fba00" rx="1" /><rect y="11" width="9" height="9" fill="#00a4ef" rx="1" /><rect x="11" y="11" width="9" height="9" fill="#ffb900" rx="1" /></svg>
+                  <span style={{ fontSize: 12, color: "#888", letterSpacing: 1.5, textTransform: "uppercase" }}>Azure Investment Overview</span>
+                </div>
+                <h1 style={{ fontSize: 26, fontWeight: 600, color: "#1a1a2e", margin: "0 0 4px" }}>{sow.cn === "[CUSTOMER NAME]" || !sow.cn ? "Your Organization" : sow.cn}</h1>
+                <div style={{ fontSize: 13, color: "#888" }}>Prepared {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</div>
+              </div>
+
+              {/* ── SECTION 1: YOUR AZURE INVESTMENT ── */}
+              <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: "24px 36px", marginBottom: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: "#0078D4", margin: "0 0 16px", paddingBottom: 6, borderBottom: "2px solid #0078D4" }}>Your Azure Investment</h2>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+                  <div style={{ background: "#f0f6ff", borderRadius: 10, padding: 20, textAlign: "center" }}>
+                    <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>Annual Azure Investment</div>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: "#0078D4" }}>{fmt(C.tot)}</div>
+                    <div style={{ fontSize: 13, color: "#93c5fd" }}>{fmt(C.tot / 12)} / month</div>
+                  </div>
+                  <div style={{ background: "#f0fdf4", borderRadius: 10, padding: 20, textAlign: "center" }}>
+                    <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>Microsoft Co-Investment</div>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: "#059669" }}>{fmt(C.recCash)}</div>
+                    <div style={{ fontSize: 13, color: "#6ee7b7" }}>Available through certified partners</div>
+                  </div>
+                </div>
+
+                {/* Workload breakdown */}
+                <div style={{ fontSize: 12, fontWeight: 600, color: "#888", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Investment Breakdown</div>
+                {C.rows.filter(r => !r.xcr).sort((a, b) => b.yr - a.yr).map((r, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: "1px solid #f5f5f7" }}>
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: r.color, flexShrink: 0 }} />
+                    <div style={{ flex: 1, fontSize: 12, color: "#333" }}>{r.name}{r.sku ? " (" + r.sku + ")" : ""}</div>
+                    <div style={{ fontSize: 13, color: "#888" }}>{fmt(r.mo)}/mo</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: "#333", minWidth: 80, textAlign: "right" }}>{fmt(r.yr)}/yr</div>
+                    <div style={{ width: 120, height: 6, background: "#f0f0f0", borderRadius: 3, flexShrink: 0 }}>
+                      <div style={{ height: "100%", width: Math.min((r.yr / Math.max(...C.rows.map(x => x.yr), 1)) * 100, 100) + "%", background: r.color, borderRadius: 3 }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── SECTION 2: MICROSOFT CO-INVESTMENT ── */}
+              <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: "24px 36px", marginBottom: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: "#059669", margin: "0 0 6px", paddingBottom: 6, borderBottom: "2px solid #059669" }}>Microsoft Co-Investment</h2>
+                <div style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>Based on your planned Azure investment, Microsoft offers the following co-investment, delivered through certified partners.</div>
+
+                {/* Qualification badge */}
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 20, background: C.ok ? "#ecfdf5" : "#eff6ff", border: "1.5px solid " + (C.ok ? "#6ee7b7" : "#93c5fd"), marginBottom: 16 }}>
+                  <span style={{ fontSize: 14 }}>✓</span>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: C.ok ? "#059669" : "#0078D4" }}>
+                    {C.ok ? "Qualifies for Microsoft Data & AI Acceleration Program" : "Qualifies for Microsoft Azure Accelerate Program"}
+                  </span>
+                </div>
+
+                {/* Funding cards */}
+                <div style={{ display: "grid", gridTemplateColumns: C.mci.pre > 0 ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 16 }}>
+                  <div style={{ background: "#f0fdf4", borderRadius: 10, padding: 20, border: "1px solid #bbf7d0" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#059669", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Implementation Funding{C.recStrategy === "MCI" ? " (Partner-Led)" : " (Field-Led)"}</div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: "#059669" }}>{C.ok ? fmt(C.ecif) : C.recStrategy === "MCI" ? fmt(C.mci.post) : "~" + fmt(C.stdEcif)}</div>
+                    <div style={{ fontSize: 13, color: "#555", marginTop: 6 }}>For expert implementation services, delivered by a certified Microsoft partner.</div>
+                  </div>
+                  {C.mci.pre > 0 && (
+                    <div style={{ background: "#eff6ff", borderRadius: 10, padding: 20, border: "1px solid #bfdbfe" }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#0078D4", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Assessment & Planning</div>
+                      <div style={{ fontSize: 28, fontWeight: 700, color: "#0078D4" }}>{fmt(C.mci.pre)}</div>
+                      <div style={{ fontSize: 13, color: "#555", marginTop: 6 }}>Complimentary assessment and proof of value, delivered by a certified partner.</div>
+                    </div>
+                  )}
+                </div>
+
+                {/* ── SECTION 2b: YOUR COMMITMENTS ── */}
+                <div style={{ background: "#fafafa", borderRadius: 10, padding: 20, border: "1px solid #e8e8ec" }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#333", marginBottom: 10 }}>What a Successful Engagement Looks Like</div>
+                  <div style={{ fontSize: 13, color: "#555", lineHeight: 1.8 }}>
+                    {C.ok ? (
+                      <>
+                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#059669", flexShrink: 0 }}>✓</span><span>Minimum Azure commitment: <strong>{fmt(C.tot)}/year</strong> (Year 1 Azure Consumption)</span></div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#059669", flexShrink: 0 }}>✓</span><span>At least 50% from qualifying Data, Analytics, or AI services: <strong>{C.rows.filter(r => r.elig && !r.xcr).map(r => r.name).join(", ")}</strong></span></div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#059669", flexShrink: 0 }}>✓</span><span>Implementation delivered by a <strong>Microsoft-certified partner</strong> (your Microsoft account team connects you)</span></div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#059669", flexShrink: 0 }}>✓</span><span>Post-sales engagement — covers implementation, not pre-sales planning</span></div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#059669", flexShrink: 0 }}>✓</span><span>License type: Enterprise Agreement (EA), MCA-E, or Modern CSP</span></div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#d97706", flexShrink: 0 }}>○</span><span>First come, first served — co-investment subject to availability</span></div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#059669", flexShrink: 0 }}>✓</span><span>Minimum Azure commitment: <strong>{fmt(C.tot)}/year</strong></span></div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#059669", flexShrink: 0 }}>✓</span><span>Implementation delivered by a <strong>Microsoft-certified partner</strong></span></div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#059669", flexShrink: 0 }}>✓</span><span>Nominated by your Microsoft account team</span></div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#d97706", flexShrink: 0 }}>○</span><span>Subject to Microsoft approval and available budget</span></div>
+                      </>
+                    )}
+                    {C.mci.pre > 0 && (
+                      <>
+                        <div style={{ height: 1, background: "#e8e8ec", margin: "10px 0" }} />
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "#0078D4", marginBottom: 6 }}>Assessment & Planning Requirements</div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#0078D4", flexShrink: 0 }}>✓</span><span>Minimum planned Azure consumption: <strong>{fmt(C.tot)}/year</strong></span></div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#0078D4", flexShrink: 0 }}>✓</span><span>Delivered by a certified partner at <strong>no cost to you</strong></span></div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#0078D4", flexShrink: 0 }}>✓</span><span>Includes: architecture assessment + proof of value (up to 120 days)</span></div>
+                      </>
+                    )}
+                    {/* Per-workload requirements */}
+                    {(C.db || C.fab || C.fo || C.accel) && (
+                      <>
+                        <div style={{ height: 1, background: "#e8e8ec", margin: "10px 0" }} />
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "#555", marginBottom: 6 }}>Technical Prerequisites</div>
+                        {C.db && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#0078D4", flexShrink: 0 }}>→</span><span>Database migrations: access to source database environments for assessment</span></div>}
+                        {C.fab && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#107C10", flexShrink: 0 }}>→</span><span>Analytics: Fabric capacity (F-SKU) provisioned in Azure subscription</span></div>}
+                        {C.fo && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#5C2D91", flexShrink: 0 }}>→</span><span>AI: Azure OpenAI access approved (if applicable)</span></div>}
+                        {C.rows.some(r => ["infra-linux","infra-win","infra-mdc"].includes(r.id)) && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#D83B01", flexShrink: 0 }}>→</span><span>VM migrations: Azure Migrate appliance deployed for server discovery</span></div>}
+                        {C.rows.some(r => r.id === "sap") && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#D83B01", flexShrink: 0 }}>→</span><span>SAP: SAP Basis team available for migration coordination</span></div>}
+                        {C.rows.some(r => ["infra-win","infra-mdc"].includes(r.id)) && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#888", flexShrink: 0 }}>ℹ</span><span>Windows VMs with Hybrid Benefit: requires active Software Assurance</span></div>}
+                        {C.rows.some(r => ["sql-mi","sql-db","sql-hyper","sql-vm"].includes(r.id)) && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#888", flexShrink: 0 }}>ℹ</span><span>SQL with Hybrid Benefit: requires active SQL Server Software Assurance</span></div>}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* ── SECTION 3: INVESTMENT ROADMAP ── */}
+              <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: "24px 36px", marginBottom: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: "#5C2D91", margin: "0 0 16px", paddingBottom: 6, borderBottom: "2px solid #5C2D91" }}>Investment Roadmap</h2>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0 }}>
+                  {[
+                    { phase: "Phase 1", title: "Assessment & Planning", badge: "Microsoft co-funded", badgeColor: "#0078D4", desc: "Architecture assessment, technical proof of value, migration planning, and business case validation.", icon: "🔍" },
+                    { phase: "Phase 2", title: "Build & Deploy", badge: "Co-funded implementation", badgeColor: "#059669", desc: "Landing zone setup, workload migration/deployment, testing, and production cutover.", icon: "🚀" },
+                    { phase: "Phase 3", title: "Optimize & Scale", badge: "Continuous improvement", badgeColor: "#5C2D91", desc: "Performance optimization, cost management, governance, and platform expansion.", icon: "📈" },
+                  ].map((p, i) => (
+                    <div key={i} style={{ padding: "16px 20px", position: "relative", borderLeft: i > 0 ? "2px solid #e8e8ec" : "none" }}>
+                      {/* Connector dot */}
+                      {i > 0 && <div style={{ position: "absolute", left: -5, top: 24, width: 8, height: 8, borderRadius: "50%", background: p.badgeColor, border: "2px solid white" }} />}
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>{p.phase}</div>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: "#333", marginBottom: 6 }}>{p.icon} {p.title}</div>
+                      <div style={{ display: "inline-block", padding: "2px 8px", borderRadius: 10, background: p.badgeColor + "15", color: p.badgeColor, fontSize: 11, fontWeight: 600, marginBottom: 8 }}>{p.badge}</div>
+                      <div style={{ fontSize: 13, color: "#666", lineHeight: 1.5 }}>{p.desc}</div>
+                      {/* Workloads in this phase */}
+                      {i === 0 && C.mci.pre > 0 && <div style={{ marginTop: 8, fontSize: 11, color: "#0078D4", fontWeight: 600 }}>Assessment value: {fmt(C.mci.pre)}</div>}
+                      {i === 1 && <div style={{ marginTop: 8, fontSize: 11, color: "#059669", fontWeight: 600 }}>Implementation funding: {fmt(C.ok ? C.ecif : C.stdEcif)}</div>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── SECTION 4: EXPAND YOUR PLATFORM ── */}
+              {nextWL.length > 0 && (
+                <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: "24px 36px", marginBottom: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                  <h2 style={{ fontSize: 15, fontWeight: 600, color: "#0078D4", margin: "0 0 6px", paddingBottom: 6, borderBottom: "2px solid #0078D4" }}>Expand Your Platform</h2>
+                  <div style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>Recommended next steps to maximize value from your Azure investment.</div>
+                  <div style={{ display: "grid", gridTemplateColumns: nextWL.length > 2 ? "1fr 1fr" : "1fr", gap: 12 }}>
+                    {nextWL.map((nw, i) => (
+                      <div key={i} style={{ padding: 16, borderRadius: 10, border: "1px solid #e8e8ec", background: "#fafafa" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                          <span style={{ fontSize: 20 }}>{nw.icon}</span>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#333" }}>{nw.title}</div>
+                        </div>
+                        <div style={{ fontSize: 13, color: "#555", lineHeight: 1.5 }}>{nw.why}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── SECTION 5: NEXT STEPS ── */}
+              <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: "24px 36px", marginBottom: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                <h2 style={{ fontSize: 15, fontWeight: 600, color: "#333", margin: "0 0 16px", paddingBottom: 6, borderBottom: "2px solid #333" }}>Next Steps</h2>
+                {[
+                  { n: "1", title: "Confirm priorities and scope", desc: "Review this overview with your Microsoft account team and align on priorities." },
+                  { n: "2", title: "Connect with a certified partner", desc: "Microsoft connects you with a qualified implementation partner from our ecosystem." },
+                  { n: "3", title: "Assessment and proof of value", desc: "Your partner delivers a technical assessment and proof of value — co-funded by Microsoft." },
+                  { n: "4", title: "Implementation begins", desc: "Full implementation with Microsoft co-investment support, delivered by your certified partner." },
+                ].map((s, i) => (
+                  <div key={i} style={{ display: "flex", gap: 14, alignItems: "flex-start", marginBottom: i < 3 ? 16 : 0 }}>
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#0078D4", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, flexShrink: 0 }}>{s.n}</div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "#333" }}>{s.title}</div>
+                      <div style={{ fontSize: 13, color: "#666" }}>{s.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* ── FOOTER ── */}
+              <div style={{ padding: "12px 0", fontSize: 11, color: "#aaa", textAlign: "center", lineHeight: 1.6 }}>
+                This tool is an independently authored estimation aid and is not an official Microsoft pricing or funding calculator. Azure pricing shown is approximate — use Azure Pricing Calculator for precise estimates. All co-investment subject to availability and Microsoft internal approval. Implementation and assessment delivered through Microsoft's certified partner ecosystem. Program terms, eligibility, and amounts may change. Contact your Microsoft account team for formal engagement.
+              </div>
+            </div>
+          </div>
+        )}
       </div>
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "16px 28px 8px" }}>
-        <div style={{ background: "#f8f9fa", borderRadius: 8, border: "1px solid #e5e7eb", padding: "10px 14px", fontSize: 9, color: "#6b7280", lineHeight: 1.6 }}>
-          <strong style={{ color: "#374151" }}>Important:</strong> This tool provides indicative estimates for planning purposes only. All amounts, eligibility, and funding recommendations are non-binding and subject to Microsoft internal approval, program availability, and regional variations. Always verify against the latest official Microsoft documentation, Azure Pricing Calculator, and your Microsoft PSS/account team before submitting nominations. Program rules, funding caps, and eligibility criteria may change without notice. Conduct a thorough assessment using official Microsoft tools (Azure Migrate, Fabric Capacity Estimator, Azure Pricing Calculator) before finalizing any customer proposal.
+      {pg !== "cust" && (
+        <>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "16px 28px 8px" }}>
+        <div style={{ background: "#f8f9fa", borderRadius: 8, border: "1px solid #e5e7eb", padding: "10px 14px", fontSize: 11, color: "#6b7280", lineHeight: 1.6 }}>
+          <strong style={{ color: "#374151" }}>Important:</strong> This tool is an independently authored estimation aid and is not an official Microsoft pricing or funding calculator. All amounts, eligibility, and funding recommendations are non-binding and subject to Microsoft internal approval, program availability, and regional variations. Always verify against the latest official Microsoft documentation, Azure Pricing Calculator, and your Microsoft PSS/account team before submitting nominations. Program rules, funding caps, and eligibility criteria may change without notice. Conduct a thorough assessment using official Microsoft tools (Azure Migrate, Fabric Capacity Estimator, Azure Pricing Calculator) before finalizing any customer proposal.
         </div>
       </div>
-      <div style={{ borderTop: "1px solid #e8e8ec", padding: "12px 28px", display: "flex", justifyContent: "center", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.6)" }}>
-        <span style={{ fontSize: 10, color: "#aaa" }}>Created by</span>
-        <span style={{ fontSize: 10, fontWeight: 600, color: "#555" }}>Rai</span>
-        <span style={{ fontSize: 10, color: "#ccc" }}>·</span>
-        <span style={{ fontSize: 10, color: "#888" }}>Sr Cloud & AI Specialist</span>
-        <span style={{ fontSize: 10, color: "#ccc" }}>·</span>
-        <a href="mailto:rachowdhury@microsoft.com" style={{ fontSize: 10, color: "#0078D4", textDecoration: "none" }}>rachowdhury@microsoft.com</a>
+      <div style={{ borderTop: "1px solid #e8e8ec", padding: "12px 28px", display: "flex", justifyContent: "center", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.6)", flexWrap: "wrap" }}>
+        <span style={{ fontSize: 12, color: "#aaa" }}>Created by</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: "#555" }}>Rai</span>
+        <span style={{ fontSize: 12, color: "#ccc" }}>·</span>
+        <span style={{ fontSize: 12, color: "#888" }}>Sr Cloud & AI Specialist</span>
+        <span style={{ fontSize: 12, color: "#ccc" }}>·</span>
+        <a href="mailto:rachowdhury@microsoft.com" style={{ fontSize: 12, color: "#0078D4", textDecoration: "none" }}>rachowdhury@microsoft.com</a>
+        <span style={{ fontSize: 12, color: "#ccc" }}>·</span>
+        <span style={{ fontSize: 10, color: "#bbb" }}>v2.0 · Pricing: March 2026 · MCI Guide: March 2026</span>
       </div>
+      </>
+      )}
     </div>
   );
 }
