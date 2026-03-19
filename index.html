@@ -642,9 +642,39 @@ function App() {
   const print = () => {
     const el = document.getElementById("sowdoc");
     if (!el) return;
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll("input, textarea").forEach(inp => {
+      const span = document.createElement("span");
+      span.textContent = inp.value;
+      span.setAttribute("style", (inp.getAttribute("style") || "") + ";border:none;background:transparent;");
+      inp.parentNode.replaceChild(span, inp);
+    });
     const w = window.open("", "_blank");
-    w.document.write("<!DOCTYPE html><html><head><title>ECIF - " + sow.cn + "</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;padding:36px 44px;color:#1a1a2e;font-size:12px;line-height:1.6}table{width:100%;border-collapse:collapse}th,td{padding:5px 8px;text-align:left;border-bottom:1px solid #e0e0e0}th{background:#f0f4fa;font-size:11px;color:#555}h2{color:#0078D4;font-size:14px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 8px}.hd{background:linear-gradient(135deg,#0078D4,#5C2D91);color:white;padding:24px 30px;margin:-36px -44px 24px}.hd h1{font-size:17px;margin-top:4px}input,textarea{border:none!important;background:transparent!important;font:inherit;color:inherit;padding:0;outline:none}@media print{.hd{-webkit-print-color-adjust:exact;print-color-adjust:exact}}</style></head><body>" + el.innerHTML + "</body></html>");
-    w.document.close(); w.print();
+    w.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>SOW - ${sow.cn}</title><style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Calibri,sans-serif;padding:40px 50px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white}
+table{width:100%;border-collapse:collapse;page-break-inside:auto}
+tr{page-break-inside:avoid;page-break-after:auto}
+th,td{padding:5px 8px;text-align:left;border-bottom:1px solid #e0e0e0}
+th{background:#f0f4fa;font-size:11px;color:#555;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+h2{color:#0078D4;font-size:14px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 8px;page-break-after:avoid}
+h1{page-break-after:avoid}
+.hd{background:linear-gradient(135deg,#0078D4,#5C2D91);color:white;padding:24px 30px;margin:-40px -50px 24px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.hd h1{font-size:17px;margin-top:4px}
+input,textarea,select{border:none!important;background:transparent!important;font:inherit;color:inherit;padding:0;outline:none;-webkit-appearance:none}
+button{display:none!important}
+div[style*="border-radius"]{page-break-inside:avoid}
+@page{margin:20mm 15mm;size:A4}
+@media print{
+  body{padding:0;font-size:11px}
+  .hd{margin:-20mm -15mm 20px;padding:20px 25px}
+  h2{margin:16px 0 6px;font-size:13px}
+  table{font-size:11px}
+  div[style*="background: #fef2f2"],div[style*="background: #ecfdf5"],div[style*="background: #fffbeb"]{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style></head><body>` + clone.innerHTML + `</body></html>`);
+    w.document.close();
+    setTimeout(() => w.print(), 300);
   };
 
 
@@ -1116,13 +1146,35 @@ function App() {
                   const el = document.getElementById("sowdoc");
                   if (!el) return;
                   const clone = el.cloneNode(true);
+                  // Replace inputs/textareas with spans
                   clone.querySelectorAll("input, textarea").forEach(inp => {
                     const span = document.createElement("span");
                     span.textContent = inp.value;
-                    span.setAttribute("style", inp.getAttribute("style") || "");
+                    const origStyle = inp.getAttribute("style") || "";
+                    span.setAttribute("style", origStyle.replace(/border[^;]*/g, "border:none").replace(/background[^;]*/g, "background:transparent"));
                     inp.parentNode.replaceChild(span, inp);
                   });
-                  const html = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;padding:36px 44px;color:#1a1a2e;font-size:12px;line-height:1.6}table{width:100%;border-collapse:collapse}th,td{padding:5px 8px;text-align:left;border-bottom:1px solid #e0e0e0}th{background:#f0f4fa;font-size:11px;color:#555}h2{color:#0078D4;font-size:14px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 8px}span{font:inherit;color:inherit}</style></head><body>" + clone.innerHTML + "</body></html>";
+                  // Hide buttons
+                  clone.querySelectorAll("button").forEach(b => b.remove());
+                  // Strip border-radius (Word doesn't support)
+                  clone.querySelectorAll("[style]").forEach(el => {
+                    let s = el.getAttribute("style") || "";
+                    s = s.replace(/border-radius[^;]*/g, "border-radius:0");
+                    el.setAttribute("style", s);
+                  });
+                  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
+<head><meta charset='utf-8'>
+<style>
+@page{size:A4;margin:2cm}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Calibri,sans-serif;padding:30px 40px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white!important;background-color:white!important}
+div,td,th,p,span{background-color:transparent}
+table{width:100%;border-collapse:collapse;background:white}
+th,td{padding:5px 8px;text-align:left;border-bottom:1px solid #d0d0d0;background:white}
+th{background:#f0f4fa!important;font-size:11px;color:#555}
+h2{color:#0078D4;font-size:14px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:18px 0 8px}
+span{font:inherit;color:inherit}
+</style></head><body style="background:white!important;background-color:white!important">` + clone.innerHTML + `</body></html>`;
                   const blob = new Blob(["\ufeff" + html], { type: "application/msword;charset=utf-8" });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
@@ -1433,14 +1485,46 @@ function App() {
                 <button onClick={() => {
                   const el = document.getElementById("custview");
                   if (!el) return;
+                  const clone = el.cloneNode(true);
+                  clone.querySelectorAll("button").forEach(b => b.remove());
                   const w = window.open("", "_blank");
-                  w.document.write("<!DOCTYPE html><html><head><title>Azure Investment Overview - " + sow.cn + "</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;padding:40px 50px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white}h2{color:#0078D4;font-size:15px;margin:24px 0 10px;padding-bottom:4px;border-bottom:2px solid #0078D4}h3{font-size:13px;color:#333;margin:14px 0 6px}@media print{body{padding:20px 30px}}</style></head><body>" + el.innerHTML + "</body></html>");
-                  w.document.close(); w.print();
+                  w.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Azure Investment Overview - ${sow.cn}</title><style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Calibri,sans-serif;padding:40px 50px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white}
+h2{color:#0078D4;font-size:15px;margin:24px 0 10px;padding-bottom:4px;border-bottom:2px solid #0078D4;page-break-after:avoid}
+h1{page-break-after:avoid}
+div[style*="borderRadius"],div[style*="border-radius"]{page-break-inside:avoid}
+@page{margin:18mm 15mm;size:A4}
+@media print{
+  body{padding:0;font-size:11px}
+  div[style*="background"]{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style></head><body>` + clone.innerHTML + `</body></html>`);
+                  w.document.close();
+                  setTimeout(() => w.print(), 300);
                 }} style={{ padding: "5px 14px", background: "#0078D4", color: "white", border: "none", borderRadius: 6, fontSize: 13, cursor: "pointer" }}>Print / PDF</button>
                 <button onClick={() => {
                   const el = document.getElementById("custview");
                   if (!el) return;
-                  const html = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;padding:36px 44px;color:#1a1a2e;font-size:12px;line-height:1.6}h2{color:#0078D4;font-size:15px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 10px}</style></head><body>" + el.innerHTML + "</body></html>";
+                  const clone = el.cloneNode(true);
+                  clone.querySelectorAll("button").forEach(b => b.remove());
+                  clone.querySelectorAll("[style]").forEach(el => {
+                    let s = el.getAttribute("style") || "";
+                    s = s.replace(/border-radius[^;]*/g, "border-radius:0");
+                    el.setAttribute("style", s);
+                  });
+                  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
+<head><meta charset='utf-8'>
+<style>
+@page{size:A4;margin:2cm}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',Calibri,sans-serif;padding:30px 40px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white!important;background-color:white!important}
+div,td,th,p,span{background-color:transparent}
+table{width:100%;border-collapse:collapse;background:white}
+th,td{padding:5px 8px;text-align:left;border-bottom:1px solid #d0d0d0;background:white}
+th{background:#f0f4fa!important;font-size:11px;color:#555}
+h2{color:#0078D4;font-size:15px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 10px}
+</style></head><body style="background:white!important;background-color:white!important">` + clone.innerHTML + `</body></html>`;
                   const blob = new Blob(["\ufeff" + html], { type: "application/msword;charset=utf-8" });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
