@@ -1162,36 +1162,26 @@ button{display:none!important}
                   clone.querySelectorAll("input, textarea").forEach(inp => {
                     const span = document.createElement("span");
                     span.textContent = inp.value;
-                    const origStyle = inp.getAttribute("style") || "";
-                    span.setAttribute("style", origStyle.replace(/border[^;]*/g, "border:none").replace(/background[^;]*/g, "background:transparent"));
                     inp.parentNode.replaceChild(span, inp);
                   });
-                  clone.querySelectorAll("button").forEach(b => b.remove());
-                  // Strip ALL inline backgrounds except the header gradient
-                  clone.querySelectorAll("[style]").forEach(node => {
-                    let s = node.getAttribute("style") || "";
-                    s = s.replace(/border-radius[^;]*/g, "border-radius:0");
-                    // Keep gradient on .hd header, strip everything else
-                    if (!s.includes("linear-gradient")) {
-                      s = s.replace(/background:\s*#[0-9a-fA-F]{3,8}[^;]*/g, "background:white");
-                      s = s.replace(/background:\s*rgb[^;]*/g, "background:white");
-                      s = s.replace(/background:\s*rgba[^;]*/g, "background:white");
-                      s = s.replace(/background-color:\s*#[0-9a-fA-F]{3,8}[^;]*/g, "background-color:white");
+                  clone.querySelectorAll("button, select").forEach(b => b.remove());
+                  // Nuke ALL style attributes — Word gets clean HTML + CSS only
+                  clone.querySelectorAll("*").forEach(node => {
+                    const s = node.getAttribute("style");
+                    if (s) {
+                      // Extract only color and font-weight, kill everything else
+                      const color = s.match(/(?:^|;)\s*color:\s*([^;]+)/);
+                      const fw = s.match(/font-weight:\s*([^;]+)/);
+                      const ta = s.match(/text-align:\s*([^;]+)/);
+                      let keep = "";
+                      if (color && !color[1].includes("white")) keep += "color:" + color[1] + ";";
+                      if (fw) keep += "font-weight:" + fw[1] + ";";
+                      if (ta) keep += "text-align:" + ta[1] + ";";
+                      node.setAttribute("style", keep);
                     }
-                    node.setAttribute("style", s);
                   });
-                  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
-<head><meta charset='utf-8'>
-<style>
-@page{size:A4;margin:2cm}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Calibri,sans-serif;padding:30px 40px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white!important;background-color:white!important}
-div,td,th,p,span,tr{background:white!important;background-color:white!important}
-table{width:100%;border-collapse:collapse;background:white!important}
-th,td{padding:5px 8px;text-align:left;border-bottom:1px solid #d0d0d0}
-h2{color:#0078D4;font-size:14px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:18px 0 8px}
-span{font:inherit;color:inherit}
-</style></head><body style="background:white!important">` + clone.innerHTML + `</body></html>`;
+                  const css = "@page{size:A4;margin:2cm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Segoe UI,Calibri,sans-serif;padding:30px 40px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white}table{width:100%;border-collapse:collapse}th,td{padding:6px 10px;text-align:left;border-bottom:1px solid #d0d0d0}th{font-size:11px;color:#555;background:#f0f4fa}h2{color:#0078D4;font-size:14px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:18px 0 8px}";
+                  const html = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><style>" + css + "</style></head><body>" + clone.innerHTML + "</body></html>";
                   const blob = new Blob(["\ufeff" + html], { type: "application/msword;charset=utf-8" });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
@@ -1535,30 +1525,21 @@ h1{page-break-after:avoid}
                   if (!el) return;
                   const clone = el.cloneNode(true);
                   clone.querySelectorAll("button").forEach(b => b.remove());
-                  // Strip ALL inline backgrounds to force white
-                  clone.querySelectorAll("[style]").forEach(node => {
-                    let s = node.getAttribute("style") || "";
-                    s = s.replace(/border-radius[^;]*/g, "border-radius:0");
-                    s = s.replace(/box-shadow[^;]*/g, "box-shadow:none");
-                    if (!s.includes("linear-gradient")) {
-                      s = s.replace(/background:\s*#[0-9a-fA-F]{3,8}[^;]*/g, "background:white");
-                      s = s.replace(/background:\s*rgb[^;]*/g, "background:white");
-                      s = s.replace(/background:\s*rgba[^;]*/g, "background:white");
-                      s = s.replace(/background-color:\s*#[0-9a-fA-F]{3,8}[^;]*/g, "background-color:white");
+                  clone.querySelectorAll("*").forEach(node => {
+                    const s = node.getAttribute("style");
+                    if (s) {
+                      const color = s.match(/(?:^|;)\s*color:\s*([^;]+)/);
+                      const fw = s.match(/font-weight:\s*([^;]+)/);
+                      const ta = s.match(/text-align:\s*([^;]+)/);
+                      let keep = "";
+                      if (color && !color[1].includes("white")) keep += "color:" + color[1] + ";";
+                      if (fw) keep += "font-weight:" + fw[1] + ";";
+                      if (ta) keep += "text-align:" + ta[1] + ";";
+                      node.setAttribute("style", keep);
                     }
-                    node.setAttribute("style", s);
                   });
-                  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'>
-<head><meta charset='utf-8'>
-<style>
-@page{size:A4;margin:2cm}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',Calibri,sans-serif;padding:30px 40px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white!important}
-div,td,th,p,span,tr{background:white!important;background-color:white!important}
-table{width:100%;border-collapse:collapse}
-th,td{padding:5px 8px;text-align:left;border-bottom:1px solid #d0d0d0}
-h2{color:#0078D4;font-size:15px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 10px}
-</style></head><body style="background:white!important">` + clone.innerHTML + `</body></html>`;
+                  const css = "@page{size:A4;margin:2cm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Segoe UI,Calibri,sans-serif;padding:30px 40px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white}table{width:100%;border-collapse:collapse}th,td{padding:6px 10px;text-align:left;border-bottom:1px solid #d0d0d0}h2{color:#0078D4;font-size:15px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 10px}h1{font-size:22px;margin-bottom:4px}";
+                  const html = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><style>" + css + "</style></head><body>" + clone.innerHTML + "</body></html>";
                   const blob = new Blob(["\ufeff" + html], { type: "application/msword;charset=utf-8" });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
