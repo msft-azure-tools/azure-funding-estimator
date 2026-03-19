@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Azure Funding Estimator</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='14.5' height='14.5' x='1' y='1' rx='2' fill='%23f25022'/%3E%3Crect width='14.5' height='14.5' x='16.5' y='1' rx='2' fill='%237fba00'/%3E%3Crect width='14.5' height='14.5' x='1' y='16.5' rx='2' fill='%2300a4ef'/%3E%3Crect width='14.5' height='14.5' x='16.5' y='16.5' rx='2' fill='%23ffb900'/%3E%3C/svg%3E">
 <style>
 * { box-sizing: border-box; }
 body { margin: 0; font-family: 'Segoe UI', -apple-system, sans-serif; -webkit-text-size-adjust: 100%; }
 input[type="date"] { min-width: 130px; }
-
-/* Custom checkboxes */
 input[type="checkbox"] {
   appearance: none; -webkit-appearance: none;
   width: 16px; height: 16px;
@@ -26,29 +25,35 @@ input[type="checkbox"]:checked::after {
 }
 input[type="checkbox"]:hover { border-color: #999; }
 input[type="checkbox"]:checked:hover { opacity: 0.9; }
-
-/* Global hover + transitions */
 button { transition: opacity 0.15s ease, background 0.15s ease; }
 button:hover { opacity: 0.85; }
 button:active { opacity: 0.75; }
-
-/* Micro-animations */
 @keyframes fadeSlide {
   from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
 }
-
 @media (max-width: 768px) {
   .main-grid { grid-template-columns: 1fr !important; gap: 8px !important; padding: 8px 6px 40px !important; }
   .sow-grid { grid-template-columns: 1fr !important; }
   .email-grid { grid-template-columns: 1fr !important; }
+  .header-row { flex-wrap: wrap !important; gap: 8px !important; }
+  .header-actions { flex-wrap: wrap !important; gap: 6px !important; width: 100% !important; justify-content: flex-end !important; }
   .tab-nav { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .tab-nav button { white-space: nowrap; flex-shrink: 0; padding: 8px 12px !important; font-size: 11px !important; }
+  .grid-2col { grid-template-columns: 1fr !important; }
+  .grid-3col { grid-template-columns: 1fr !important; }
+  .grid-acr { gap: 3px !important; }
+  .flex-funding { flex-direction: column !important; }
+  .metrics-bar { flex-wrap: wrap !important; gap: 4px !important; }
+  .metrics-bar > div { min-width: 80px !important; flex: 1 1 80px !important; }
   input[type="number"] { width: 50px !important; }
   select { max-width: 130px !important; }
+  .main-grid > div:nth-child(2) { position: static !important; }
 }
 @media (max-width: 480px) {
   .main-grid { padding: 6px 4px 30px !important; }
+  .grid-acr { grid-template-columns: 1fr !important; }
+  .header-actions > div:first-child { width: 100% !important; }
 }
 </style></head><body><div id="root"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -776,7 +781,7 @@ button{display:none!important}
     <div style={{ fontFamily: "'Segoe UI',sans-serif", minHeight: "100vh", background: "#f5f5f5", color: "#1a1a2e" }}>
       <div style={{ background: HDR, padding: "16px 28px 0", color: "white" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }} className="header-row">
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <svg width="24" height="24" viewBox="0 0 20 20"><rect width="9" height="9" fill="#f25022" rx="1" /><rect x="11" width="9" height="9" fill="#7fba00" rx="1" /><rect y="11" width="9" height="9" fill="#00a4ef" rx="1" /><rect x="11" y="11" width="9" height="9" fill="#ffb900" rx="1" /></svg>
               <div>
@@ -784,7 +789,7 @@ button{display:none!important}
                 <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", marginTop: 2, letterSpacing: 0.2 }}>by Rai Chowdhury · rachowdhury@microsoft.com</div>
               </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }} className="header-actions">
               <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.12)", borderRadius: 6, padding: "4px 10px" }}>
                 <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Customer:</span>
                 <input value={sow.cn} onChange={(e) => us("cn", e.target.value)} placeholder="Enter name..." style={{ background: "transparent", border: "none", color: "white", fontSize: 12, fontWeight: 600, fontFamily: "inherit", outline: "none", width: 160 }} />
@@ -932,7 +937,7 @@ button{display:none!important}
                 <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#888", marginBottom: 8, letterSpacing: 0.5 }}>Eligibility Overview</div>
 
                 {C.tot === 0 ? <div style={{ fontSize: 13, color: "#ccc" }}>Select workloads to see eligibility...</div> : (
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }} className="grid-2col">
                     {/* Field-Led (AFO) */}
                     <div style={{ borderRadius: 8, padding: 10, background: C.ok ? "linear-gradient(135deg,#ecfdf5,#d1fae5)" : "linear-gradient(135deg,#f8f9fa,#f0f1f3)", border: "1.5px solid " + (C.ok ? "#6ee7b7" : "#d1d5db"), textAlign: "center" }}>
                       <div style={{ fontSize: 10, fontWeight: 700, color: "#888", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Field-Led</div>
@@ -986,7 +991,7 @@ button{display:none!important}
               <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 14, marginBottom: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#888", marginBottom: 5 }}>Year 1 ACR</div>
                 <div style={{ textAlign: "center", marginBottom: 8 }}><AnimNum value={C.tot} format={fmt} style={{ fontSize: 26, fontWeight: 700, color: "#0078D4" }} /><div style={{ fontSize: 12, color: "#bbb" }}>{fmt(C.tot / 12)}/mo{C.xcr > 0 ? " (+ " + fmt(C.xcr) + " XCR)" : ""}</div></div>
-                <div style={{ display: "grid", gridTemplateColumns: C.xcr > 0 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 4 }}>
+                <div style={{ display: "grid", gridTemplateColumns: C.xcr > 0 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 4 }} className="grid-acr">
                   <div style={{ background: "#eff6ff", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 10 }}>AFO Eligible ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>{fmt(C.el)}</div></div>
                   <div style={{ background: "#fff7ed", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 10 }}>ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#D83B01" }}>{fmt(C.ot)}</div></div>
                   {C.xcr > 0 && <div style={{ background: "#fef3c7", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 10 }}>XCR (not ACR)</div><div style={{ fontSize: 13, fontWeight: 700, color: "#d97706" }}>{fmt(C.xcr)}</div></div>}
@@ -1262,7 +1267,7 @@ button{display:none!important}
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: 6, marginBottom: 10 }}>
+            <div style={{ display: "flex", gap: 6, marginBottom: 10 }} className="metrics-bar">
               {[{ l: "Y1 ACR", v: fmt(C.tot), c: "#0078D4" }, { l: "AFO Elig.", v: C.pct.toFixed(0) + "%", c: C.ok ? "#059669" : "#64748b" }, { l: "ECIF (cash)", v: C.ok ? fmt(C.ecif) : fmtRange(C.tot), c: C.ok ? "#3b82f6" : "#f97316" }, { l: "MCI (cash)", v: fmt(C.ok ? C.mci.pre : Math.max(C.mci.pre + C.mci.post, 0)), c: "#22c55e" }].map((b, i) => (
                 <div key={i} style={{ flex: 1, background: "white", padding: "7px 4px", borderRadius: 7, textAlign: "center", border: "1px solid #e8e8ec" }}>
                   <div style={{ fontSize: 10, color: "#888" }}>{b.l}</div>
@@ -1361,7 +1366,7 @@ button{display:none!important}
 
                 {/* Funding options with clear labels */}
                 <div style={{ fontSize: 12, color: "#555", marginBottom: 6 }}>{C.ok ? <span>AFO recommended. MCI pre-sales <strong>can be stacked</strong> as separate assessment scope.</span> : <span>Choose <strong>one</strong> path per project — ECIF and MCI cannot be combined on the same customer + project.</span>}</div>
-                <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+                <div style={{ display: "flex", gap: 6, marginBottom: 8 }} className="flex-funding">
                   {/* AFO ECIF */}
                   {(() => {
                     const isRec = C.recStrategy === "AFO + MCI Pre-sales" || C.recStrategy === "AFO";
@@ -1419,7 +1424,7 @@ button{display:none!important}
                 </div>
                 {/* ── ROI / BUSINESS CASE ── */}
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Business Case Summary</h2>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 8 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 8 }} className="grid-2col">
                   <div style={{ background: "#eff6ff", padding: 10, borderRadius: 6, textAlign: "center" }}>
                     <div style={{ fontSize: 10, color: "#64748b" }}>Customer Y1 Azure Spend</div>
                     <div style={{ fontSize: 20, fontWeight: 700, color: "#0078D4" }}>{fmt(roi.custInvest)}</div>
@@ -1629,7 +1634,7 @@ h1{page-break-after:avoid}
               {/* ── SECTION 1: YOUR AZURE INVESTMENT ── */}
               <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: "24px 36px", marginBottom: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                 <h2 style={{ fontSize: 15, fontWeight: 600, color: "#0078D4", margin: "0 0 16px", paddingBottom: 6, borderBottom: "2px solid #0078D4" }}>Your Azure Investment</h2>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }} className="grid-2col">
                   <div style={{ background: "#f0f6ff", borderRadius: 10, padding: 20, textAlign: "center" }}>
                     <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>Annual Azure Investment</div>
                     <div style={{ fontSize: 32, fontWeight: 700, color: "#0078D4" }}>{fmt(C.tot)}</div>
@@ -1671,7 +1676,7 @@ h1{page-break-after:avoid}
                 </div>
 
                 {/* Funding cards */}
-                <div style={{ display: "grid", gridTemplateColumns: C.mci.pre > 0 ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 16 }}>
+                <div style={{ display: "grid", gridTemplateColumns: C.mci.pre > 0 ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 16 }} className="grid-2col">
                   <div style={{ background: "#f0fdf4", borderRadius: 10, padding: 20, border: "1px solid #bbf7d0" }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#059669", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Implementation Funding{C.recStrategy === "MCI" ? " (Partner-Led)" : " (Field-Led)"}</div>
                     <div style={{ fontSize: 28, fontWeight: 700, color: "#059669" }}>{C.ok ? fmt(C.ecif) : C.recStrategy === "MCI" ? fmt(C.mci.post) : fmtRange(C.tot)}</div>
@@ -1737,7 +1742,7 @@ h1{page-break-after:avoid}
               {/* ── SECTION 3: INVESTMENT ROADMAP ── */}
               <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: "24px 36px", marginBottom: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                 <h2 style={{ fontSize: 15, fontWeight: 600, color: "#5C2D91", margin: "0 0 16px", paddingBottom: 6, borderBottom: "2px solid #5C2D91" }}>Investment Roadmap</h2>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 0 }} className="grid-3col">
                   {[
                     { phase: "Phase 1", title: "Assessment & Planning", badge: "Microsoft co-funded", badgeColor: "#0078D4", desc: "Architecture assessment, technical proof of value, migration planning, and business case validation.", icon: "🔍" },
                     { phase: "Phase 2", title: "Build & Deploy", badge: "Co-funded implementation", badgeColor: "#059669", desc: "Landing zone setup, workload migration/deployment, testing, and production cutover.", icon: "🚀" },
@@ -1763,7 +1768,7 @@ h1{page-break-after:avoid}
                 <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: "24px 36px", marginBottom: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                   <h2 style={{ fontSize: 15, fontWeight: 600, color: "#0078D4", margin: "0 0 6px", paddingBottom: 6, borderBottom: "2px solid #0078D4" }}>Expand Your Platform</h2>
                   <div style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>Recommended next steps to maximize value from your Azure investment.</div>
-                  <div style={{ display: "grid", gridTemplateColumns: nextWL.length > 2 ? "1fr 1fr" : "1fr", gap: 12 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: nextWL.length > 2 ? "1fr 1fr" : "1fr", gap: 12 }} className="grid-2col">
                     {nextWL.map((nw, i) => (
                       <div key={i} style={{ padding: 16, borderRadius: 10, border: "1px solid #e8e8ec", background: "#fafafa" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
