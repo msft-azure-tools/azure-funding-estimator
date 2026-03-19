@@ -5,6 +5,33 @@
 * { box-sizing: border-box; }
 body { margin: 0; font-family: 'Segoe UI', -apple-system, sans-serif; -webkit-text-size-adjust: 100%; }
 input[type="date"] { min-width: 130px; }
+
+/* Custom checkboxes — category-colored */
+input[type="checkbox"] {
+  appearance: none; -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border: 2px solid #ccc; border-radius: 4px;
+  cursor: pointer; position: relative; flex-shrink: 0;
+  transition: all 0.15s ease; background: white;
+}
+input[type="checkbox"]:checked {
+  border-color: var(--accent, #0078D4);
+  background: var(--accent, #0078D4);
+}
+input[type="checkbox"]:checked::after {
+  content: ''; position: absolute;
+  left: 4px; top: 1px; width: 5px; height: 9px;
+  border: solid white; border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+input[type="checkbox"]:hover { border-color: #999; }
+input[type="checkbox"]:checked:hover { opacity: 0.9; }
+
+/* Global hover + transitions */
+button { transition: opacity 0.15s ease, background 0.15s ease; }
+button:hover { opacity: 0.85; }
+button:active { opacity: 0.75; }
+
 @media (max-width: 768px) {
   .main-grid { grid-template-columns: 1fr !important; gap: 8px !important; padding: 8px 6px 40px !important; }
   .sow-grid { grid-template-columns: 1fr !important; }
@@ -811,7 +838,7 @@ button{display:none!important}
                             <div key={itm.id} style={{ padding: "5px 0", borderTop: "1px solid #f5f5f7" }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
                               <label style={{ display: "flex", alignItems: "center", gap: 5, minWidth: 145, flex: "1 1 145px", cursor: "pointer", fontSize: 12, color: on ? "#1a1a2e" : "#aaa", fontWeight: on ? 500 : 400 }}>
-                                <input type="checkbox" checked={on} onChange={(e) => upd(itm.id, "on", e.target.checked)} style={{ accentColor: cat.color }} />
+                                <input type="checkbox" checked={on} onChange={(e) => upd(itm.id, "on", e.target.checked)} style={{ "--accent": cat.color }} />
                                 <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{itm.name}</span>
                               </label>
                               {on && (
@@ -854,7 +881,7 @@ button{display:none!important}
                                 </div>
                               )}
                               </div>
-                              {on && itm.note && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#888", fontStyle: "italic", background: "#f8f9fa", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>ℹ {itm.note}</div>}
+                              {on && itm.note && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#888", fontStyle: "italic", background: "#f8f9fa", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>{itm.note}</div>}
                               {on && itm.fab && ri && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>1yr reserved: ~41% savings vs PAYG. Lower ACR = lower funding, but customer saves more.</div>}
                               {on && itm.riOpts && s.riTerm && s.riTerm !== "payg" && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>Reserved pricing: lower ACR = lower funding thresholds, but customer saves on monthly cost.</div>}
                             </div>
@@ -937,14 +964,14 @@ button{display:none!important}
                 {C.rows.length > 0 && <div style={{ marginTop: 8 }}>{C.rows.sort((a, b) => b.yr - a.yr).map((r, i) => (
                   <div key={i} style={{ marginBottom: 3 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}><span style={{ color: r.xcr ? "#d97706" : "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 155 }}>{r.name}{r.sku ? " (" + r.sku + ")" : ""}{r.xcr ? " ⚡" : ""}</span><span style={{ fontWeight: 600 }}>{fmt(r.yr)}</span></div>
-                    <div style={{ height: 3, background: "#f0f0f0", borderRadius: 2 }}><div style={{ height: "100%", width: (r.yr / mx) * 100 + "%", background: r.xcr ? "#fbbf24" : r.color, borderRadius: 2, opacity: r.elig ? 1 : r.xcr ? 0.7 : 0.6 }} /></div>
+                    <div style={{ height: 6, background: "#e8e8ec", borderRadius: 3 }}><div style={{ height: "100%", width: (r.yr / mx) * 100 + "%", background: r.xcr ? "#fbbf24" : r.color, borderRadius: 3, opacity: r.elig ? 1 : r.xcr ? 0.7 : 0.6 }} /></div>
                   </div>
                 ))}</div>}
               </div>
 
               {/* ── YOUR FUNDING PLAN (unified) ── */}
               {C.tot > 0 && (
-                <div style={{ borderRadius: 10, marginBottom: 8, overflow: "hidden", background: "linear-gradient(135deg,#1e1b4b,#312e81)" }}>
+                <div style={{ borderRadius: 10, marginBottom: 8, overflow: "hidden", background: "linear-gradient(135deg,#0a1628,#1e3a5f)" }}>
                   {/* Big total */}
                   {(() => {
                     const lines = [];
@@ -1669,8 +1696,8 @@ h1{page-break-after:avoid}
                         {C.fo && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#5C2D91", flexShrink: 0 }}>→</span><span>AI: Azure OpenAI access approved (if applicable)</span></div>}
                         {C.rows.some(r => ["infra-linux","infra-win","infra-mdc"].includes(r.id)) && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#D83B01", flexShrink: 0 }}>→</span><span>VM migrations: Azure Migrate appliance deployed for server discovery</span></div>}
                         {C.rows.some(r => r.id === "sap") && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#D83B01", flexShrink: 0 }}>→</span><span>SAP: SAP Basis team available for migration coordination</span></div>}
-                        {C.rows.some(r => ["infra-win","infra-mdc"].includes(r.id)) && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#888", flexShrink: 0 }}>ℹ</span><span>Windows VMs with Hybrid Benefit: requires active Software Assurance</span></div>}
-                        {C.rows.some(r => ["sql-mi","sql-db","sql-hyper","sql-vm"].includes(r.id)) && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#888", flexShrink: 0 }}>ℹ</span><span>SQL with Hybrid Benefit: requires active SQL Server Software Assurance</span></div>}
+                        {C.rows.some(r => ["infra-win","infra-mdc"].includes(r.id)) && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#888", flexShrink: 0 }}>•</span><span>Windows VMs with Hybrid Benefit: requires active Software Assurance</span></div>}
+                        {C.rows.some(r => ["sql-mi","sql-db","sql-hyper","sql-vm"].includes(r.id)) && <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#888", flexShrink: 0 }}>•</span><span>SQL with Hybrid Benefit: requires active SQL Server Software Assurance</span></div>}
                       </>
                     )}
                   </div>
