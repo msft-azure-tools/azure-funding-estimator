@@ -6,7 +6,7 @@
 body { margin: 0; font-family: 'Segoe UI', -apple-system, sans-serif; -webkit-text-size-adjust: 100%; }
 input[type="date"] { min-width: 130px; }
 
-/* Custom checkboxes — category-colored */
+/* Custom checkboxes */
 input[type="checkbox"] {
   appearance: none; -webkit-appearance: none;
   width: 16px; height: 16px;
@@ -31,6 +31,12 @@ input[type="checkbox"]:checked:hover { opacity: 0.9; }
 button { transition: opacity 0.15s ease, background 0.15s ease; }
 button:hover { opacity: 0.85; }
 button:active { opacity: 0.75; }
+
+/* Micro-animations */
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 @media (max-width: 768px) {
   .main-grid { grid-template-columns: 1fr !important; gap: 8px !important; padding: 8px 6px 40px !important; }
@@ -442,6 +448,30 @@ function DTxt({ v, fn, st }) {
   return <textarea value={local} onChange={handleChange} onFocus={() => setFocus(true)} onBlur={() => { setFocus(false); clearTimeout(timer.current); fn(local); }} style={{ border: focus ? "1px solid #0078D4" : "1px solid transparent", borderRadius: 4, padding: "6px 8px", background: focus ? "#fffef5" : "transparent", width: "100%", fontFamily: "inherit", fontSize: "inherit", lineHeight: "inherit", resize: "vertical", minHeight: 100, outline: "none", transition: "border-color 0.2s, background 0.2s", ...st }} />;
 }
 
+// Animated number — counts up on change
+function AnimNum({ value, format, style: st }) {
+  const [display, setDisplay] = useState(value);
+  const prev = useRef(value);
+  const raf = useRef(null);
+  useEffect(() => {
+    const from = prev.current;
+    const to = value;
+    if (from === to) return;
+    const start = performance.now();
+    const duration = 400;
+    const animate = (now) => {
+      const t = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      setDisplay(Math.round(from + (to - from) * ease));
+      if (t < 1) raf.current = requestAnimationFrame(animate);
+    };
+    raf.current = requestAnimationFrame(animate);
+    prev.current = to;
+    return () => cancelAnimationFrame(raf.current);
+  }, [value]);
+  return <span style={st}>{format ? format(display) : display}</span>;
+}
+
 function App() {
   const [sel, setSel] = useState({});
   const [exCat, setExCat] = useState({ db: true, fab: false, fo: false, accel: false, pbi: false, oth: false });
@@ -825,7 +855,7 @@ button{display:none!important}
                       <span style={{ opacity: 0.3, transform: open ? "rotate(0)" : "rotate(-90deg)", transition: "0.2s" }}>▾</span>
                     </button>
                     {open && (
-                      <div style={{ padding: "0 14px 10px" }}>
+                      <div style={{ padding: "0 14px 10px", animation: "fadeSlide 0.2s ease" }}>
                         {items.map((itm) => {
                           const s = sel[itm.id] || {};
                           const on = !!s.on;
@@ -955,7 +985,7 @@ button{display:none!important}
               {/* ── YEAR 1 ACR ── */}
               <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 14, marginBottom: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#888", marginBottom: 5 }}>Year 1 ACR</div>
-                <div style={{ textAlign: "center", marginBottom: 8 }}><div style={{ fontSize: 26, fontWeight: 700, color: "#0078D4" }}>{fmt(C.tot)}</div><div style={{ fontSize: 12, color: "#bbb" }}>{fmt(C.tot / 12)}/mo{C.xcr > 0 ? " (+ " + fmt(C.xcr) + " XCR)" : ""}</div></div>
+                <div style={{ textAlign: "center", marginBottom: 8 }}><AnimNum value={C.tot} format={fmt} style={{ fontSize: 26, fontWeight: 700, color: "#0078D4" }} /><div style={{ fontSize: 12, color: "#bbb" }}>{fmt(C.tot / 12)}/mo{C.xcr > 0 ? " (+ " + fmt(C.xcr) + " XCR)" : ""}</div></div>
                 <div style={{ display: "grid", gridTemplateColumns: C.xcr > 0 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 4 }}>
                   <div style={{ background: "#eff6ff", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 10 }}>AFO Eligible ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>{fmt(C.el)}</div></div>
                   <div style={{ background: "#fff7ed", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 10 }}>ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#D83B01" }}>{fmt(C.ot)}</div></div>
@@ -999,7 +1029,7 @@ button{display:none!important}
                         {C.ok ? (
                           <>
                             {/* AFO eligible — show stacked funding */}
-                            <div style={{ fontSize: 30, fontWeight: 700, color: "white", textAlign: "center" }}>{fmt(grandTotal)}</div>
+                            <AnimNum value={grandTotal} format={fmt} style={{ fontSize: 30, fontWeight: 700, color: "white", textAlign: "center", display: "block" }} />
                             <div style={{ fontSize: 11, color: "#a5b4fc", textAlign: "center", marginBottom: 10 }}>total stackable funding</div>
 
                             <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", height: 14, marginBottom: 12 }}>
@@ -1046,7 +1076,7 @@ button{display:none!important}
 
                               return (
                                 <>
-                                  <div style={{ fontSize: 30, fontWeight: 700, color: "white", textAlign: "center" }}>{fmt(bestTotal)}</div>
+                                  <AnimNum value={bestTotal} format={fmt} style={{ fontSize: 30, fontWeight: 700, color: "white", textAlign: "center", display: "block" }} />
                                   <div style={{ fontSize: 11, color: "#a5b4fc", textAlign: "center", marginBottom: 10 }}>recommended co-investment</div>
 
                                   <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", height: 14, marginBottom: 12 }}>
