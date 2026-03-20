@@ -105,7 +105,7 @@ const ITEMS = [
   { id:"avs",cat:"accel",name:"AVS (VMware → Azure)",tag:"Core: VMware Migrate & Modernize (AVS)",unit:"nodes",up:4500,dq:3,riOpts:[{k:"1yr",label:"1yr RI (–20%)",up:3600},{k:"3yr",label:"3yr RI (–35%)",up:2925}] },
   { id:"avd",cat:"accel",name:"Azure Virtual Desktop (VDI)",tag:"Core: Virtual Desktop Infrastructure Migration",unit:"sessions",up:25,dq:100 },
   { id:"sap",cat:"accel",name:"SAP on Azure",tag:"SAP: SAP Migration",unit:"VMs",up:2000,dq:4 },
-  { id:"def",cat:"oth",name:"Defender for Cloud",tag:"Defender for Cloud",unit:"servers",up:15,dq:40 },
+  { id:"def",cat:"oth",name:"Defender for Cloud",tag:"Defender for Cloud",unit:"servers",up:15,dq:40,riOpts:[{k:"p1",label:"Plan 1 — EDR ($5/srv/mo)",up:5},{k:"p2",label:"Plan 2 — Full ($15/srv/mo)",up:15}],note:"Plan 1: EDR via Defender for Endpoint. Plan 2: + agentless scan, vulnerability assessment, FIM, JIT. Default = Plan 2" },
   { id:"purview",cat:"oth",name:"Microsoft Purview",tag:"Data Governance: Microsoft Purview",unit:"flat",up:1,dq:2000,flat:true,note:"Data governance and compliance. Common in Fabric and DB deals. Generates ACR — counts toward funding thresholds" },
   { id:"storage",cat:"oth",name:"Azure Storage (Blob / ADLS / OneLake)",tag:"Azure Storage",unit:"TB",up:23,dq:10,note:"$23/TB/mo (hot). OneLake = Fabric storage billed separately from F-SKU. ADLS for non-Fabric. All generate ACR" },
   { id:"networking",cat:"oth",name:"Azure Networking (ExpressRoute / Firewall / VPN)",tag:"Azure Networking",unit:"flat",up:1,dq:2000,flat:true,note:"Supporting infra for all workloads. ExpressRoute alone can be $1K–$5K/mo. Generates ACR" },
