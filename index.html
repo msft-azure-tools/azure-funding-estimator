@@ -111,6 +111,14 @@ const ITEMS = [
   { id:"networking",cat:"oth",name:"Azure Networking (ExpressRoute / Firewall / VPN)",tag:"Azure Networking",unit:"flat",up:1,dq:2000,flat:true,note:"Supporting infra for all workloads. ExpressRoute alone can be $1K–$5K/mo. Generates ACR" },
   { id:"monitor",cat:"oth",name:"Azure Monitor / Log Analytics",tag:"Azure Observability",unit:"GB/mo",up:3,dq:500,riOpts:[{k:"analytics",label:"Analytics Logs ($3/GB)",up:3},{k:"basic",label:"Basic Logs ($0.65/GB)",up:0.65}],note:"Analytics = full query + alerts + 90d retention. Basic = limited query, 8d retention, 80% cheaper. Mix both for cost optimization" },
   { id:"backup",cat:"oth",name:"Azure Backup / Site Recovery",tag:"Azure Backup & DR",unit:"instances",up:50,dq:20,note:"~$50/instance/mo average. Business continuity. Often required for production workloads. Generates ACR" },
+  { id:"iot",cat:"accel",name:"IoT Hub",tag:"IoT: Azure IoT Hub",unit:"M msg/mo",up:25,dq:40,riOpts:[{k:"s1",label:"Standard S1 ($25/unit/mo)",up:25},{k:"s2",label:"Standard S2 ($250/unit/mo)",up:250},{k:"s3",label:"Standard S3 ($2,500/unit/mo)",up:2500}],note:"S1 for dev/small. S2 for mid-scale. S3 for enterprise. Each unit = 400K–300M msgs/day depending on tier" },
+  { id:"eventhubs",cat:"accel",name:"Event Hubs",tag:"IoT: Azure Event Hubs",unit:"TUs",up:22,dq:10,riOpts:[{k:"std",label:"Standard ($22/TU/mo)",up:22},{k:"prem",label:"Premium ($92/PU/mo)",up:92},{k:"ded",label:"Dedicated ($1,850/CU/mo)",up:1850}],note:"Standard for most streaming. Premium for enterprise isolation. Dedicated for predictable high-throughput" },
+  { id:"apim",cat:"accel",name:"API Management",tag:"API: Azure API Management",unit:"units",up:150,dq:2,riOpts:[{k:"dev",label:"Developer ($50/unit/mo)",up:50},{k:"basic",label:"Basic ($150/unit/mo)",up:150},{k:"std",label:"Standard ($700/unit/mo)",up:700},{k:"prem",label:"Premium ($2,800/unit/mo)",up:2800}],note:"Developer for test. Basic for low-traffic. Standard for production. Premium for multi-region + VNet" },
+  { id:"redis",cat:"accel",name:"Azure Cache for Redis",tag:"Data: Azure Cache for Redis",unit:"instances",up:160,dq:2,riOpts:[{k:"basic",label:"Basic C1 ($40/mo)",up:40},{k:"std",label:"Standard C2 ($160/mo)",up:160},{k:"prem",label:"Premium P1 ($450/mo)",up:450},{k:"ent",label:"Enterprise E10 ($880/mo)",up:880}],note:"Basic for dev. Standard for production. Premium for clustering + VNet. Enterprise for Redis modules + 99.999% SLA" },
+  { id:"sentinel",cat:"oth",name:"Microsoft Sentinel (SIEM)",tag:"Microsoft Sentinel",unit:"GB/day",up:90,dq:10,riOpts:[{k:"payg",label:"Pay-as-you-go ($2.76/GB)",up:90},{k:"commit100",label:"Commitment 100GB/day ($1.96/GB)",up:64},{k:"commit500",label:"Commitment 500GB/day ($1.52/GB)",up:50}],note:"Pricing = GB ingested/day x 30. Commitment tiers give 30-45% discount. Hot in Arc + DFC security cases. Generates ACR" },
+  { id:"functions",cat:"accel",name:"Azure Functions / Logic Apps",tag:"AI Apps: Serverless Compute",unit:"M exec/mo",up:20,dq:50,note:"Consumption plan: ~$0.20/M executions + compute time. Premium for VNet + predictable scale. Common in AI/integration scenarios" },
+  { id:"frontdoor",cat:"oth",name:"Azure Front Door / CDN",tag:"Azure Front Door & CDN",unit:"TB transfer",up:35,dq:10,note:"~$35/TB for global delivery. Web Application Firewall included in Premium tier. Common for web apps + API security" },
+  { id:"keyvault",cat:"oth",name:"Azure Key Vault",tag:"Azure Key Vault",unit:"K operations",up:3,dq:100,note:"~$0.03/10K operations. Secrets, keys, certificates. Required for most production workloads. Very low ACR but essential" },
   { id:"oth",cat:"oth",name:"Other Azure",tag:"Other Azure Services",unit:"flat",up:1,dq:1000,flat:true },
 ];
 
@@ -127,6 +135,40 @@ const FSKU = [
   { s: "F2", cu: 2, mo: 263, ri: 156 }, { s: "F4", cu: 4, mo: 526, ri: 313 }, { s: "F8", cu: 8, mo: 1051, ri: 625 },
   { s: "F16", cu: 16, mo: 2103, ri: 1251 }, { s: "F32", cu: 32, mo: 4205, ri: 2502 }, { s: "F64", cu: 64, mo: 8410, ri: 5004 },
   { s: "F128", cu: 128, mo: 16820, ri: 10008 }, { s: "F256", cu: 256, mo: 33640, ri: 20016 },
+];
+
+const SCENARIOS = [
+  { id: "db-migration", icon: "🗄️", label: "SQL Database Migration", desc: "SQL MI + Defender + Backup + Monitor + Networking", items: {
+    "sql-mi": { on: true, qty: 8, riTerm: "1yr-ahub" }, "def": { on: true, qty: 20, riTerm: "p2" },
+    "backup": { on: true, qty: 20 }, "monitor": { on: true, qty: 500 }, "networking": { on: true, mo: 2000 }
+  }},
+  { id: "analytics", icon: "📊", label: "Analytics & Fabric", desc: "Fabric F16 + PBI F64 + Real-Time + Storage + Monitor", items: {
+    "fab-mig": { on: true, sku: "F16" }, "fab-pbi": { on: true, sku: "F64" }, "fab-rti": { on: true, sku: "F32" },
+    "storage": { on: true, qty: 10 }, "monitor": { on: true, qty: 500 }
+  }},
+  { id: "ai-platform", icon: "🤖", label: "AI Platform (RAG)", desc: "OpenAI + AI Search + Cosmos DB + AKS + Monitor", items: {
+    "oai-std": { on: true, qty: 10 }, "search": { on: true, qty: 3, riTerm: "s1" }, "cosmos": { on: true, qty: 4, riTerm: "1yr" },
+    "aks": { on: true, qty: 6 }, "monitor": { on: true, qty: 500 }
+  }},
+  { id: "infra", icon: "☁️", label: "Infra Modernization", desc: "Windows + Linux VMs + Defender + Backup + AVD + Monitor", items: {
+    "infra-win": { on: true, qty: 15, riTerm: "1yr-ahub" }, "infra-linux": { on: true, qty: 10, riTerm: "1yr" },
+    "def": { on: true, qty: 25, riTerm: "p2" }, "backup": { on: true, qty: 25 },
+    "avd": { on: true, qty: 50, riTerm: "pooled" }, "monitor": { on: true, qty: 1000 }
+  }},
+  { id: "oracle-mig", icon: "🔄", label: "Oracle Migration", desc: "Oracle to PG/SQL + VMs + Defender + Backup", items: {
+    "oracle-pg": { on: true, qty: 8 }, "infra-linux": { on: true, qty: 5, riTerm: "1yr" },
+    "def": { on: true, qty: 10, riTerm: "p2" }, "backup": { on: true, qty: 10 }, "monitor": { on: true, qty: 300 }
+  }},
+  { id: "security", icon: "🛡️", label: "Security & Arc", desc: "Defender P2 + Sentinel + Monitor + Key Vault + Networking", items: {
+    "def": { on: true, qty: 50, riTerm: "p2" }, "sentinel": { on: true, qty: 10, riTerm: "payg" },
+    "monitor": { on: true, qty: 2000 }, "keyvault": { on: true, qty: 100 }, "networking": { on: true, mo: 3000 }
+  }},
+  { id: "full-stack", icon: "🚀", label: "Full Stack (DB + AI + Infra)", desc: "SQL MI + Fabric + OpenAI + VMs + Defender + everything", items: {
+    "sql-mi": { on: true, qty: 8, riTerm: "1yr-ahub" }, "fab-mig": { on: true, sku: "F16" }, "fab-pbi": { on: true, sku: "F64" },
+    "oai-std": { on: true, qty: 10 }, "search": { on: true, qty: 3, riTerm: "s1" },
+    "infra-win": { on: true, qty: 10, riTerm: "1yr-ahub" }, "def": { on: true, qty: 20, riTerm: "p2" },
+    "backup": { on: true, qty: 20 }, "monitor": { on: true, qty: 1000 }, "networking": { on: true, mo: 3000 }
+  }},
 ];
 
 const skuMo = (sku, reserved) => { const f = FSKU.find((f) => f.s === sku) || FSKU[0]; return reserved ? f.ri : f.mo; };
@@ -522,6 +564,35 @@ function App() {
     setSow((p) => ({ ...p, milestones: p.milestones.filter((_, i) => i !== idx) }));
   };
 
+
+  // ── Apply Scenario ──
+  const applyScenario = (scenario) => {
+    const newSel = {};
+    Object.entries(scenario.items).forEach(([id, config]) => {
+      const itm = ITEMS.find(i => i.id === id);
+      if (!itm) return;
+      const qty = config.qty || itm.dq || 1;
+      const sku = config.sku || itm.dsku || "";
+      const ri = config.riTerm && config.riTerm !== "payg";
+      const riTerm = config.riTerm || "payg";
+      const riOpt = itm.riOpts && itm.riOpts.find(o => o.k === riTerm);
+      const up = riOpt ? riOpt.up : itm.up;
+      const mo = config.mo || (itm.flat ? config.mo || itm.dq : (itm.fab ? skuMo(sku, ri) * qty : up * qty));
+      newSel[id] = { on: true, qty, sku, ri, riTerm, mo };
+    });
+    setSel(newSel);
+    setExCat(prev => {
+      const updated = { ...prev };
+      Object.keys(scenario.items).forEach(id => {
+        const itm = ITEMS.find(i => i.id === id);
+        if (itm) updated[itm.cat] = true;
+      });
+      return updated;
+    });
+  };
+
+
+
   // ── Save / Load via persistent storage ──
   const saveProject = async (customName) => {
     const defaultName = sow.cn === "[CUSTOMER NAME]" ? "Untitled-" + Date.now() : sow.cn;
@@ -786,7 +857,7 @@ button{display:none!important}
               <svg width="24" height="24" viewBox="0 0 20 20"><rect width="9" height="9" fill="#f25022" rx="1" /><rect x="11" width="9" height="9" fill="#7fba00" rx="1" /><rect y="11" width="9" height="9" fill="#00a4ef" rx="1" /><rect x="11" y="11" width="9" height="9" fill="#ffb900" rx="1" /></svg>
               <div>
                 <div style={{ fontSize: 18, lineHeight: 1.1, letterSpacing: -0.3 }}><span style={{ fontWeight: 300 }}>Azure</span> <span style={{ fontWeight: 700 }}>Funding Estimator</span></div>
-                <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", marginTop: 2, letterSpacing: 0.2 }}>by Rai Chowdhury · rachowdhury@microsoft.com · Use Azure Pricing Calculator for exact sizing & pricing</div>
+                <div style={{ fontSize: 9, color: "rgba(255,255,255,0.35)", marginTop: 2, letterSpacing: 0.2 }}>by Rai Chowdhury · rachowdhury@microsoft.com</div>
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }} className="header-actions">
@@ -796,6 +867,7 @@ button{display:none!important}
               </div>
               {saveStatus && <span style={{ fontSize: 12, padding: "3px 8px", background: "rgba(255,255,255,0.2)", borderRadius: 4 }}>{saveStatus}</span>}
               <button onClick={() => saveProject()} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>💾 Save</button>
+              {Object.keys(sel).length > 0 && <button onClick={() => setSel({})} style={{ padding: "5px 12px", background: "rgba(220,38,38,0.2)", color: "#fca5a5", border: "1px solid rgba(220,38,38,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>✕ Clear</button>}
               <div style={{ position: "relative" }}>
                 <button onClick={() => { setShowSaves(!showSaves); if (!showSaves) loadSavedList(); }} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>📂{savedList.length > 0 ? " " + savedList.length : ""}</button>
                 {showSaves && (
@@ -818,7 +890,6 @@ button{display:none!important}
               </div>
             </div>
           </div>
-          {/* Tab navigation */}
           <div style={{ display: "flex", gap: 0 }} className="tab-nav">
             {[
               { k: "calc", label: "Calculator" },
@@ -1207,16 +1278,26 @@ button{display:none!important}
                     <p style={{ margin: "0 0 8px" }}><strong>What it does:</strong> Estimates Azure workload costs across 47 services, calculates potential funding through AFO (ECIF), Standard ECIF, and MCI Partner Nominated programs, generates Statements of Work, and produces customer-facing investment summaries.</p>
                     <p style={{ margin: "0 0 8px" }}><strong>Data sources:</strong> Azure list pricing (approximate, March 2026), Microsoft Commercial Partner Incentives Guide (9 March 2026, Market A), and Azure Frontier Offer partner documentation.</p>
                     <p style={{ margin: "0 0 8px" }}><strong>Limitations:</strong> All prices are planning estimates — actual Azure pricing varies by region, tier, and negotiated discounts. Funding amounts are indicative and subject to Microsoft internal approval, program availability, and eligibility verification. Always validate with Azure Pricing Calculator and your Microsoft PSS/account team before submitting nominations.</p>
-                    <p style={{ margin: "0 0 4px" }}><strong>Coverage:</strong> 47 workloads · 6 categories · Fabric F-SKU pricing (F2–F256) · RI and AHUB options · MCI Market A tiers (XXS–L) · AFO 50% eligibility engine · Smart split recommendations · Dynamic SOW with milestones · Customer-facing summary view</p>
+                    <p style={{ margin: "0 0 4px" }}><strong>Coverage:</strong> 55 workloads · 6 categories · 7 quick-start scenarios · Fabric F-SKU pricing (F2–F256) · RI and AHUB options · MCI Market A tiers (XXS–L) · AFO 50% eligibility engine · Smart split recommendations · Dynamic SOW with milestones · Customer-facing summary view</p>
                   </div>
                 )}
               </div>
 
               {C.tot === 0 && (
-                <div style={{ background: "white", borderRadius: 10, border: "1px dashed #c4b5fd", padding: 16, textAlign: "center" }}>
-                  <div style={{ fontSize: 22, marginBottom: 6 }}>👈</div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: "#5C2D91", marginBottom: 4 }}>Get started</div>
-                  <div style={{ fontSize: 12, color: "#888", lineHeight: 1.5 }}>Select workloads on the left to build your Azure estimate. The funding calculator updates automatically.</div>
+                <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#5C2D91", marginBottom: 8 }}>Quick start — pick a scenario</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }} className="grid-2col">
+                    {SCENARIOS.map(s => (
+                      <button key={s.id} onClick={() => applyScenario(s)} style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 12px", background: "#fafafa", border: "1px solid #e8e8ec", borderRadius: 8, cursor: "pointer", textAlign: "left" }}>
+                        <span style={{ fontSize: 20, flexShrink: 0, marginTop: 1 }}>{s.icon}</span>
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: "#333" }}>{s.label}</div>
+                          <div style={{ fontSize: 10, color: "#888", marginTop: 1 }}>{s.desc}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  <div style={{ fontSize: 11, color: "#aaa", textAlign: "center", marginTop: 8 }}>Or select workloads manually on the left</div>
                 </div>
               )}
             </div>
@@ -1820,6 +1901,8 @@ h1{page-break-after:avoid}
         <a href="mailto:rachowdhury@microsoft.com" style={{ fontSize: 11, color: "#0078D4", textDecoration: "none" }}>rachowdhury@microsoft.com</a>
         <span style={{ fontSize: 11, color: "#ddd" }}>·</span>
         <span style={{ fontSize: 11, color: "#bbb" }}>v2.0 · Pricing: March 2026 · MCI Guide: March 2026</span>
+        <span style={{ fontSize: 11, color: "#ddd" }}>·</span>
+        <a href="https://azure.microsoft.com/en-us/pricing/calculator/" target="_blank" rel="noopener" style={{ fontSize: 11, color: "#0078D4", textDecoration: "none" }}>Azure Pricing Calculator</a>
       </div>
       </>
       )}
