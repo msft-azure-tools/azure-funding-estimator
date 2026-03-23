@@ -605,7 +605,7 @@ function App() {
 
 
 
-  // ── Visitor Gate ──
+  // ── Visitor Gate (timed overlay) ──
   const [visitor, setVisitor] = useState(() => {
     try {
       const stored = localStorage.getItem("afe_visitor");
@@ -613,6 +613,21 @@ function App() {
     } catch(e) { return null; }
   });
   const [visitorForm, setVisitorForm] = useState({ name: "", email: "", company: "" });
+  const [showGate, setShowGate] = useState(false);
+
+  // Show registration overlay after 25 seconds if not registered
+  useEffect(() => {
+    if (visitor) return;
+    const timer = setTimeout(() => setShowGate(true), 25000);
+    return () => clearTimeout(timer);
+  }, [visitor]);
+  const [showGate, setShowGate] = useState(false);
+
+  useEffect(() => {
+    if (visitor) return;
+    const timer = setTimeout(() => setShowGate(true), 25000);
+    return () => clearTimeout(timer);
+  }, [visitor]);
 
   const registerVisitor = () => {
     if (!visitorForm.name || !visitorForm.company) return;
@@ -1141,53 +1156,6 @@ button{display:none!important}
 
 
 
-  // ── Visitor gate ──
-  if (!visitor) {
-    return (
-      <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0a1628 0%, #1e3a5f 40%, #0078D4 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Segoe UI',sans-serif" }}>
-        <div style={{ maxWidth: 900, width: "100%", display: "flex", gap: 0, borderRadius: 16, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
-          {/* Left panel — branding */}
-          <div style={{ flex: 1, background: "rgba(255,255,255,0.05)", padding: "48px 40px", display: "flex", flexDirection: "column", justifyContent: "center", backdropFilter: "blur(10px)" }} className="gate-brand">
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
-              <svg width="32" height="32" viewBox="0 0 23 23"><rect x="0" y="0" width="11" height="11" fill="#f25022"/><rect x="12" y="0" width="11" height="11" fill="#7fba00"/><rect x="0" y="12" width="11" height="11" fill="#00a4ef"/><rect x="12" y="12" width="11" height="11" fill="#ffb900"/></svg>
-              <div>
-                <div style={{ fontSize: 22, letterSpacing: -0.5, color: "white" }}><span style={{ fontWeight: 300 }}>Azure</span> <span style={{ fontWeight: 700 }}>Funding Estimator</span></div>
-              </div>
-            </div>
-            <div style={{ fontSize: 15, color: "rgba(255,255,255,0.8)", lineHeight: 1.6, marginBottom: 32 }}>Estimate Azure funding for your next project — AFO, ECIF & MCI in one tool.</div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              {[
-                { icon: "⚡", text: "Automatic funding calculation" },
-                { icon: "📄", text: "SOW & customer summary generation" },
-              ].map((f, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 16, width: 24, textAlign: "center" }}>{f.icon}</span>
-                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.7)" }}>{f.text}</span>
-                </div>
-              ))}
-            </div>
-            <div style={{ marginTop: 32, fontSize: 10, color: "rgba(255,255,255,0.25)" }}>by Rai Chowdhury · Microsoft Cloud & AI</div>
-          </div>
-          {/* Right panel — form */}
-          <div style={{ width: 360, background: "white", padding: "48px 36px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-            <div style={{ fontSize: 18, fontWeight: 600, color: "#1a1a2e", marginBottom: 4 }}>Get started</div>
-            <div style={{ fontSize: 12, color: "#888", marginBottom: 24 }}>Enter your details to access the tool</div>
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 11, fontWeight: 600, color: "#555", display: "block", marginBottom: 4 }}>Name *</label>
-              <input value={visitorForm.name} onChange={(e) => setVisitorForm(p => ({ ...p, name: e.target.value }))} placeholder="Your full name" style={{ width: "100%", padding: "10px 14px", border: "1.5px solid #e0e0e0", borderRadius: 8, fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", transition: "border 0.15s" }} onFocus={(e) => e.target.style.borderColor = "#0078D4"} onBlur={(e) => e.target.style.borderColor = "#e0e0e0"} />
-            </div>
-
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 11, fontWeight: 600, color: "#555", display: "block", marginBottom: 4 }}>Company *</label>
-              <input value={visitorForm.company} onChange={(e) => setVisitorForm(p => ({ ...p, company: e.target.value }))} placeholder="Your organization" style={{ width: "100%", padding: "10px 14px", border: "1.5px solid #e0e0e0", borderRadius: 8, fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", transition: "border 0.15s" }} onFocus={(e) => e.target.style.borderColor = "#0078D4"} onBlur={(e) => e.target.style.borderColor = "#e0e0e0"} onKeyDown={(e) => e.key === "Enter" && registerVisitor()} />
-            </div>
-            <button onClick={registerVisitor} disabled={!visitorForm.name || !visitorForm.company} style={{ width: "100%", padding: "12px", background: (!visitorForm.name || !visitorForm.company) ? "#e0e0e0" : "linear-gradient(135deg, #0078D4, #005a9e)", color: (!visitorForm.name || !visitorForm.company) ? "#999" : "white", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: (!visitorForm.name || !visitorForm.company) ? "default" : "pointer", fontFamily: "inherit", transition: "opacity 0.15s", boxShadow: (!visitorForm.name || !visitorForm.company) ? "none" : "0 4px 12px rgba(0,120,212,0.3)" }} onMouseOver={(e) => { if (visitorForm.name && visitorForm.company) e.target.style.opacity = "0.9"; }} onMouseOut={(e) => e.target.style.opacity = "1"}>Open Tool →</button>
-            <div style={{ textAlign: "center", marginTop: 16, fontSize: 10, color: "#ccc" }}>No account needed · Data stays in your browser</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={{ fontFamily: "'Segoe UI',sans-serif", minHeight: "100vh", background: "#f5f5f5", color: "#1a1a2e" }}>
@@ -2395,7 +2363,39 @@ h1{page-break-after:avoid}
       </>
       )}
 
-      {/* Excel Import Preview Modal */}
+
+      {/* Timed registration overlay */}
+      {showGate && !visitor && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 99999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ position: "absolute", inset: 0, background: "rgba(10,22,40,0.7)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }} />
+          <div style={{ position: "relative", maxWidth: 420, width: "100%", background: "white", borderRadius: 16, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.4)", animation: "fadeSlide 0.3s ease" }}>
+            <div style={{ background: HDR, padding: "24px 28px", color: "white", textAlign: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 6 }}>
+                <svg width="20" height="20" viewBox="0 0 23 23"><rect x="0" y="0" width="11" height="11" fill="#f25022"/><rect x="12" y="0" width="11" height="11" fill="#7fba00"/><rect x="0" y="12" width="11" height="11" fill="#00a4ef"/><rect x="12" y="12" width="11" height="11" fill="#ffb900"/></svg>
+                <span style={{ fontSize: 16, letterSpacing: -0.3 }}><span style={{ fontWeight: 300 }}>Azure</span> <span style={{ fontWeight: 700 }}>Funding Estimator</span></span>
+              </div>
+              <div style={{ fontSize: 13, opacity: 0.7 }}>Register to continue using the tool</div>
+            </div>
+            <div style={{ padding: "20px 28px" }}>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ fontSize: 11, fontWeight: 600, color: "#555", display: "block", marginBottom: 3 }}>Name *</label>
+                <input value={visitorForm.name} onChange={(e) => setVisitorForm(p => ({ ...p, name: e.target.value }))} placeholder="Your full name" style={{ width: "100%", padding: "9px 12px", border: "1.5px solid #e0e0e0", borderRadius: 8, fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", transition: "border 0.15s" }} onFocus={(e) => e.target.style.borderColor = "#0078D4"} onBlur={(e) => e.target.style.borderColor = "#e0e0e0"} />
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <label style={{ fontSize: 11, fontWeight: 600, color: "#555", display: "block", marginBottom: 3 }}>Work Email *</label>
+                <input type="email" value={visitorForm.email} onChange={(e) => setVisitorForm(p => ({ ...p, email: e.target.value }))} placeholder="you@company.com" style={{ width: "100%", padding: "9px 12px", border: "1.5px solid #e0e0e0", borderRadius: 8, fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", transition: "border 0.15s" }} onFocus={(e) => e.target.style.borderColor = "#0078D4"} onBlur={(e) => e.target.style.borderColor = "#e0e0e0"} onKeyDown={(e) => e.key === "Enter" && registerVisitor()} />
+              </div>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 11, fontWeight: 600, color: "#555", display: "block", marginBottom: 3 }}>Company</label>
+                <input value={visitorForm.company} onChange={(e) => setVisitorForm(p => ({ ...p, company: e.target.value }))} placeholder="Your organization" style={{ width: "100%", padding: "9px 12px", border: "1.5px solid #e0e0e0", borderRadius: 8, fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", transition: "border 0.15s" }} onFocus={(e) => e.target.style.borderColor = "#0078D4"} onBlur={(e) => e.target.style.borderColor = "#e0e0e0"} onKeyDown={(e) => e.key === "Enter" && registerVisitor()} />
+              </div>
+              <button onClick={registerVisitor} disabled={!visitorForm.name || !visitorForm.email} style={{ width: "100%", padding: "11px", background: (!visitorForm.name || !visitorForm.email) ? "#e0e0e0" : "linear-gradient(135deg, #0078D4, #005a9e)", color: (!visitorForm.name || !visitorForm.email) ? "#999" : "white", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: (!visitorForm.name || !visitorForm.email) ? "default" : "pointer", fontFamily: "inherit", boxShadow: (!visitorForm.name || !visitorForm.email) ? "none" : "0 4px 12px rgba(0,120,212,0.3)" }}>Continue →</button>
+              <div style={{ textAlign: "center", marginTop: 10, fontSize: 9, color: "#bbb" }}>Your details are only used to track tool usage</div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Excel Import Preview Modal */
       {importPreview && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
           <div style={{ background: "white", borderRadius: 12, maxWidth: 700, width: "100%", maxHeight: "80vh", overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
@@ -2444,5 +2444,9 @@ h1{page-break-after:avoid}
     </div>
   );
 }
+}
 
-,
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+<script data-goatcounter="https://azure-funding.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
+</body></html>
