@@ -610,12 +610,12 @@ function App() {
     try {
       const stored = localStorage.getItem("afe_visitor");
       return stored ? JSON.parse(stored) : null;
-    } catch { return null; }
+    } catch(e) { return null; }
   });
   const [visitorForm, setVisitorForm] = useState({ name: "", email: "", company: "" });
 
   const registerVisitor = () => {
-    if (!visitorForm.name || !visitorForm.email) return;
+    if (!visitorForm.name || !visitorForm.company) return;
     const v = { ...visitorForm, registered: new Date().toISOString() };
     localStorage.setItem("afe_visitor", JSON.stringify(v));
     setVisitor(v);
@@ -627,7 +627,7 @@ function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...v, type: "new" })
       });
-    } catch {}
+    } catch(e) {}
   };
 
   // Log every visit (returning users)
@@ -640,7 +640,7 @@ function App() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name: visitor.name, email: visitor.email, company: visitor.company, type: "return" })
         });
-      } catch {}
+      } catch(e) {}
     }
   }, []);
 
@@ -1176,15 +1176,12 @@ button{display:none!important}
               <label style={{ fontSize: 11, fontWeight: 600, color: "#555", display: "block", marginBottom: 4 }}>Name *</label>
               <input value={visitorForm.name} onChange={(e) => setVisitorForm(p => ({ ...p, name: e.target.value }))} placeholder="Your full name" style={{ width: "100%", padding: "10px 14px", border: "1.5px solid #e0e0e0", borderRadius: 8, fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", transition: "border 0.15s" }} onFocus={(e) => e.target.style.borderColor = "#0078D4"} onBlur={(e) => e.target.style.borderColor = "#e0e0e0"} />
             </div>
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ fontSize: 11, fontWeight: 600, color: "#555", display: "block", marginBottom: 4 }}>Work Email *</label>
-              <input type="email" value={visitorForm.email} onChange={(e) => setVisitorForm(p => ({ ...p, email: e.target.value }))} placeholder="you@company.com" style={{ width: "100%", padding: "10px 14px", border: "1.5px solid #e0e0e0", borderRadius: 8, fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", transition: "border 0.15s" }} onFocus={(e) => e.target.style.borderColor = "#0078D4"} onBlur={(e) => e.target.style.borderColor = "#e0e0e0"} onKeyDown={(e) => e.key === "Enter" && registerVisitor()} />
-            </div>
+
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 11, fontWeight: 600, color: "#555", display: "block", marginBottom: 4 }}>Company</label>
+              <label style={{ fontSize: 11, fontWeight: 600, color: "#555", display: "block", marginBottom: 4 }}>Company *</label>
               <input value={visitorForm.company} onChange={(e) => setVisitorForm(p => ({ ...p, company: e.target.value }))} placeholder="Your organization" style={{ width: "100%", padding: "10px 14px", border: "1.5px solid #e0e0e0", borderRadius: 8, fontSize: 13, fontFamily: "inherit", outline: "none", boxSizing: "border-box", transition: "border 0.15s" }} onFocus={(e) => e.target.style.borderColor = "#0078D4"} onBlur={(e) => e.target.style.borderColor = "#e0e0e0"} onKeyDown={(e) => e.key === "Enter" && registerVisitor()} />
             </div>
-            <button onClick={registerVisitor} disabled={!visitorForm.name || !visitorForm.email} style={{ width: "100%", padding: "12px", background: (!visitorForm.name || !visitorForm.email) ? "#e0e0e0" : "linear-gradient(135deg, #0078D4, #005a9e)", color: (!visitorForm.name || !visitorForm.email) ? "#999" : "white", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: (!visitorForm.name || !visitorForm.email) ? "default" : "pointer", fontFamily: "inherit", transition: "opacity 0.15s", boxShadow: (!visitorForm.name || !visitorForm.email) ? "none" : "0 4px 12px rgba(0,120,212,0.3)" }} onMouseOver={(e) => { if (visitorForm.name && visitorForm.email) e.target.style.opacity = "0.9"; }} onMouseOut={(e) => e.target.style.opacity = "1"}>Open Tool →</button>
+            <button onClick={registerVisitor} disabled={!visitorForm.name || !visitorForm.company} style={{ width: "100%", padding: "12px", background: (!visitorForm.name || !visitorForm.company) ? "#e0e0e0" : "linear-gradient(135deg, #0078D4, #005a9e)", color: (!visitorForm.name || !visitorForm.company) ? "#999" : "white", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: (!visitorForm.name || !visitorForm.company) ? "default" : "pointer", fontFamily: "inherit", transition: "opacity 0.15s", boxShadow: (!visitorForm.name || !visitorForm.company) ? "none" : "0 4px 12px rgba(0,120,212,0.3)" }} onMouseOver={(e) => { if (visitorForm.name && visitorForm.company) e.target.style.opacity = "0.9"; }} onMouseOut={(e) => e.target.style.opacity = "1"}>Open Tool →</button>
             <div style={{ textAlign: "center", marginTop: 16, fontSize: 10, color: "#ccc" }}>No account needed · Data stays in your browser</div>
           </div>
         </div>
