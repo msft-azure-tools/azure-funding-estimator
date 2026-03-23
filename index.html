@@ -56,6 +56,7 @@ button:active { opacity: 0.75; }
   .header-actions > div:first-child { width: 100% !important; }
 }
 </style></head><body><div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
@@ -627,6 +628,95 @@ function App() {
 
 
 
+
+  // ── Funding Maximizer ──
+  const getMaximizerTips = () => {
+    if (C.tot === 0) return [];
+    const tips = [];
+    const gap = 50 - C.pct;
+    
+    // Tip 1: Close to AFO threshold
+    if (!C.ok && C.el > 0 && gap <= 25 && gap > 0) {
+      const needed = (C.ot * 50 / 50) - C.el; // ACR needed to reach 50%
+      const potentialEcif = Math.min((C.tot + needed) * 0.5, 500000);
+      tips.push({
+        icon: "🎯",
+        title: "You're " + gap.toFixed(0) + "% from AFO threshold",
+        desc: "Add ~" + fmt(needed) + " in DB/Fabric/AI Foundry workloads to unlock up to " + fmt(potentialEcif) + " ECIF.",
+        action: "reach-afo",
+        impact: potentialEcif,
+        items: [
+          !sel["fab-sql"] && { id: "fab-sql", name: "Fabric SQL DB (F8)", add: "$625/mo" },
+          !sel["search"] && { id: "search", name: "AI Search (S1)", add: "$250/mo" },
+          !sel["cosmos"] && { id: "cosmos", name: "Cosmos DB (4K RU)", add: "$232/mo" },
+        ].filter(Boolean).slice(0, 3)
+      });
+    }
+    
+    // Tip 2: AFO eligible but ACR could be higher → more ECIF
+    if (C.ok && C.ecif < 500000) {
+      const headroom = 500000 - C.ecif;
+      const acrNeeded = headroom * 2; // 2:1 ROI = need 2x more ACR
+      tips.push({
+        icon: "📈",
+        title: "ECIF headroom: " + fmt(headroom) + " available",
+        desc: "Add ~" + fmt(acrNeeded) + " more ACR to maximize ECIF to $500K cap.",
+        impact: headroom,
+        items: [
+          !sel["fab-pbi"] && { id: "fab-pbi", name: "Power BI on Fabric (F64)", add: "$8,276/mo" },
+          !sel["oai-std"] && { id: "oai-std", name: "OpenAI Standard (10M tok)", add: "$2,500/mo" },
+          !sel["fab-rti"] && { id: "fab-rti", name: "Real-Time Intelligence (F32)", add: "$3,240/mo" },
+        ].filter(Boolean).slice(0, 3)
+      });
+    }
+    
+    // Tip 3: MCI tier upgrade opportunity
+    if (C.tot >= 5000) {
+      const tiers = [
+        { min: 5000, max: 15000, tier: "XXS", next: "XS", payout: 6500, need: 15000 },
+        { min: 15000, max: 50000, tier: "XS", next: "S", payout: 15000, need: 50000 },
+        { min: 50000, max: 100000, tier: "S", next: "M", payout: 35000, need: 100000 },
+        { min: 100000, max: 250000, tier: "M", next: "L", payout: 75000, need: 250000 },
+      ];
+      const current = tiers.find(t => C.tot >= t.min && C.tot < t.max);
+      if (current) {
+        const acrGap = current.need - C.tot;
+        tips.push({
+          icon: "⬆️",
+          title: "MCI " + current.tier + " → " + current.next + " (" + fmt(acrGap) + " more ACR)",
+          desc: "Adding " + fmt(acrGap) + " ACR upgrades MCI post-sales from " + fmt(C.mci.post) + " to " + fmt(current.payout) + ".",
+          impact: current.payout - C.mci.post,
+        });
+      }
+    }
+    
+    // Tip 4: No MCI pre-sales claimed
+    if (C.tot >= 15000 && C.mci.pre > 0) {
+      tips.push({
+        icon: "💰",
+        title: "Don't forget MCI Pre-sales (" + fmt(C.mci.pre) + ")",
+        desc: C.ok ? "Stackable with AFO ECIF — separate assessment scope. Free money." : "Available via Partner Center. Submit before starting post-sales.",
+        impact: C.mci.pre,
+      });
+    }
+    
+    // Tip 5: Reserved Instances savings
+    const paygoItems = Object.entries(sel).filter(([id, s]) => {
+      const itm = ITEMS.find(i => i.id === id);
+      return s.on && itm && itm.riOpts && (!s.riTerm || s.riTerm === "payg");
+    });
+    if (paygoItems.length >= 2) {
+      tips.push({
+        icon: "🔒",
+        title: paygoItems.length + " workloads on PAYG — consider Reserved",
+        desc: "Switching to 1yr RI saves 20-40% on customer cost while keeping same ACR for funding.",
+        impact: 0,
+      });
+    }
+    
+    return tips.sort((a, b) => b.impact - a.impact);
+  };
+
   // ── Excel Import ──
   const [importPreview, setImportPreview] = useState(null);
   const fileRef = useRef(null);
@@ -637,7 +727,8 @@ function App() {
     e.target.value = "";
     try {
       const data = await file.arrayBuffer();
-      const XLSX = await import("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm");
+      const XLSX = window.XLSX;
+      if (!XLSX) { alert("Excel library not loaded. Please refresh the page and try again."); return; }
       const wb = XLSX.read(data);
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
@@ -883,7 +974,10 @@ function App() {
       recStrategy = recCash === stdEcif ? "Standard ECIF" : "MCI";
     }
 
-    return { el, ot, xcr, tot, pct, ok, rows, sc, ecif, stdEcif, db, fab, fo, accel, mci, recs, recCash, recCredits, recStrategy };
+    // Customer-visible funding = single-path amount (not split)
+    const custFunding = ok ? (ecif + mci.pre) : Math.max(stdEcif, mci.pre + mci.post);
+    const custFundingLabel = ok ? "AFO ECIF" + (mci.pre > 0 ? " + Assessment" : "") : (mci.pre + mci.post) >= stdEcif ? "MCI Partner Program" : "Standard ECIF";
+    return { el, ot, xcr, tot, pct, ok, rows, sc, ecif, stdEcif, db, fab, fo, accel, mci, recs, recCash, recCredits, recStrategy, custFunding, custFundingLabel };
   }, [sel]);
 
   const dyn = useMemo(() => getScope(C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn), [C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn]);
@@ -898,22 +992,22 @@ function App() {
     const perMs = sow.milestones.map(m => { const h = parseFloat(m.h) || 0; return { h, e: h * r }; });
     const totalH = perMs.reduce((s, m) => s + m.h, 0);
     const totalE = perMs.reduce((s, m) => s + m.e, 0);
-    const budget = C.ok ? C.ecif : C.stdEcif;
+    const budget = C.custFunding || (C.ok ? C.ecif : Math.max(C.stdEcif, C.mci.pre + C.mci.post));
     const suggestedH = r > 0 ? Math.floor(budget / r) : 0;
     return { perMs, totalH, totalE, budget, suggestedH, overBudget: totalE > budget && budget > 0 };
-  }, [sow.rate, sow.milestones, C.ecif, C.stdEcif, C.ok]);
+  }, [sow.rate, sow.milestones, C.ecif, C.stdEcif, C.ok, C.custFunding, C.mci]);
 
   // ROI calculation
   const roi = useMemo(() => {
     const custInvest = C.tot; // Y1 Azure spend
-    const fundCash = C.recCash;
+    const fundCash = C.custFunding;
     const fundCredits = 0;
     const fundTotal = fundCash + fundCredits;
     const netCost = custInvest - fundCredits; // credits offset Azure cost
     const partnerCost = mCalc.totalE; // partner implementation
     const custTotalCost = netCost + partnerCost - fundCash; // customer pays: Azure + partner - ECIF cash
     return { custInvest, fundCash, fundCredits, fundTotal, netCost, partnerCost, custTotalCost, fundPct: custInvest > 0 ? (fundTotal / custInvest * 100) : 0 };
-  }, [C.tot, C.recCash, C.recCredits, mCalc.totalE]);
+  }, [C.tot, C.custFunding, mCalc.totalE]);
 
   const prevK = useRef("");
   useEffect(() => {
@@ -1351,7 +1445,7 @@ button{display:none!important}
                         {/* Split suggestion if not eligible */}
                         {!C.ok && C.el > 0 && (
                           <div style={{ marginTop: 8, padding: "6px 8px", background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 5, fontSize: 11, color: "#fbbf24", lineHeight: 1.5 }}>
-                            💡 <strong>Split tip:</strong> Nominate DB/Fabric/Foundry ({fmt(C.el)}) as separate AFO project → unlocks <strong>{fmt(Math.min(C.el * 0.5, 500000))}</strong> ECIF (cash to partner).
+                            💡 <strong>Split tip:</strong> Nominate DB/Fabric/Foundry ({fmt(C.el)}) as separate AFO project → unlocks <strong>{fmt(Math.min(C.el * 0.5, 500000))}</strong> ECIF (cash to partner).{C.el < 10000 && <span style={{ display: "block", marginTop: 3, fontSize: 10, color: "#f59e0b" }}>⚠ Small deal ({fmt(C.el)} ACR) — field may deprioritize. Consider adding more DB/Fabric/AI workloads first, or go MCI-only.</span>}
                           </div>
                         )}
                         {!C.ok && C.el === 0 && (
@@ -1365,6 +1459,40 @@ button{display:none!important}
                 </div>
               )}
 
+
+              {/* ── FUNDING MAXIMIZER ── */}
+              {C.tot > 0 && (() => {
+                const tips = getMaximizerTips();
+                if (tips.length === 0) return null;
+                return (
+                  <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", marginBottom: 8 }}>
+                    <div style={{ padding: "8px 12px", background: "linear-gradient(135deg, #fef3c7, #fde68a)", display: "flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 14 }}>⚡</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#92400e" }}>Funding Maximizer</span>
+                      <span style={{ fontSize: 10, color: "#b45309", marginLeft: "auto" }}>{tips.length} tip{tips.length > 1 ? "s" : ""}</span>
+                    </div>
+                    {tips.map((tip, i) => (
+                      <div key={i} style={{ padding: "8px 12px", borderBottom: i < tips.length - 1 ? "1px solid #f5f5f5" : "none" }}>
+                        <div style={{ display: "flex", alignItems: "flex-start", gap: 6 }}>
+                          <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{tip.icon}</span>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: "#333" }}>{tip.title}</div>
+                            <div style={{ fontSize: 11, color: "#777", marginTop: 1, lineHeight: 1.4 }}>{tip.desc}</div>
+                            {tip.items && tip.items.length > 0 && (
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+                                {tip.items.map((item, j) => (
+                                  <button key={j} onClick={() => { upd(item.id, "on", true); }} style={{ fontSize: 10, padding: "2px 8px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 4, color: "#1d4ed8", cursor: "pointer", fontWeight: 500 }}>+ {item.name}</button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          {tip.impact > 0 && <div style={{ fontSize: 11, fontWeight: 700, color: "#059669", flexShrink: 0, marginTop: 1 }}>+{fmt(tip.impact)}</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
               <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", marginBottom: 8 }}>
                 <button onClick={() => setShowGuide(!showGuide)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 10px", border: "none", background: "transparent", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#555" }}>
                   <span>AFO vs ECIF vs MCI — Program Guide</span>
@@ -1505,12 +1633,26 @@ button{display:none!important}
             </div>
 
             <div style={{ display: "flex", gap: 6, marginBottom: 10 }} className="metrics-bar">
-              {[{ l: "Y1 ACR", v: fmt(C.tot), c: "#0078D4" }, { l: "AFO Elig.", v: C.pct.toFixed(0) + "%", c: C.ok ? "#059669" : "#64748b" }, { l: "ECIF (cash)", v: C.ok ? fmt(C.ecif) : fmtRange(C.tot), c: C.ok ? "#3b82f6" : "#f97316" }, { l: "MCI (cash)", v: fmt(C.ok ? C.mci.pre : Math.max(C.mci.pre + C.mci.post, 0)), c: "#22c55e" }].map((b, i) => (
-                <div key={i} style={{ flex: 1, background: "white", padding: "7px 4px", borderRadius: 7, textAlign: "center", border: "1px solid #e8e8ec" }}>
-                  <div style={{ fontSize: 10, color: "#888" }}>{b.l}</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: b.c || "#333" }}>{b.v}</div>
-                </div>
-              ))}
+              {(() => {
+                const metrics = [{ l: "Y1 ACR", v: fmt(C.tot), c: "#0078D4" }];
+                if (C.ok) {
+                  metrics.push({ l: "AFO Eligible", v: C.pct.toFixed(0) + "% ✓", c: "#059669" });
+                  metrics.push({ l: "ECIF (Field-Led)", v: fmt(C.ecif), c: "#3b82f6" });
+                  if (C.mci.pre > 0) metrics.push({ l: "MCI Pre-sales", v: fmt(C.mci.pre), c: "#22c55e" });
+                } else {
+                  const mciTotal = C.mci.pre + C.mci.post;
+                  const isMci = mciTotal >= C.stdEcif;
+                  metrics.push({ l: "Recommended", v: C.custFundingLabel, c: isMci ? "#22c55e" : "#f97316" });
+                  metrics.push({ l: "Co-Investment", v: fmt(C.custFunding), c: "#059669" });
+                  if (isMci && C.mci.ts) metrics.push({ l: "MCI Tier", v: C.mci.ts + " · " + C.mci.days + "d", c: "#2563eb" });
+                }
+                return metrics.map((b, i) => (
+                  <div key={i} style={{ flex: 1, background: "white", padding: "7px 4px", borderRadius: 7, textAlign: "center", border: "1px solid #e8e8ec" }}>
+                    <div style={{ fontSize: 10, color: "#888" }}>{b.l}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: b.c || "#333" }}>{b.v}</div>
+                  </div>
+                ));
+              })()}
             </div>
             <div style={{ display: "grid", gridTemplateColumns: nextWL.length > 0 ? "1fr 260px" : "1fr", gap: 12, alignItems: "start" }} className="sow-grid">
             <div id="sowdoc" style={{ background: "white", borderRadius: 12, border: "1px solid #e0e0e0", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
@@ -1575,17 +1717,72 @@ button{display:none!important}
                     <span style={{ fontSize: 11, color: "#bbb" }}>/hr</span>
                   </div>
                 </div>
+                {/* Visual Gantt Timeline */}
+                {sow.sd && sow.ed && sow.milestones.some(m => m.d) && (() => {
+                  const start = new Date(sow.sd);
+                  const end = new Date(sow.ed);
+                  const totalDays = Math.max(1, (end - start) / (1000 * 60 * 60 * 24));
+                  const colors = ["#3b82f6", "#059669", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4"];
+                  const bars = sow.milestones.map((m, i) => {
+                    if (!m.d) return null;
+                    const mDate = new Date(m.d);
+                    const prevDate = i === 0 ? start : (sow.milestones[i - 1].d ? new Date(sow.milestones[i - 1].d) : start);
+                    const barStart = Math.max(0, (prevDate - start) / (1000 * 60 * 60 * 24));
+                    const barEnd = Math.max(barStart + 1, (mDate - start) / (1000 * 60 * 60 * 24));
+                    return { name: m.n || ("M" + (i + 1)), start: barStart, end: barEnd, color: colors[i % colors.length], date: m.d, hours: m.h };
+                  }).filter(Boolean);
+                  if (bars.length === 0) return null;
+                  const months = [];
+                  const mStart = new Date(start.getFullYear(), start.getMonth(), 1);
+                  while (mStart <= end) {
+                    const mEnd = new Date(mStart.getFullYear(), mStart.getMonth() + 1, 0);
+                    const dayStart = Math.max(0, (mStart - start) / (1000 * 60 * 60 * 24));
+                    const dayEnd = Math.min(totalDays, (mEnd - start) / (1000 * 60 * 60 * 24));
+                    months.push({ label: mStart.toLocaleDateString("en", { month: "short", year: "2-digit" }), left: (dayStart / totalDays) * 100, width: ((dayEnd - dayStart) / totalDays) * 100 });
+                    mStart.setMonth(mStart.getMonth() + 1);
+                  }
+                  return (
+                    <div style={{ background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0", padding: "10px 12px", marginBottom: 10 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", marginBottom: 6 }}>Project Timeline</div>
+                      {/* Month headers */}
+                      <div style={{ position: "relative", height: 16, marginBottom: 2 }}>
+                        {months.map((m, i) => (
+                          <div key={i} style={{ position: "absolute", left: m.left + "%", width: m.width + "%", fontSize: 9, color: "#94a3b8", textAlign: "center", borderLeft: i > 0 ? "1px solid #e2e8f0" : "none", paddingLeft: 2 }}>{m.label}</div>
+                        ))}
+                      </div>
+                      {/* Bars */}
+                      {bars.map((b, i) => (
+                        <div key={i} style={{ position: "relative", height: 24, marginBottom: 3 }}>
+                          <div style={{ position: "absolute", left: (b.start / totalDays * 100) + "%", width: Math.max(2, ((b.end - b.start) / totalDays * 100)) + "%", height: "100%", background: b.color, borderRadius: 4, display: "flex", alignItems: "center", paddingLeft: 6, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
+                            <span style={{ fontSize: 10, color: "white", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{b.name}{b.hours ? " · " + b.hours + "h" : ""}</span>
+                          </div>
+                          {/* Diamond marker at end */}
+                          <div style={{ position: "absolute", left: "calc(" + (b.end / totalDays * 100) + "% - 5px)", top: 7, width: 10, height: 10, background: b.color, transform: "rotate(45deg)", border: "2px solid white", boxShadow: "0 1px 3px rgba(0,0,0,0.15)", zIndex: 2 }} />
+                        </div>
+                      ))}
+                      {/* Today marker */}
+                      {(() => {
+                        const today = new Date();
+                        if (today >= start && today <= end) {
+                          const pos = ((today - start) / (1000 * 60 * 60 * 24)) / totalDays * 100;
+                          return <div style={{ position: "absolute", left: pos + "%", top: 0, bottom: 0, width: 1.5, background: "#ef4444", zIndex: 3 }}><div style={{ position: "absolute", top: -8, left: -8, fontSize: 8, color: "#ef4444", fontWeight: 700 }}>Today</div></div>;
+                        }
+                        return null;
+                      })()}
+                    </div>
+                  );
+                })()}
                 <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4, fontSize: 13 }}>
-                  <thead><tr style={{ background: "#f5f7fa" }}><th style={{ padding: "5px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Milestone</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 60 }}>Hours</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 80 }}>ECIF</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 120 }}>Date</th><th style={{ width: 24, borderBottom: "2px solid #ddd" }} /></tr></thead>
+                  <thead><tr style={{ background: "#f5f7fa" }}><th style={{ padding: "5px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Milestone</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 60 }}>Hours</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 90 }}>Cost</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 120 }}>Date</th><th style={{ width: 24, borderBottom: "2px solid #ddd" }} /></tr></thead>
                   <tbody>
                     {sow.milestones.map((m, i) => {
-                      const ecifAmt = mCalc.perMs[i] ? mCalc.perMs[i].e : 0;
+                      const cost = mCalc.perMs[i] ? mCalc.perMs[i].e : 0;
                       return (
                         <Fragment key={i}>
                           <tr>
                             <td style={{ padding: "4px 6px", fontWeight: 600, borderBottom: "none" }}><DInp v={m.n} fn={(v) => uMs(i, "n", v)} ph="Milestone name" st={{ width: "100%", fontWeight: 600 }} /></td>
                             <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none" }}><input type="number" placeholder="hrs" value={m.h} onChange={(e) => uMs(i, "h", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 6px", fontSize: 12, color: "#0078D4", fontFamily: "inherit", width: 65, textAlign: "right" }} /></td>
-                            <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none", color: ecifAmt > 0 ? "#0078D4" : "#ccc", fontWeight: 600 }}>{ecifAmt > 0 ? fmt(ecifAmt) : "—"}</td>
+                            <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none", color: cost > 0 ? "#555" : "#ccc", fontWeight: 500 }}>{cost > 0 ? fmt(cost) : "—"}</td>
                             <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none" }}><input type="date" value={m.d} onChange={(e) => uMs(i, "d", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 4px", fontSize: 12, color: "#0078D4", fontFamily: "inherit" }} /></td>
                             <td style={{ padding: "4px 6px", borderBottom: "none", textAlign: "center" }}>{sow.milestones.length > 1 && <button onClick={() => removeMilestone(i)} style={{ border: "none", background: "transparent", color: "#ccc", cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }} title="Remove milestone">×</button>}</td>
                           </tr>
@@ -1593,9 +1790,49 @@ button{display:none!important}
                         </Fragment>
                       );
                     })}
-                    <tr style={{ fontWeight: 700 }}><td style={{ padding: "5px 6px", borderTop: "2px solid #333" }}>Total</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333", color: "#0078D4" }}>{mCalc.totalH > 0 ? mCalc.totalH + "h" : "—"}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333", color: mCalc.overBudget ? "#dc2626" : "#0078D4" }}>{mCalc.totalE > 0 ? fmt(mCalc.totalE) : "—"}</td><td style={{ borderTop: "2px solid #333" }} /><td style={{ borderTop: "2px solid #333" }} /></tr>
+                    <tr style={{ fontWeight: 700 }}><td style={{ padding: "5px 6px", borderTop: "2px solid #333" }}>Total</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333", color: "#0078D4" }}>{mCalc.totalH > 0 ? mCalc.totalH + "h" : "—"}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{mCalc.totalE > 0 ? fmt(mCalc.totalE) : "—"}</td><td style={{ borderTop: "2px solid #333" }} /><td style={{ borderTop: "2px solid #333" }} /></tr>
                   </tbody>
                 </table>
+
+                {mCalc.totalE > 0 && mCalc.budget > 0 && (() => {
+                  const funded = Math.min(mCalc.totalE, mCalc.budget);
+                  const custPays = Math.max(0, mCalc.totalE - mCalc.budget);
+                  const pct = Math.min(100, (mCalc.budget / mCalc.totalE * 100));
+                  return (
+                    <div style={{ marginBottom: 8, padding: "10px 12px", background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>Project Funding Split</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: pct >= 100 ? "#059669" : "#b45309" }}>{pct.toFixed(0)}% funded</span>
+                      </div>
+                      <div style={{ height: 16, background: "#e5e7eb", borderRadius: 8, overflow: "hidden", display: "flex", marginBottom: 8 }}>
+                        <div style={{ width: pct + "%", background: "linear-gradient(90deg, #059669, #34d399)", display: "flex", alignItems: "center", justifyContent: "center", transition: "width 0.3s" }}>
+                          {pct >= 20 && <span style={{ fontSize: 9, color: "white", fontWeight: 700 }}>Microsoft {fmt(funded)}</span>}
+                        </div>
+                        {custPays > 0 && (
+                          <div style={{ flex: 1, background: "linear-gradient(90deg, #fbbf24, #f59e0b)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            {(100 - pct) >= 20 && <span style={{ fontSize: 9, color: "white", fontWeight: 700 }}>Customer {fmt(custPays)}</span>}
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 6, textAlign: "center" }}>
+                        <div style={{ padding: "6px", background: "#ecfdf5", borderRadius: 6 }}>
+                          <div style={{ fontSize: 10, color: "#059669" }}>Microsoft ECIF</div>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: "#059669" }}>{fmt(funded)}</div>
+                        </div>
+                        <div style={{ padding: "6px", background: custPays > 0 ? "#fffbeb" : "#ecfdf5", borderRadius: 6 }}>
+                          <div style={{ fontSize: 10, color: custPays > 0 ? "#b45309" : "#059669" }}>Customer Pays</div>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: custPays > 0 ? "#b45309" : "#059669" }}>{custPays > 0 ? fmt(custPays) : "✓ $0"}</div>
+                        </div>
+                        <div style={{ padding: "6px", background: "#f0f4ff", borderRadius: 6 }}>
+                          <div style={{ fontSize: 10, color: "#3b82f6" }}>Total Project</div>
+                          <div style={{ fontSize: 16, fontWeight: 700, color: "#3b82f6" }}>{fmt(mCalc.totalE)}</div>
+                        </div>
+                      </div>
+                      {custPays > 0 && <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 6, textAlign: "center" }}>Partner decides how to allocate ECIF across milestones — maximum flexibility</div>}
+                      {pct >= 100 && <div style={{ fontSize: 10, color: "#059669", marginTop: 6, textAlign: "center", fontWeight: 600 }}>✓ Entire project covered by Microsoft co-investment</div>}
+                    </div>
+                  );
+                })()}
                 <button onClick={addMilestone} style={{ padding: "4px 12px", background: "#f0f4fa", border: "1px dashed #93c5fd", borderRadius: 5, fontSize: 12, color: "#0078D4", cursor: "pointer", marginBottom: 6, fontWeight: 600 }}>+ Add Milestone</button>
                 {mCalc.overBudget && <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 5, padding: "4px 8px", fontSize: 11, color: "#dc2626", marginBottom: 6 }}>⚠ Total ECIF ({fmt(mCalc.totalE)}) exceeds estimated budget ({fmt(mCalc.budget)}). Reduce hours or adjust rate. Budget allows ~{mCalc.suggestedH} hours at ${sow.rate}/hr.</div>}
                 {!mCalc.overBudget && mCalc.totalE > 0 && <div style={{ background: "#ecfdf5", border: "1px solid #6ee7b7", borderRadius: 5, padding: "4px 8px", fontSize: 11, color: "#059669", marginBottom: 6 }}>✓ Within budget. {fmt(mCalc.totalE)} of {fmt(mCalc.budget)} ({(mCalc.totalE / mCalc.budget * 100).toFixed(0)}% utilization)</div>}
@@ -1653,9 +1890,9 @@ button{display:none!important}
 
                 {/* Recommended total */}
                 <div style={{ background: "#fffbeb", border: "1.5px solid #fbbf24", borderRadius: 6, padding: 10, marginBottom: 8 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#92400e", textTransform: "uppercase", marginBottom: 3 }}>Recommended Strategy: {C.recStrategy}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#92400e", textTransform: "uppercase", marginBottom: 3 }}>Recommended: {C.custFundingLabel}</div>
                   <div style={{ fontSize: 12, color: "#555", lineHeight: 1.6 }}>
-                    <div>Cash to partner: <strong>~{fmt(C.recCash)}</strong></div>
+                    <div>Cash to partner: <strong>{fmt(C.custFunding)}</strong></div>
                   </div>
                   <div style={{ fontSize: 10, color: "#888", marginTop: 3 }}>All nominations via Azure Offer Navigator (field-led) and/or Partner Center (partner-led).</div>
                 </div>
@@ -1675,7 +1912,7 @@ button{display:none!important}
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 6, marginBottom: 12 }}>
                   <div style={{ background: "#ecfdf5", padding: 10, borderRadius: 6, textAlign: "center", border: "1px solid #6ee7b7" }}>
-                    <div style={{ fontSize: 10, color: "#64748b" }}>{C.recStrategy === "MCI" ? "MCI" : "ECIF"} — Cash to Partner</div>
+                    <div style={{ fontSize: 10, color: "#64748b" }}>{C.custFundingLabel} — Cash to Partner</div>
                     <div style={{ fontSize: 20, fontWeight: 700, color: "#059669" }}>{fmt(roi.fundCash)}</div>
                     <div style={{ fontSize: 10, color: "#059669" }}>Offsets implementation cost</div>
                   </div>
@@ -1879,7 +2116,7 @@ h1{page-break-after:avoid}
                   </div>
                   <div style={{ background: "#f0fdf4", borderRadius: 10, padding: 20, textAlign: "center" }}>
                     <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>Microsoft Co-Investment</div>
-                    <div style={{ fontSize: 32, fontWeight: 700, color: "#059669" }}>{fmt(C.recCash)}</div>
+                    <div style={{ fontSize: 32, fontWeight: 700, color: "#059669" }}>{fmt(C.custFunding)}</div>
                     <div style={{ fontSize: 13, color: "#6ee7b7" }}>Available through certified partners</div>
                   </div>
                 </div>
@@ -1915,8 +2152,8 @@ h1{page-break-after:avoid}
                 {/* Funding cards */}
                 <div style={{ display: "grid", gridTemplateColumns: C.mci.pre > 0 ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 16 }} className="grid-2col">
                   <div style={{ background: "#f0fdf4", borderRadius: 10, padding: 20, border: "1px solid #bbf7d0" }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#059669", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Implementation Funding{C.recStrategy === "MCI" ? " (Partner-Led)" : " (Field-Led)"}</div>
-                    <div style={{ fontSize: 28, fontWeight: 700, color: "#059669" }}>{C.ok ? fmt(C.ecif) : C.recStrategy === "MCI" ? fmt(C.mci.post) : fmtRange(C.tot)}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#059669", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>Implementation Funding{!C.ok && C.mci.pre + C.mci.post >= C.stdEcif ? " (Partner-Led)" : " (Field-Led)"}</div>
+                    <div style={{ fontSize: 28, fontWeight: 700, color: "#059669" }}>{C.ok ? fmt(C.ecif) : C.mci.pre + C.mci.post >= C.stdEcif ? fmt(C.mci.post) : fmtRange(C.tot)}</div>
                     <div style={{ fontSize: 13, color: "#555", marginTop: 6 }}>For expert implementation services, delivered by a certified Microsoft partner.</div>
                   </div>
                   {C.mci.pre > 0 && (
@@ -1994,7 +2231,7 @@ h1{page-break-after:avoid}
                       <div style={{ fontSize: 13, color: "#666", lineHeight: 1.5 }}>{p.desc}</div>
                       {/* Workloads in this phase */}
                       {i === 0 && C.mci.pre > 0 && <div style={{ marginTop: 8, fontSize: 11, color: "#0078D4", fontWeight: 600 }}>Assessment value: {fmt(C.mci.pre)}</div>}
-                      {i === 1 && <div style={{ marginTop: 8, fontSize: 11, color: "#059669", fontWeight: 600 }}>Implementation funding: {C.ok ? fmt(C.ecif) : fmtRange(C.tot)}</div>}
+                      {i === 1 && <div style={{ marginTop: 8, fontSize: 11, color: "#059669", fontWeight: 600 }}>Implementation funding: {C.ok ? fmt(C.ecif) : C.mci.post >= C.stdEcif ? fmt(C.mci.post) : fmtRange(C.tot)}</div>}
                     </div>
                   ))}
                 </div>
