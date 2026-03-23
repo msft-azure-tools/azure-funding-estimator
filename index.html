@@ -171,6 +171,39 @@ const SCENARIOS = [
   }},
 ];
 
+// Excel Import: Maps Azure Pricing Calculator export → ITEMS
+const EXCEL_MAP = [
+  { match: (t, d) => t === "Virtual Machines" && /windows/i.test(d), id: "infra-win", extractQty: (d) => { const m = d.match(/(\d+)\s+\w+\d?s?\s+v\d/); return m ? parseInt(m[1]) : 1; }},
+  { match: (t, d) => t === "Virtual Machines" && !/windows/i.test(d), id: "infra-linux", extractQty: (d) => { const m = d.match(/(\d+)\s+\w+\d?s?\s+v\d/); return m ? parseInt(m[1]) : 1; }},
+  { match: (t) => /Azure SQL Database|SQL Database/i.test(t), id: "sql-db", extractQty: (d) => { const m = d.match(/(\d+)\s*vCore/i); return m ? parseInt(m[1]) : 4; }},
+  { match: (t) => /SQL.*Managed/i.test(t), id: "sql-mi", extractQty: (d) => { const m = d.match(/(\d+)\s*vCore/i); return m ? parseInt(m[1]) : 8; }},
+  { match: (t) => /Cosmos/i.test(t), id: "cosmos", extractQty: (d) => { const m = d.match(/([\d,]+)\s*RUs/i); return m ? Math.max(1, Math.round(parseInt(m[1].replace(/,/g,"")) / 1000)) : 1; }},
+  { match: (t) => /Kubernetes|AKS/i.test(t), id: "aks", extractQty: (d) => { const m = d.match(/(\d+)\s+\w+\d?s?\s+v\d/); return m ? parseInt(m[1]) : 3; }},
+  { match: (t) => /Storage Account/i.test(t), id: "storage", extractQty: (d) => { const m = d.match(/([\d,]+)\s*GB\s*Capacity/i); return m ? Math.max(1, Math.round(parseInt(m[1].replace(/,/g,"")) / 1000)) : 1; }},
+  { match: (t) => /AI Search|Cognitive Search/i.test(t), id: "search", extractQty: (d) => { const m = d.match(/(\d+)\s*Unit/i); return m ? parseInt(m[1]) : 1; }},
+  { match: (t) => /OpenAI/i.test(t), id: "oai-std", extractQty: () => 10 },
+  { match: (t) => /App Service/i.test(t), id: "aks", extractQty: (d) => { const m = d.match(/(\d+)\s+P\d/); return m ? parseInt(m[1]) : 1; }},
+  { match: (t) => /Monitor/i.test(t), id: "monitor", extractQty: (d) => { const m = d.match(/(\d+)\s*GB\s*Daily/i); return m ? parseInt(m[1]) * 30 : 500; }},
+  { match: (t) => /Defender/i.test(t), id: "def", extractQty: (d) => { const m = d.match(/(\d+)\s*Plan\s*[12]/i); return m ? parseInt(m[1]) : 10; }},
+  { match: (t) => /Key Vault/i.test(t), id: "keyvault", extractQty: () => 100 },
+  { match: (t) => /Firewall|DDoS|Bastion|Load Balancer|Application Gateway|Bandwidth|IP Address/i.test(t), id: "networking", extractQty: () => 0 },
+  { match: (t) => /PostgreSQL/i.test(t), id: "postgres", extractQty: (d) => { const m = d.match(/(\d+)\s*vCore/i); return m ? parseInt(m[1]) : 4; }},
+  { match: (t) => /MySQL/i.test(t), id: "mysql", extractQty: (d) => { const m = d.match(/(\d+)\s*vCore/i); return m ? parseInt(m[1]) : 4; }},
+  { match: (t) => /Sentinel/i.test(t), id: "sentinel", extractQty: () => 10 },
+  { match: (t) => /Redis|Cache for Redis/i.test(t), id: "redis", extractQty: () => 1 },
+  { match: (t) => /Event Hub/i.test(t), id: "eventhubs", extractQty: () => 10 },
+  { match: (t) => /IoT Hub/i.test(t), id: "iot", extractQty: () => 1 },
+  { match: (t) => /API Management/i.test(t), id: "apim", extractQty: () => 1 },
+  { match: (t) => /Fabric/i.test(t), id: "fab-new", extractQty: () => 1 },
+  { match: (t) => /Function|Logic App/i.test(t), id: "functions", extractQty: () => 50 },
+  { match: (t) => /Front Door|CDN/i.test(t), id: "frontdoor", extractQty: () => 10 },
+  { match: (t) => /Databricks/i.test(t), id: "databricks", extractQty: () => 5000 },
+  { match: (t) => /Purview/i.test(t), id: "purview", extractQty: () => 1 },
+  { match: (t) => /Backup|Site Recovery/i.test(t), id: "backup", extractQty: () => 20 },
+  { match: (t) => /Container Registry/i.test(t), id: "aks", extractQty: () => 1 },
+  { match: (t) => /Foundry Tools|Content Safety/i.test(t), id: "oai-std", extractQty: () => 5 },
+];
+
 const skuMo = (sku, reserved) => { const f = FSKU.find((f) => f.s === sku) || FSKU[0]; return reserved ? f.ri : f.mo; };
 const fmt = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 const fmtRange = (tot) => { const lo = Math.min(tot * 0.14, 250000), hi = Math.min(tot * 0.33, 250000); return "~" + fmt(lo) + "–" + fmt(hi); }; // 3:1 to 7:1 ROI range
@@ -593,6 +626,127 @@ function App() {
 
 
 
+
+  // ── Excel Import ──
+  const [importPreview, setImportPreview] = useState(null);
+  const fileRef = useRef(null);
+
+  const handleExcelUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    e.target.value = "";
+    try {
+      const data = await file.arrayBuffer();
+      const XLSX = await import("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm");
+      const wb = XLSX.read(data);
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      
+      // Find header row (contains "Service type")
+      let headerIdx = rows.findIndex(r => r && r.some && r.some(c => String(c).includes("Service type")));
+      if (headerIdx < 0) headerIdx = 2; // default row 3 (0-indexed = 2)
+      
+      const parsed = [];
+      const networkingTotal = { mo: 0, found: false };
+      
+      for (let i = headerIdx + 1; i < rows.length; i++) {
+        const row = rows[i];
+        if (!row || !row[1]) continue;
+        const serviceType = String(row[1] || "").trim();
+        const desc = String(row[4] || "").trim();
+        const monthlyCost = parseFloat(row[5]) || 0;
+        if (!serviceType || serviceType === "Support" || monthlyCost === 0) continue;
+        
+        // Find matching map entry
+        const mapEntry = EXCEL_MAP.find(m => m.match(serviceType, desc));
+        if (!mapEntry) {
+          parsed.push({ serviceType, desc: desc.substring(0, 80), monthlyCost, mapped: null, id: null, status: "unmapped" });
+          continue;
+        }
+        
+        // Networking items get aggregated
+        if (mapEntry.id === "networking") {
+          networkingTotal.mo += monthlyCost;
+          networkingTotal.found = true;
+          continue;
+        }
+        
+        const itm = ITEMS.find(item => item.id === mapEntry.id);
+        if (!itm) continue;
+        
+        const qty = mapEntry.extractQty(desc);
+        parsed.push({
+          serviceType,
+          desc: desc.substring(0, 80) + (desc.length > 80 ? "..." : ""),
+          monthlyCost,
+          mapped: itm.name,
+          id: mapEntry.id,
+          qty,
+          status: "mapped"
+        });
+      }
+      
+      // Add aggregated networking
+      if (networkingTotal.found) {
+        parsed.push({
+          serviceType: "Networking (aggregated)",
+          desc: "Firewall + DDoS + Bastion + Load Balancer + Bandwidth etc.",
+          monthlyCost: networkingTotal.mo,
+          mapped: "Azure Networking",
+          id: "networking",
+          qty: 0,
+          status: "mapped"
+        });
+      }
+      
+      setImportPreview(parsed);
+    } catch (err) {
+      console.error("Excel parse error:", err);
+      alert("Could not parse Excel file. Make sure it is an Azure Pricing Calculator export (.xlsx).");
+    }
+  };
+
+  const applyImport = () => {
+    if (!importPreview) return;
+    const newSel = {};
+    const merged = {};
+    
+    // Merge duplicate IDs (e.g. multiple VM rows → sum costs)
+    importPreview.filter(p => p.status === "mapped" && p.id).forEach(p => {
+      if (merged[p.id]) {
+        merged[p.id].mo += p.monthlyCost;
+        merged[p.id].qty = Math.max(merged[p.id].qty, p.qty);
+      } else {
+        merged[p.id] = { id: p.id, mo: p.monthlyCost, qty: p.qty };
+      }
+    });
+    
+    Object.values(merged).forEach(m => {
+      const itm = ITEMS.find(i => i.id === m.id);
+      if (!itm) return;
+      newSel[m.id] = {
+        on: true,
+        qty: m.qty || itm.dq || 1,
+        mo: Math.round(m.mo),
+        sku: itm.dsku || "",
+        ri: false,
+        riTerm: "payg"
+      };
+    });
+    
+    setSel(newSel);
+    // Open relevant categories
+    setExCat(prev => {
+      const updated = { ...prev };
+      Object.keys(newSel).forEach(id => {
+        const itm = ITEMS.find(i => i.id === id);
+        if (itm) updated[itm.cat] = true;
+      });
+      return updated;
+    });
+    setImportPreview(null);
+  };
+
   // ── Save / Load via persistent storage ──
   const saveProject = async (customName) => {
     const defaultName = sow.cn === "[CUSTOMER NAME]" ? "Untitled-" + Date.now() : sow.cn;
@@ -866,6 +1020,8 @@ button{display:none!important}
                 <input value={sow.cn} onChange={(e) => us("cn", e.target.value)} placeholder="Enter name..." style={{ background: "transparent", border: "none", color: "white", fontSize: 12, fontWeight: 600, fontFamily: "inherit", outline: "none", width: 160 }} />
               </div>
               {saveStatus && <span style={{ fontSize: 12, padding: "3px 8px", background: "rgba(255,255,255,0.2)", borderRadius: 4 }}>{saveStatus}</span>}
+              <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={handleExcelUpload} style={{ display: "none" }} />
+              <button onClick={() => fileRef.current && fileRef.current.click()} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>📊 Import</button>
               <button onClick={() => saveProject()} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>💾 Save</button>
               {Object.keys(sel).length > 0 && <button onClick={() => setSel({})} style={{ padding: "5px 12px", background: "rgba(220,38,38,0.2)", color: "#fca5a5", border: "1px solid rgba(220,38,38,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>✕ Clear</button>}
               <div style={{ position: "relative" }}>
@@ -1905,6 +2061,53 @@ h1{page-break-after:avoid}
         <a href="https://azure.microsoft.com/en-us/pricing/calculator/" target="_blank" rel="noopener" style={{ fontSize: 11, color: "#0078D4", textDecoration: "none" }}>Azure Pricing Calculator</a>
       </div>
       </>
+      )}
+
+      {/* Excel Import Preview Modal */}
+      {importPreview && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ background: "white", borderRadius: 12, maxWidth: 700, width: "100%", maxHeight: "80vh", overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+            <div style={{ padding: "16px 20px", background: HDR, color: "white" }}>
+              <div style={{ fontSize: 16, fontWeight: 600 }}>Import from Azure Pricing Calculator</div>
+              <div style={{ fontSize: 12, opacity: 0.7, marginTop: 2 }}>{importPreview.filter(p => p.status === "mapped").length} services mapped · {importPreview.filter(p => p.status === "unmapped").length} unmapped</div>
+            </div>
+            <div style={{ overflow: "auto", flex: 1, padding: "0" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                <thead>
+                  <tr style={{ background: "#f5f7fa", position: "sticky", top: 0 }}>
+                    <th style={{ padding: "8px 10px", textAlign: "left", borderBottom: "2px solid #ddd", fontWeight: 600 }}>Excel Service</th>
+                    <th style={{ padding: "8px 10px", textAlign: "left", borderBottom: "2px solid #ddd", fontWeight: 600 }}>Mapped To</th>
+                    <th style={{ padding: "8px 10px", textAlign: "right", borderBottom: "2px solid #ddd", fontWeight: 600 }}>$/mo</th>
+                    <th style={{ padding: "8px 10px", textAlign: "center", borderBottom: "2px solid #ddd", fontWeight: 600 }}>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {importPreview.map((p, i) => (
+                    <tr key={i} style={{ background: i % 2 ? "#fafafa" : "white", opacity: p.status === "unmapped" ? 0.5 : 1 }}>
+                      <td style={{ padding: "6px 10px", borderBottom: "1px solid #f0f0f0" }}>
+                        <div style={{ fontWeight: 500 }}>{p.serviceType}</div>
+                        <div style={{ fontSize: 10, color: "#888", maxWidth: 250, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.desc}</div>
+                      </td>
+                      <td style={{ padding: "6px 10px", borderBottom: "1px solid #f0f0f0", color: p.mapped ? "#0078D4" : "#ccc" }}>{p.mapped || "—"}</td>
+                      <td style={{ padding: "6px 10px", borderBottom: "1px solid #f0f0f0", textAlign: "right", fontWeight: 600 }}>{fmt(p.monthlyCost)}</td>
+                      <td style={{ padding: "6px 10px", borderBottom: "1px solid #f0f0f0", textAlign: "center" }}>
+                        {p.status === "mapped" ? <span style={{ fontSize: 10, padding: "2px 6px", borderRadius: 4, background: "#ecfdf5", color: "#059669", fontWeight: 600 }}>Mapped</span>
+                        : <span style={{ fontSize: 10, padding: "2px 6px", borderRadius: 4, background: "#fef2f2", color: "#dc2626", fontWeight: 600 }}>Unmapped</span>}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div style={{ padding: "12px 20px", borderTop: "1px solid #e8e8ec", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fafafa" }}>
+              <div style={{ fontSize: 11, color: "#888" }}>Unmapped services will be skipped. Prices from Excel override tool defaults.</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={() => setImportPreview(null)} style={{ padding: "6px 16px", background: "white", border: "1px solid #ddd", borderRadius: 6, fontSize: 12, cursor: "pointer", color: "#555" }}>Cancel</button>
+                <button onClick={applyImport} style={{ padding: "6px 16px", background: "#0078D4", color: "white", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Apply {importPreview.filter(p => p.status === "mapped").length} services</button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
