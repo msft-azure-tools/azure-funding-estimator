@@ -101,6 +101,9 @@ const ITEMS = [
   { id:"functions",cat:"accel",name:"Azure Functions / Logic Apps",tag:"AI Apps: Serverless Compute",unit:"M exec/mo",up:20,dq:50,note:"Consumption plan: ~$0.20/M executions + compute time. Premium for VNet + predictable scale. Common in AI/integration scenarios" },
   { id:"frontdoor",cat:"oth",name:"Azure Front Door / CDN",tag:"Azure Front Door & CDN",unit:"TB transfer",up:35,dq:10,note:"~$35/TB for global delivery. Web Application Firewall included in Premium tier. Common for web apps + API security" },
   { id:"keyvault",cat:"oth",name:"Azure Key Vault",tag:"Azure Key Vault",unit:"K operations",up:3,dq:100,note:"~$0.03/10K operations. Secrets, keys, certificates. Required for most production workloads. Very low ACR but essential" },
+  { id:"logicapps",cat:"accel",name:"Logic Apps (BizTalk replacement)",tag:"Integration: Azure Logic Apps",unit:"workflows",up:185,dq:5,riOpts:[{k:"consumption",label:"Consumption (pay-per-exec)",up:20},{k:"standard",label:"Standard WS1 ($185/mo)",up:185},{k:"premium",label:"Standard WS2 ($370/mo)",up:370}],note:"BizTalk replacement. Consumption for low-volume. Standard WS1 for production. WS2 for high-throughput. Enterprise connectors (SAP, IBM MQ) cost extra" },
+  { id:"servicebus",cat:"accel",name:"Service Bus",tag:"Integration: Azure Service Bus",unit:"M msg/mo",up:10,dq:50,riOpts:[{k:"basic",label:"Basic ($0.05/M msg)",up:0.05},{k:"std",label:"Standard ($10/M msg)",up:10},{k:"prem",label:"Premium ($677/unit/mo)",up:677}],note:"Basic for simple queues. Standard for topics + subscriptions. Premium for dedicated throughput + VNet. Key in BizTalk migrations" },
+  { id:"eventgrid",cat:"accel",name:"Event Grid",tag:"Integration: Azure Event Grid",unit:"M events/mo",up:0.60,dq:100,note:"$0.60/M events. Event-driven architecture. Often paired with Logic Apps and Service Bus in integration scenarios" },
   { id:"oth",cat:"oth",name:"Other Azure",tag:"Other Azure Services",unit:"flat",up:1,dq:1000,flat:true },
 ];
 
@@ -145,6 +148,11 @@ const SCENARIOS = [
     "def": { on: true, qty: 50, riTerm: "p2" }, "sentinel": { on: true, qty: 10, riTerm: "payg" },
     "monitor": { on: true, qty: 2000 }, "keyvault": { on: true, qty: 100 }, "networking": { on: true, mo: 3000 }
   }},
+  { id: "biztalk", icon: "🔗", label: "BizTalk Migration", desc: "Logic Apps + Service Bus + API Management + Functions + Monitor", items: {
+    "logicapps": { on: true, qty: 10, riTerm: "standard" }, "servicebus": { on: true, qty: 50, riTerm: "std" },
+    "apim": { on: true, qty: 1, riTerm: "std" }, "functions": { on: true, qty: 50 },
+    "monitor": { on: true, qty: 500 }, "storage": { on: true, qty: 5 }
+  }},
   { id: "full-stack", icon: "🚀", label: "Full Stack (DB + AI + Infra)", desc: "SQL MI + Fabric + OpenAI + VMs + Defender + everything", items: {
     "sql-mi": { on: true, qty: 8, riTerm: "1yr-ahub" }, "fab-mig": { on: true, sku: "F16" }, "fab-pbi": { on: true, sku: "F64" },
     "oai-std": { on: true, qty: 10 }, "search": { on: true, qty: 3, riTerm: "s1" },
@@ -177,7 +185,11 @@ const EXCEL_MAP = [
   { match: (t) => /IoT Hub/i.test(t), id: "iot", extractQty: () => 1 },
   { match: (t) => /API Management/i.test(t), id: "apim", extractQty: () => 1 },
   { match: (t) => /Fabric/i.test(t), id: "fab-new", extractQty: () => 1 },
-  { match: (t) => /Function|Logic App/i.test(t), id: "functions", extractQty: () => 50 },
+  { match: (t) => /Function/i.test(t), id: "functions", extractQty: () => 50 },
+  { match: (t) => /Logic App/i.test(t), id: "logicapps", extractQty: () => 5 },
+  { match: (t) => /Service Bus/i.test(t), id: "servicebus", extractQty: () => 50 },
+  { match: (t) => /Event Grid/i.test(t), id: "eventgrid", extractQty: () => 100 },
+
   { match: (t) => /Front Door|CDN/i.test(t), id: "frontdoor", extractQty: () => 10 },
   { match: (t) => /Databricks/i.test(t), id: "databricks", extractQty: () => 5000 },
   { match: (t) => /Purview/i.test(t), id: "purview", extractQty: () => 1 },
@@ -380,6 +392,7 @@ function getNextWorkloads(rows) {
   if (ids.has("infra-linux") || ids.has("infra-win") || ids.has("infra-mdc")) {
     if (!cats.has("db")) next.push({ icon: "🗄️", title: "Database Modernization", why: "You're migrating servers - now modernize the databases running on them. Move from SQL VM to SQL MI (PaaS) for lower TCO and automatic patching.", acr: "SQL MI 8-16 vCores ($1.5K-$3K/mo)", funding: "AFO eligible" });
     if (!cats.has("fab")) next.push({ icon: "📊", title: "Microsoft Fabric", why: "Once workloads are in Azure, connect them to Fabric for centralized analytics and Power BI dashboards across your estate.", acr: "F16-F32 ($2K-$4K/mo)", funding: "AFO eligible" });
+    if (!ids.has("logicapps") && (ids.has("aks") || ids.has("functions") || ids.has("apim"))) next.push({ icon: "🔗", title: "Logic Apps (Integration)", why: "Automate workflows and integrate systems. Direct BizTalk replacement for enterprise integration patterns.", acr: "$185/workflow/mo (Standard)", funding: "Azure Accelerate eligible" });
     if (!ids.has("infra-mdc")) next.push({ icon: "🛡️", title: "Defender for Cloud (MDC)", why: "Protect your newly migrated VMs with cloud-native security posture management and threat detection.", acr: "$15/server/mo", funding: "Azure Accelerate eligible" });
   }
 
@@ -1546,7 +1559,7 @@ button{display:none!important}
                     <p style={{ margin: "0 0 8px" }}><strong>What it does:</strong> Estimates Azure workload costs across 47 services, calculates potential funding through AFO (ECIF), Standard ECIF, and MCI Partner Nominated programs, generates Statements of Work, and produces customer-facing investment summaries.</p>
                     <p style={{ margin: "0 0 8px" }}><strong>Data sources:</strong> Azure list pricing (approximate, March 2026), Microsoft Commercial Partner Incentives Guide (9 March 2026, Market A), and Azure Frontier Offer partner documentation.</p>
                     <p style={{ margin: "0 0 8px" }}><strong>Limitations:</strong> All prices are planning estimates - actual Azure pricing varies by region, tier, and negotiated discounts. Funding amounts are indicative and subject to Microsoft internal approval, program availability, and eligibility verification. Always validate with Azure Pricing Calculator and your Microsoft PSS/account team before submitting nominations.</p>
-                    <p style={{ margin: "0 0 4px" }}><strong>Coverage:</strong> 55 workloads · 6 categories · 7 quick-start scenarios · Fabric F-SKU pricing (F2-F256) · RI and AHUB options · MCI Market A tiers (XXS-L) · AFO 50% eligibility engine · Smart split recommendations · Dynamic SOW with milestones · Customer-facing summary view</p>
+                    <p style={{ margin: "0 0 4px" }}><strong>Coverage:</strong> 58 workloads · 6 categories · 7 quick-start scenarios · Fabric F-SKU pricing (F2-F256) · RI and AHUB options · MCI Market A tiers (XXS-L) · AFO 50% eligibility engine · Smart split recommendations · Dynamic SOW with milestones · Customer-facing summary view</p>
                   </div>
                 )}
               </div>
@@ -1605,7 +1618,7 @@ button{display:none!important}
                       node.setAttribute("style", keep);
                     }
                   });
-                  const css = "@page{size:A4;margin:2cm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Segoe UI,Calibri,sans-serif;padding:30px 40px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white}table{width:100%;border-collapse:collapse;border:1px solid #d0d0d0;margin:8px 0 16px}th{padding:8px 10px;text-align:left;border:1px solid #d0d0d0;background:#e8f0fe;color:#0078D4;font-weight:700;font-size:11px}td{padding:6px 10px;text-align:left;border:1px solid #e8e8ec}tr:nth-child(even) td{background:#fafbfc}h1{color:#0078D4;font-size:18px;margin-bottom:4px}h2{color:#0078D4;font-size:14px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 8px}strong{color:#333}p{margin:4px 0}";
+                  const css = "@page{size:A4;margin:2cm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Segoe UI,Calibri,sans-serif;padding:30px 40px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white}div{background:white !important}table{width:100%;border-collapse:collapse;border:1px solid #d0d0d0;margin:8px 0 16px}th{padding:8px 10px;text-align:left;border:1px solid #d0d0d0;background:#e8f0fe;color:#0078D4;font-weight:700;font-size:11px}td{padding:6px 10px;text-align:left;border:1px solid #e8e8ec}tr:nth-child(even) td{background:#fafbfc}h1{color:#0078D4;font-size:18px;margin-bottom:4px}h2{color:#0078D4;font-size:14px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 8px}strong{color:#333}p{margin:4px 0}";
                   const html = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><style>" + css + "</style></head><body>" + clone.innerHTML + "</body></html>";
                   const blob = new Blob(["\ufeff" + html], { type: "application/msword;charset=utf-8" });
                   const url = URL.createObjectURL(blob);
@@ -2067,7 +2080,7 @@ h1{page-break-after:avoid}
                       node.setAttribute("style", keep);
                     }
                   });
-                  const css = "@page{size:A4;margin:2cm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Segoe UI,Calibri,sans-serif;padding:30px 40px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white}table{width:100%;border-collapse:collapse;border:1px solid #d0d0d0;margin:8px 0 16px}th{padding:8px 10px;text-align:left;border:1px solid #d0d0d0;background:#e8f0fe;color:#0078D4;font-weight:700;font-size:11px}td{padding:6px 10px;text-align:left;border:1px solid #e8e8ec}h1{color:#1a1a2e;font-size:22px;margin-bottom:4px}h2{color:#0078D4;font-size:15px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 10px}strong{color:#333}p{margin:4px 0}";
+                  const css = "@page{size:A4;margin:2cm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Segoe UI,Calibri,sans-serif;padding:30px 40px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white}div{background:white !important}table{width:100%;border-collapse:collapse;border:1px solid #d0d0d0;margin:8px 0 16px}th{padding:8px 10px;text-align:left;border:1px solid #d0d0d0;background:#e8f0fe;color:#0078D4;font-weight:700;font-size:11px}td{padding:6px 10px;text-align:left;border:1px solid #e8e8ec}h1{color:#1a1a2e;font-size:22px;margin-bottom:4px}h2{color:#0078D4;font-size:15px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 10px}strong{color:#333}p{margin:4px 0}";
                   const html = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><style>" + css + "</style></head><body>" + clone.innerHTML + "</body></html>";
                   const blob = new Blob(["\ufeff" + html], { type: "application/msword;charset=utf-8" });
                   const url = URL.createObjectURL(blob);
