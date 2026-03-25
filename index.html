@@ -295,6 +295,9 @@ function getScope(db, fab, fo, accel, rows, tot, cust) {
     avs: { p: "migrate VMware workloads to Azure VMware Solution", a: ["Azure VMware Solution (AVS) cluster", "HCX for live migration", "NSX-T networking"], d: ["VMware estate assessment", "AVS cluster provisioning", "HCX configuration and migration waves", "Network cutover and validation", "Operational handover"] },
     avd: { p: "migrate virtual desktop infrastructure to Azure Virtual Desktop", a: ["Azure Virtual Desktop (AVD) host pools", "FSLogix profile management", "Entra ID + Conditional Access"], d: ["VDI assessment and user profiling", "AVD architecture and host pool design", "Image management and deployment", "User acceptance testing", "Production rollout and enablement"] },
     aks: { p: "modernize applications using Azure Kubernetes Service and cloud-native platform", a: ["Azure Kubernetes Service (AKS)", "Azure Container Registry", "Azure App Service / Container Apps"], d: ["Application portfolio assessment", "Container strategy and architecture", "AKS cluster provisioning", "Application containerization and deployment", "CI/CD pipeline setup and enablement"] },
+    integration: { p: "modernize integration platform from BizTalk to Azure Integration Services", a: ["Azure Logic Apps (Standard) for workflow orchestration", "Azure Service Bus for messaging", "Azure API Management for API gateway", "Azure Event Grid for event-driven architecture"], d: ["BizTalk integration inventory and assessment", "Integration architecture design (Logic Apps + Service Bus)", "Workflow migration and development", "API management setup and policy configuration", "End-to-end testing and cutover", "Operational monitoring and knowledge transfer"] },
+    security: { p: "implement a comprehensive cloud security posture with Microsoft Defender and Sentinel", a: ["Microsoft Defender for Cloud (CSPM + workload protection)", "Microsoft Sentinel (SIEM/SOAR)", "Azure Arc for hybrid/multicloud management", "Azure Monitor for observability"], d: ["Security posture assessment", "Defender for Cloud enablement and policy configuration", "Sentinel workspace setup and data connector onboarding", "Detection rules and playbook development", "Security operations handover and training"] },
+    oracle: { p: "migrate Oracle database workloads to Azure-native database services", a: ["Azure Database for PostgreSQL Flexible Server or Azure SQL", "Azure Database Migration Service", "Azure landing zone with security controls"], d: ["Oracle estate discovery and assessment", "Schema and data migration strategy", "Migration execution (schema conversion, data migration)", "Application compatibility testing", "Performance validation and production cutover"] },
   };
 
   // Milestone templates based on dominant category
@@ -307,6 +310,9 @@ function getScope(db, fab, fo, accel, rows, tot, cust) {
     avs: [{ n: "M1 - Assessment & Provisioning", d: "VMware assessment, AVS cluster provisioning, HCX setup" }, { n: "M2 - Migration Waves", d: "VM migration waves via HCX, network cutover, validation" }, { n: "M3 - Optimization & Handover", d: "Performance tuning, decommission planning, operational handover" }],
     avd: [{ n: "M1 - Assessment & Design", d: "VDI assessment, user profiling, AVD architecture design" }, { n: "M2 - Build & Pilot", d: "Host pool deployment, image management, pilot group rollout" }, { n: "M3 - Rollout & Enablement", d: "Full production rollout, user training, operational handover" }],
     aks: [{ n: "M1 - Assessment & Architecture", d: "App portfolio assessment, container strategy, AKS architecture" }, { n: "M2 - Containerization & Deploy", d: "App containerization, AKS provisioning, CI/CD pipeline setup" }, { n: "M3 - Validation & Enablement", d: "Testing, security hardening, monitoring, knowledge transfer" }],
+    integration: [{ n: "M1 - Assessment & Architecture", d: "BizTalk integration inventory, dependency mapping, Azure integration architecture design" }, { n: "M2 - Migration & Development", d: "Logic Apps workflow development, Service Bus setup, API Management configuration, testing" }, { n: "M3 - Cutover & Enablement", d: "Production cutover, BizTalk decommission plan, monitoring, knowledge transfer" }],
+    security: [{ n: "M1 - Assessment & Design", d: "Security posture assessment, Defender/Sentinel architecture, data connector planning" }, { n: "M2 - Implementation", d: "Defender enablement, Sentinel onboarding, detection rules, playbook development" }, { n: "M3 - Operationalize", d: "SOC handover, runbooks, alert tuning, training, continuous improvement plan" }],
+    oracle: [{ n: "M1 - Assessment & Strategy", d: "Oracle estate discovery, schema analysis, migration strategy, target architecture" }, { n: "M2 - Migration & Testing", d: "Schema conversion, data migration, application testing, performance validation" }, { n: "M3 - Cutover & Handover", d: "Production cutover, decommission planning, monitoring, knowledge transfer" }],
     multi: [{ n: "M1 - Discovery & Architecture", d: "Assessment across all workload areas, combined architecture, landing zone" }, { n: "M2 - Build & Migration", d: "Parallel workstream execution, migration, platform build, testing" }, { n: "M3 - Validation & Enablement", d: "End-to-end validation, optimization, governance, knowledge transfer" }],
   };
 
@@ -316,6 +322,9 @@ function getScope(db, fab, fo, accel, rows, tot, cust) {
   const hasAvs = rows.some(r => r.id === "avs");
   const hasAvd = rows.some(r => r.id === "avd");
   const hasAks = rows.some(r => r.id === "aks");
+  const hasIntegration = rows.some(r => ["logicapps","servicebus","eventgrid"].includes(r.id));
+  const hasSecurity = rows.some(r => ["def","sentinel"].includes(r.id)) && !hasInfra && !db;
+  const hasOracle = rows.some(r => ["oracle-sql","oracle-pg","oracle-az"].includes(r.id));
 
   // Collect active categories
   const cats = [];
@@ -327,6 +336,9 @@ function getScope(db, fab, fo, accel, rows, tot, cust) {
   if (hasAvs) cats.push("avs");
   if (hasAvd) cats.push("avd");
   if (hasAks) cats.push("aks");
+  if (hasIntegration) cats.push("integration");
+  if (hasSecurity) cats.push("security");
+  if (hasOracle && !db) cats.push("oracle");
 
   if (cats.length === 0) return { scope: "[Select workloads to generate scope]", ms: [] };
 
@@ -595,6 +607,76 @@ function App() {
 
 
   // ── Visitor Gate (timed overlay) ──
+
+  // ── AFO Pre-Assessment Questionnaire ──
+  const [showQuest, setShowQuest] = useState(false);
+  const [qStep, setQStep] = useState(0);
+  const [qAns, setQAns] = useState({ dbTypes: [], dbCount: "", viewers: "", hasPremium: "", aiInterest: "", dataSources: "", agreement: "" });
+  const qSet = (k, v) => setQAns(p => ({ ...p, [k]: v }));
+  const qToggle = (k, v) => setQAns(p => ({ ...p, [k]: (p[k]||[]).includes(v) ? p[k].filter(x=>x!==v) : [...(p[k]||[]), v] }));
+
+  const applyQuestionnaire = () => {
+    const dbMap = { "SQL Server": "sql-mi", "Oracle": "oracle-pg", "PostgreSQL": "postgres", "MySQL": "mysql", "Cosmos DB": "cosmos" };
+    // instances → vCores per instance (conservative 4 vCores per DB instance avg)
+    const instCount = { "1-5": 3, "5-15": 10, "15-50": 30, "50+": 50 };
+    const vcoresPerInst = 4;
+    const viewerSku = { "<50": "F8", "50-200": "F32", "200-500": "F64", "500+": "F128" };
+    const newSel = {};
+    const instances = instCount[qAns.dbCount] || 3;
+
+    // DB workloads - qty = total vCores (instances x 4 vCores each)
+    qAns.dbTypes.forEach(t => {
+      const id = dbMap[t];
+      if (!id) return;
+      const itm = ITEMS.find(i => i.id === id);
+      if (!itm) return;
+      if (t === "Cosmos DB") {
+        // Cosmos uses RU/s not vCores - estimate 1K RU per instance
+        newSel[id] = { on: true, qty: instances, sku: "", ri: false, riTerm: "1yr", mo: instances * 46 };
+      } else {
+        const totalVcores = instances * vcoresPerInst;
+        // Use 1yr RI + AHUB for SQL Server, 1yr RI for others
+        const riTerm = t === "SQL Server" ? "1yr-ahub" : t === "Oracle" ? "payg" : "1yr";
+        const riOpt = (itm.riOpts || []).find(r => r.k === riTerm);
+        const up = riOpt ? riOpt.up : itm.up;
+        newSel[id] = { on: true, qty: totalVcores, sku: "", ri: !!riOpt, riTerm, mo: totalVcores * up };
+      }
+    });
+
+    // Fabric - based on viewer count
+    if (qAns.viewers) {
+      const sku = viewerSku[qAns.viewers] || "F8";
+      newSel["fab-pbi"] = { on: true, qty: 1, sku, ri: false, mo: skuMo(sku, false) };
+    }
+
+    // AI
+    if (qAns.aiInterest === "yes") {
+      newSel["oai-std"] = { on: true, qty: 10, sku: "", ri: false, riTerm: "payg", mo: 10 * 250 };
+      newSel["search"] = { on: true, qty: 3, sku: "", ri: false, riTerm: "s1", mo: 3 * 250 };
+    } else if (qAns.aiInterest === "maybe") {
+      newSel["oai-std"] = { on: true, qty: 5, sku: "", ri: false, riTerm: "payg", mo: 5 * 250 };
+    }
+
+    // Infra - scaled to actual workload size
+    const totalInstances = instances * ((qAns.dbTypes||[]).filter(t => t !== "None").length || 1);
+    const monitorGB = Math.max(200, totalInstances * 30); // ~30GB logs per instance/mo
+    newSel["monitor"] = { on: true, qty: monitorGB, sku: "", ri: false, riTerm: "payg", mo: monitorGB * 3 };
+    newSel["networking"] = { on: true, qty: 1, sku: "", ri: false, riTerm: "payg", mo: 2000 };
+    newSel["def"] = { on: true, qty: totalInstances, sku: "", ri: false, riTerm: "p2", mo: totalInstances * 15 };
+
+    setSel(newSel);
+    setExCat(prev => {
+      const updated = { ...prev };
+      Object.keys(newSel).forEach(id => {
+        const itm = ITEMS.find(i => i.id === id);
+        if (itm) updated[itm.cat] = true;
+      });
+      return updated;
+    });
+    setShowQuest(false);
+    setQStep(0);
+  };
+
   // ── Apply Scenario ──
   const applyScenario = (scenario) => {
     const newSel = {};
@@ -1108,7 +1190,7 @@ button{display:none!important}
             <div style={{ display: "flex", alignItems: "center", gap: 8 }} className="header-actions">
               <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.12)", borderRadius: 6, padding: "4px 10px" }}>
                 <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Customer:</span>
-                <input value={sow.cn} onChange={(e) => us("cn", e.target.value)} placeholder="Enter name..." style={{ background: "transparent", border: "none", color: "white", fontSize: 12, fontWeight: 600, fontFamily: "inherit", outline: "none", width: 160 }} />
+                <input value={sow.cn} onChange={(e) => us("cn", e.target.value)} placeholder="Enter name..." aria-label="Customer name" style={{ background: "transparent", border: "none", color: "white", fontSize: 12, fontWeight: 600, fontFamily: "inherit", outline: "none", width: 160 }} />
               </div>
               {saveStatus && <span style={{ fontSize: 12, padding: "3px 8px", background: "rgba(255,255,255,0.2)", borderRadius: 4 }}>{saveStatus}</span>}
               <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={handleExcelUpload} style={{ display: "none" }} />
@@ -1202,7 +1284,7 @@ button{display:none!important}
                                         {FSKU.map((f) => <option key={f.s} value={f.s}>{f.s} ({f.cu}CU) {fmt(ri ? f.ri : f.mo)}/mo</option>)}
                                       </select>
                                       <span style={{ fontSize: 11, color: "#aaa" }}>x</span>
-                                      <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 30, padding: "2px", border: "1px solid #ddd", borderRadius: 3, fontSize: 13, textAlign: "center" }} />
+                                      <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 30, padding: "2px", border: "1px solid #ddd", borderRadius: 4, fontSize: 13, textAlign: "center" }} />
                                       <select value={ri ? "1yr" : "payg"} onChange={(e) => upd(itm.id, "ri", e.target.value === "1yr")} style={{ padding: "2px 4px", border: "1px solid " + (ri ? "#0078D4" : "#ddd"), borderRadius: 4, fontSize: 12, fontWeight: 600, background: ri ? "#0078D4" : "#f5f5f5", color: ri ? "white" : "#888", cursor: "pointer" }}>
                                         <option value="payg">PAYG</option>
                                         <option value="1yr">1yr Reserved (-41%)</option>
@@ -1211,7 +1293,7 @@ button{display:none!important}
                                   ) : itm.riOpts ? (
                                     <>
                                       <div style={{ display: "flex", alignItems: "center", background: "#eff6ff", borderRadius: 4, padding: "1px 3px", gap: 2 }}>
-                                        <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 3, fontSize: 13, textAlign: "right", background: "white" }} />
+                                        <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 4, fontSize: 13, textAlign: "right", background: "white" }} />
                                         <span style={{ fontSize: 11, color: "#666" }}>{itm.unit}</span>
                                       </div>
                                       <select value={s.riTerm || "payg"} onChange={(e) => upd(itm.id, "riTerm", e.target.value)} style={{ padding: "2px 4px", border: "1px solid " + (s.riTerm && s.riTerm !== "payg" ? "#0078D4" : "#ddd"), borderRadius: 4, fontSize: 12, fontWeight: 600, background: s.riTerm && s.riTerm !== "payg" ? "#0078D4" : "#f5f5f5", color: s.riTerm && s.riTerm !== "payg" ? "white" : "#888", cursor: "pointer" }}>
@@ -1221,22 +1303,22 @@ button{display:none!important}
                                     </>
                                   ) : !itm.flat ? (
                                     <div style={{ display: "flex", alignItems: "center", background: "#eff6ff", borderRadius: 4, padding: "1px 3px", gap: 2 }}>
-                                      <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 3, fontSize: 13, textAlign: "right", background: "white" }} />
+                                      <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 4, fontSize: 13, textAlign: "right", background: "white" }} />
                                       <span style={{ fontSize: 11, color: "#666" }}>{itm.unit}</span>
                                     </div>
                                   ) : null}
                                   <div style={{ display: "flex", alignItems: "center", background: "#f8f8f8", borderRadius: 4, padding: "1px 3px" }}>
                                     <span style={{ fontSize: 11, color: "#bbb" }}>$</span>
-                                    <input type="number" value={Math.round(mo)} onChange={(e) => upd(itm.id, "mo", +e.target.value)} style={{ width: 58, padding: "2px", border: "1px solid #e0e0e0", borderRadius: 3, fontSize: 13, textAlign: "right", background: "white" }} />
+                                    <input type="number" value={Math.round(mo)} onChange={(e) => upd(itm.id, "mo", +e.target.value)} style={{ width: 58, padding: "2px", border: "1px solid #e0e0e0", borderRadius: 4, fontSize: 13, textAlign: "right", background: "white" }} />
                                     <span style={{ fontSize: 11, color: "#bbb" }}>/mo</span>
                                   </div>
                                   <div style={{ fontSize: 13, fontWeight: 600, minWidth: 58, textAlign: "right" }}>{fmt(yr)}<span style={{ fontSize: 10, color: "#bbb" }}>/yr</span></div>
                                 </div>
                               )}
                               </div>
-                              {on && itm.note && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#888", fontStyle: "italic", background: "#f8f9fa", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>{itm.note}</div>}
-                              {on && itm.fab && ri && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>1yr reserved: ~41% savings vs PAYG. Lower ACR = lower funding, but customer saves more.</div>}
-                              {on && itm.riOpts && s.riTerm && s.riTerm !== "payg" && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 3, display: "inline-block" }}>Reserved pricing: lower ACR = lower funding thresholds, but customer saves on monthly cost.</div>}
+                              {on && itm.note && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#888", fontStyle: "italic", background: "#f8f9fa", padding: "2px 6px", borderRadius: 4, display: "inline-block" }}>{itm.note}</div>}
+                              {on && itm.fab && ri && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 4, display: "inline-block" }}>1yr reserved: ~41% savings vs PAYG. Lower ACR = lower funding, but customer saves more.</div>}
+                              {on && itm.riOpts && s.riTerm && s.riTerm !== "payg" && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 4, display: "inline-block" }}>Reserved pricing: lower ACR = lower funding thresholds, but customer saves on monthly cost.</div>}
                             </div>
                           );
                         })}
@@ -1269,7 +1351,7 @@ button{display:none!important}
                       <div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>{C.ok ? "Requires ≥50% DB/Fabric/Foundry" : C.pct > 0 ? C.pct.toFixed(0) + "% eligible - add Data/AI to unlock AFO" : "Add DB, Fabric, or AI Foundry for AFO"}</div>
                       <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>ECIF up to {fmt(C.ecif)}</div>
                       <div style={{ display: "flex", gap: 2, justifyContent: "center", marginTop: 4 }}>
-                        <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 3, background: "#eff6ff", color: "#0078D4", fontWeight: 600 }}>ECIF</span>
+                        <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 4, background: "#eff6ff", color: "#0078D4", fontWeight: 600 }}>ECIF</span>
 
                       </div>
                     </div>
@@ -1294,8 +1376,8 @@ button{display:none!important}
                       <div style={{ fontSize: 10, color: "#888", marginTop: 2 }}>Partner self-serve via PC</div>
                       <div style={{ fontSize: 10, color: "#aaa", marginTop: 1 }}>Up to {fmt(C.mci.pre + C.mci.post)}</div>
                       <div style={{ display: "flex", gap: 2, justifyContent: "center", marginTop: 4 }}>
-                        <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 3, background: "#eff6ff", color: "#2563eb", fontWeight: 600 }}>Pre-sales</span>
-                        <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 3, background: "#ecfdf5", color: "#059669", fontWeight: 600 }}>Post-sales</span>
+                        <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 4, background: "#eff6ff", color: "#2563eb", fontWeight: 600 }}>Pre-sales</span>
+                        <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 4, background: "#ecfdf5", color: "#059669", fontWeight: 600 }}>Post-sales</span>
                       </div>
                     </div>
                   </div>
@@ -1310,14 +1392,14 @@ button{display:none!important}
                 <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#888", marginBottom: 5 }}>Year 1 ACR</div>
                 <div style={{ textAlign: "center", marginBottom: 8 }}><AnimNum value={C.tot} format={fmt} style={{ fontSize: 26, fontWeight: 700, color: "#0078D4" }} /><div style={{ fontSize: 12, color: "#bbb" }}>{fmt(C.tot / 12)}/mo{C.xcr > 0 ? " (+ " + fmt(C.xcr) + " XCR)" : ""}</div></div>
                 <div style={{ display: "grid", gridTemplateColumns: C.xcr > 0 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 4 }} className="grid-acr">
-                  <div style={{ background: "#eff6ff", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 10 }}>AFO Eligible ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>{fmt(C.el)}</div></div>
-                  <div style={{ background: "#fff7ed", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 10 }}>ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#D83B01" }}>{fmt(C.ot)}</div></div>
-                  {C.xcr > 0 && <div style={{ background: "#fef3c7", padding: 5, borderRadius: 5, textAlign: "center" }}><div style={{ fontSize: 10 }}>XCR (not ACR)</div><div style={{ fontSize: 13, fontWeight: 700, color: "#d97706" }}>{fmt(C.xcr)}</div></div>}
+                  <div style={{ background: "#eff6ff", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>AFO Eligible ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>{fmt(C.el)}</div></div>
+                  <div style={{ background: "#fff7ed", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#D83B01" }}>{fmt(C.ot)}</div></div>
+                  {C.xcr > 0 && <div style={{ background: "#fef3c7", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>XCR (not ACR)</div><div style={{ fontSize: 13, fontWeight: 700, color: "#d97706" }}>{fmt(C.xcr)}</div></div>}
                 </div>
                 {C.rows.length > 0 && <div style={{ marginTop: 8 }}>{C.rows.sort((a, b) => b.yr - a.yr).map((r, i) => (
                   <div key={i} style={{ marginBottom: 3 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}><span style={{ color: r.xcr ? "#d97706" : "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 155 }}>{r.name}{r.sku ? " (" + r.sku + ")" : ""}{r.xcr ? " ⚡" : ""}</span><span style={{ fontWeight: 600 }}>{fmt(r.yr)}</span></div>
-                    <div style={{ height: 6, background: "#e8e8ec", borderRadius: 3 }}><div style={{ height: "100%", width: (r.yr / mx) * 100 + "%", background: r.xcr ? "#fbbf24" : r.color, borderRadius: 3, opacity: r.elig ? 1 : r.xcr ? 0.7 : 0.6 }} /></div>
+                    <div style={{ height: 6, background: "#e8e8ec", borderRadius: 4 }}><div style={{ height: "100%", width: (r.yr / mx) * 100 + "%", background: r.xcr ? "#fbbf24" : r.color, borderRadius: 4, opacity: r.elig ? 1 : r.xcr ? 0.7 : 0.6 }} /></div>
                   </div>
                 ))}</div>}
               </div>
@@ -1381,7 +1463,7 @@ button{display:none!important}
 
                             
 
-                            {note && <div style={{ marginTop: 10, padding: "5px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 5, fontSize: 10, color: "#a5b4fc", lineHeight: 1.5 }}>{note}</div>}
+                            {note && <div style={{ marginTop: 10, padding: "5px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 4, fontSize: 10, color: "#a5b4fc", lineHeight: 1.5 }}>{note}</div>}
                           </>
                         ) : isNonAfo ? (
                           <>
@@ -1427,7 +1509,7 @@ button{display:none!important}
                                   </div>
 
                                   {/* Alternative option */}
-                                  <div style={{ marginTop: 10, padding: "6px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 5 }}>
+                                  <div style={{ marginTop: 10, padding: "6px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 4 }}>
                                     <div style={{ fontSize: 10, color: "#a5b4fc", lineHeight: 1.5 }}>
                                       <strong>Alternative:</strong> {altLabel}
                                     </div>
@@ -1441,12 +1523,12 @@ button{display:none!important}
 
                         {/* Split suggestion if not eligible */}
                         {!C.ok && C.el > 0 && (
-                          <div style={{ marginTop: 8, padding: "6px 8px", background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 5, fontSize: 11, color: "#fbbf24", lineHeight: 1.5 }}>
+                          <div style={{ marginTop: 8, padding: "6px 8px", background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 4, fontSize: 11, color: "#fbbf24", lineHeight: 1.5 }}>
                             💡 <strong>Split tip:</strong> Nominate DB/Fabric/Foundry ({fmt(C.el)}) as separate AFO project → unlocks <strong>{fmt(Math.min(C.el * 0.5, 500000))}</strong> ECIF (cash to partner).{C.el < 10000 && <span style={{ display: "block", marginTop: 3, fontSize: 10, color: "#f59e0b" }}>⚠ Small deal ({fmt(C.el)} ACR) - field may deprioritize. Consider adding more DB/Fabric/AI workloads first, or go MCI-only.</span>}
                           </div>
                         )}
                         {!C.ok && C.el === 0 && (
-                          <div style={{ marginTop: 8, padding: "5px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 5, fontSize: 10, color: "#fbbf24", lineHeight: 1.5 }}>
+                          <div style={{ marginTop: 8, padding: "5px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 4, fontSize: 10, color: "#fbbf24", lineHeight: 1.5 }}>
                             Add DB, Fabric, or AI Foundry workloads to unlock AFO (ECIF cash).
                           </div>
                         )}
@@ -1567,7 +1649,7 @@ button{display:none!important}
               {C.tot === 0 && (
                 <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                   <div style={{ fontSize: 13, fontWeight: 600, color: "#5C2D91", marginBottom: 8 }}>Quick start - pick a scenario</div>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }} className="grid-2col">
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 8 }} className="grid-2col">
                     {SCENARIOS.map(s => (
                       <button key={s.id} onClick={() => applyScenario(s)} style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 12px", background: "#fafafa", border: "1px solid #e8e8ec", borderRadius: 8, cursor: "pointer", textAlign: "left" }}>
                         <span style={{ fontSize: 20, flexShrink: 0, marginTop: 1 }}>{s.icon}</span>
@@ -1578,7 +1660,8 @@ button{display:none!important}
                       </button>
                     ))}
                   </div>
-                  <div style={{ fontSize: 11, color: "#aaa", textAlign: "center", marginTop: 8 }}>Or select workloads manually on the left</div>
+                  <button onClick={() => { setShowQuest(true); setQStep(0); }} style={{ width: "100%", padding: "10px", background: "linear-gradient(135deg, #5C2D91, #7c3aed)", color: "white", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", marginBottom: 6 }}>🎯 Answer 5 questions - estimate AFO potential</button>
+                  <div style={{ fontSize: 11, color: "#aaa", textAlign: "center" }}>Or select workloads manually on the left</div>
                 </div>
               )}
             </div>
@@ -1644,7 +1727,7 @@ button{display:none!important}
                   if (isMci && C.mci.ts) metrics.push({ l: "MCI Tier", v: C.mci.ts + " · " + C.mci.days + "d", c: "#2563eb" });
                 }
                 return metrics.map((b, i) => (
-                  <div key={i} style={{ flex: 1, background: "white", padding: "7px 4px", borderRadius: 7, textAlign: "center", border: "1px solid #e8e8ec" }}>
+                  <div key={i} style={{ flex: 1, background: "white", padding: "7px 4px", borderRadius: 8, textAlign: "center", border: "1px solid #e8e8ec" }}>
                     <div style={{ fontSize: 10, color: "#888" }}>{b.l}</div>
                     <div style={{ fontSize: 13, fontWeight: 700, color: b.c || "#333" }}>{b.v}</div>
                   </div>
@@ -1702,15 +1785,15 @@ button{display:none!important}
                     ))}
                   </tbody>
                 </table>
-                <button onClick={addSowRow} style={{ padding: "4px 12px", background: "#f0f6ff", border: "1px dashed #93c5fd", borderRadius: 5, fontSize: 11, color: "#0078D4", cursor: "pointer", marginBottom: 6, fontWeight: 600 }}>+ Add Custom Workload</button>
+                <button onClick={addSowRow} style={{ padding: "4px 12px", background: "#f0f6ff", border: "1px dashed #93c5fd", borderRadius: 4, fontSize: 11, color: "#0078D4", cursor: "pointer", marginBottom: 6, fontWeight: 600 }}>+ Add Custom Workload</button>
                 <div style={{ fontSize: 12, color: "#888", marginBottom: 16 }}>AFO Eligible: {C.pct.toFixed(0)}% · Scenario: {C.sc}{C.xcr > 0 ? " · XCR (not part of ACR): " + fmt(C.xcr) : ""}</div>
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Timeline & Milestones</h2>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                   <p style={{ fontSize: 13, margin: 0 }}>Start: <input type="date" value={sow.sd} onChange={(e) => us("sd", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 6px", fontSize: 13, color: "#0078D4", fontFamily: "inherit" }} /> · End: <input type="date" value={sow.ed} onChange={(e) => us("ed", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 6px", fontSize: 13, color: "#0078D4", fontFamily: "inherit" }} /></p>
-                  <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 4, background: "#f8f9fa", padding: "3px 8px", borderRadius: 5 }}>
+                  <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 4, background: "#f8f9fa", padding: "3px 8px", borderRadius: 4 }}>
                     <span style={{ fontSize: 11, color: "#888" }}>Partner rate:</span>
                     <span style={{ fontSize: 11, color: "#bbb" }}>$</span>
-                    <input type="number" value={sow.rate} onChange={(e) => us("rate", e.target.value)} style={{ width: 45, padding: "2px", border: "1px solid #ddd", borderRadius: 3, fontSize: 13, textAlign: "right", background: "white" }} />
+                    <input type="number" value={sow.rate} onChange={(e) => us("rate", e.target.value)} style={{ width: 45, padding: "2px", border: "1px solid #ddd", borderRadius: 4, fontSize: 13, textAlign: "right", background: "white" }} />
                     <span style={{ fontSize: 11, color: "#bbb" }}>/hr</span>
                   </div>
                 </div>
@@ -1830,9 +1913,9 @@ button{display:none!important}
                     </div>
                   );
                 })()}
-                <button onClick={addMilestone} style={{ padding: "4px 12px", background: "#f0f4fa", border: "1px dashed #93c5fd", borderRadius: 5, fontSize: 12, color: "#0078D4", cursor: "pointer", marginBottom: 6, fontWeight: 600 }}>+ Add Milestone</button>
-                {mCalc.overBudget && <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 5, padding: "4px 8px", fontSize: 11, color: "#dc2626", marginBottom: 6 }}>⚠ Total ECIF ({fmt(mCalc.totalE)}) exceeds estimated budget ({fmt(mCalc.budget)}). Reduce hours or adjust rate. Budget allows ~{mCalc.suggestedH} hours at ${sow.rate}/hr.</div>}
-                {!mCalc.overBudget && mCalc.totalE > 0 && <div style={{ background: "#ecfdf5", border: "1px solid #6ee7b7", borderRadius: 5, padding: "4px 8px", fontSize: 11, color: "#059669", marginBottom: 6 }}>✓ Within budget. {fmt(mCalc.totalE)} of {fmt(mCalc.budget)} ({(mCalc.totalE / mCalc.budget * 100).toFixed(0)}% utilization)</div>}
+                <button onClick={addMilestone} style={{ padding: "4px 12px", background: "#f0f4fa", border: "1px dashed #93c5fd", borderRadius: 4, fontSize: 12, color: "#0078D4", cursor: "pointer", marginBottom: 6, fontWeight: 600 }}>+ Add Milestone</button>
+                {mCalc.overBudget && <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 4, padding: "4px 8px", fontSize: 11, color: "#dc2626", marginBottom: 6 }}>⚠ Total ECIF ({fmt(mCalc.totalE)}) exceeds estimated budget ({fmt(mCalc.budget)}). Reduce hours or adjust rate. Budget allows ~{mCalc.suggestedH} hours at ${sow.rate}/hr.</div>}
+                {!mCalc.overBudget && mCalc.totalE > 0 && <div style={{ background: "#ecfdf5", border: "1px solid #6ee7b7", borderRadius: 4, padding: "4px 8px", fontSize: 11, color: "#059669", marginBottom: 6 }}>✓ Within budget. {fmt(mCalc.totalE)} of {fmt(mCalc.budget)} ({(mCalc.totalE / mCalc.budget * 100).toFixed(0)}% utilization)</div>}
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Funding Summary</h2>
 
                 {/* Funding options with clear labels */}
@@ -1953,8 +2036,8 @@ button{display:none!important}
                   <tbody>{risks.map((r, i) => (
                     <tr key={i} style={{ borderBottom: "1px solid #f0f0f0" }}>
                       <td style={{ padding: "4px 6px", color: "#333" }}>{r.risk}</td>
-                      <td style={{ padding: "4px 6px", textAlign: "center" }}><span style={{ fontSize: 10, fontWeight: 600, padding: "1px 5px", borderRadius: 3, background: r.lh === "High" ? "#fef2f2" : "#fefce8", color: r.lh === "High" ? "#dc2626" : "#ca8a04" }}>{r.lh}</span></td>
-                      <td style={{ padding: "4px 6px", textAlign: "center" }}><span style={{ fontSize: 10, fontWeight: 600, padding: "1px 5px", borderRadius: 3, background: r.imp === "High" ? "#fef2f2" : "#fefce8", color: r.imp === "High" ? "#dc2626" : "#ca8a04" }}>{r.imp}</span></td>
+                      <td style={{ padding: "4px 6px", textAlign: "center" }}><span style={{ fontSize: 10, fontWeight: 600, padding: "1px 5px", borderRadius: 4, background: r.lh === "High" ? "#fef2f2" : "#fefce8", color: r.lh === "High" ? "#dc2626" : "#ca8a04" }}>{r.lh}</span></td>
+                      <td style={{ padding: "4px 6px", textAlign: "center" }}><span style={{ fontSize: 10, fontWeight: 600, padding: "1px 5px", borderRadius: 4, background: r.imp === "High" ? "#fef2f2" : "#fefce8", color: r.imp === "High" ? "#dc2626" : "#ca8a04" }}>{r.imp}</span></td>
                       <td style={{ padding: "4px 6px", color: "#555" }}>{r.mit}</td>
                     </tr>
                   ))}</tbody>
@@ -1981,7 +2064,7 @@ button{display:none!important}
                           <div>
                             <div style={{ fontSize: 13, fontWeight: 700, color: "#0c4a6e" }}>{nw.title}</div>
                             <div style={{ display: "flex", gap: 4, marginTop: 1 }}>
-                              <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 3, background: nw.funding.includes("AFO") ? "#dcfce7" : "#f0f9ff", color: nw.funding.includes("AFO") ? "#166534" : "#0369a1", fontWeight: 600 }}>{nw.funding}</span>
+                              <span style={{ fontSize: 9, padding: "1px 4px", borderRadius: 4, background: nw.funding.includes("AFO") ? "#dcfce7" : "#f0f9ff", color: nw.funding.includes("AFO") ? "#166534" : "#0369a1", fontWeight: 600 }}>{nw.funding}</span>
                             </div>
                           </div>
                         </div>
@@ -2010,14 +2093,14 @@ button{display:none!important}
               <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                 <div style={{ background: "linear-gradient(135deg,#0078D4,#0057a8)", padding: "10px 14px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div><div style={{ fontSize: 10, opacity: 0.6, textTransform: "uppercase" }}>For Partner</div><div style={{ fontSize: 12, fontWeight: 600 }}>Opportunity briefing</div></div>
-                  <button onClick={() => copy(partnerMail, "p")} style={{ padding: "4px 10px", background: "rgba(255,255,255,.2)", color: "white", border: "1px solid rgba(255,255,255,.3)", borderRadius: 5, fontSize: 12, cursor: "pointer" }}>{cp === "p" ? "Copied!" : "Copy"}</button>
+                  <button onClick={() => copy(partnerMail, "p")} style={{ padding: "4px 10px", background: "rgba(255,255,255,.2)", color: "white", border: "1px solid rgba(255,255,255,.3)", borderRadius: 4, fontSize: 12, cursor: "pointer" }}>{cp === "p" ? "Copied!" : "Copy"}</button>
                 </div>
                 <pre style={{ padding: 14, fontSize: 10.5, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word", maxHeight: 460, overflow: "auto", margin: 0 }}>{partnerMail}</pre>
               </div>
               <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                 <div style={{ background: "linear-gradient(135deg,#5C2D91,#B4009E)", padding: "10px 14px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div><div style={{ fontSize: 10, opacity: 0.6, textTransform: "uppercase" }}>For Customer</div><div style={{ fontSize: 12, fontWeight: 600 }}>Investment overview</div></div>
-                  <button onClick={() => copy(custMail, "c")} style={{ padding: "4px 10px", background: "rgba(255,255,255,.2)", color: "white", border: "1px solid rgba(255,255,255,.3)", borderRadius: 5, fontSize: 12, cursor: "pointer" }}>{cp === "c" ? "Copied!" : "Copy"}</button>
+                  <button onClick={() => copy(custMail, "c")} style={{ padding: "4px 10px", background: "rgba(255,255,255,.2)", color: "white", border: "1px solid rgba(255,255,255,.3)", borderRadius: 4, fontSize: 12, cursor: "pointer" }}>{cp === "c" ? "Copied!" : "Copy"}</button>
                 </div>
                 <pre style={{ padding: 14, fontSize: 10.5, lineHeight: 1.5, whiteSpace: "pre-wrap", wordBreak: "break-word", maxHeight: 460, overflow: "auto", margin: 0 }}>{custMail}</pre>
               </div>
@@ -2126,8 +2209,8 @@ h1{page-break-after:avoid}
                     <div style={{ flex: 1, fontSize: 12, color: "#333" }}>{r.name}{r.sku ? " (" + r.sku + ")" : ""}</div>
                     <div style={{ fontSize: 13, color: "#888" }}>{fmt(r.mo)}/mo</div>
                     <div style={{ fontSize: 12, fontWeight: 600, color: "#333", minWidth: 80, textAlign: "right" }}>{fmt(r.yr)}/yr</div>
-                    <div style={{ width: 120, height: 6, background: "#f0f0f0", borderRadius: 3, flexShrink: 0 }}>
-                      <div style={{ height: "100%", width: Math.min((r.yr / Math.max(...C.rows.map(x => x.yr), 1)) * 100, 100) + "%", background: r.color, borderRadius: 3 }} />
+                    <div style={{ width: 120, height: 6, background: "#f0f0f0", borderRadius: 4, flexShrink: 0 }}>
+                      <div style={{ height: "100%", width: Math.min((r.yr / Math.max(...C.rows.map(x => x.yr), 1)) * 100, 100) + "%", background: r.color, borderRadius: 4 }} />
                     </div>
                   </div>
                 ))}
@@ -2139,7 +2222,7 @@ h1{page-break-after:avoid}
                 <div style={{ fontSize: 13, color: "#888", marginBottom: 16 }}>Based on your planned Azure investment, Microsoft offers the following co-investment, delivered through certified partners.</div>
 
                 {/* Qualification badge */}
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 20, background: C.ok ? "#ecfdf5" : "#eff6ff", border: "1.5px solid " + (C.ok ? "#6ee7b7" : "#93c5fd"), marginBottom: 16 }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 14px", borderRadius: 12, background: C.ok ? "#ecfdf5" : "#eff6ff", border: "1.5px solid " + (C.ok ? "#6ee7b7" : "#93c5fd"), marginBottom: 16 }}>
                   <span style={{ fontSize: 14 }}>✓</span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: C.ok ? "#059669" : "#0078D4" }}>
                     {C.ok ? "Qualifies for Microsoft Data & AI Acceleration Program" : "Qualifies for Microsoft Azure Accelerate Program"}
@@ -2300,6 +2383,189 @@ h1{page-break-after:avoid}
       </>
       )}
 
+
+
+      {/* AFO Pre-Assessment Questionnaire Modal */}
+      {showQuest && (() => {
+        const qs = [
+          { title: "Databases", sub: "Which database types does the customer run?", render: () => (
+            <Fragment>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
+                {["SQL Server","Oracle","PostgreSQL","MySQL","Cosmos DB","None"].map(t => (
+                  <button key={t} onClick={() => qToggle("dbTypes", t)} style={{ padding: "9px 16px", borderRadius: 8, border: "1.5px solid " + ((qAns.dbTypes||[]).includes(t) ? "#0078D4" : "#ddd"), background: (qAns.dbTypes||[]).includes(t) ? "#eff6ff" : "white", color: (qAns.dbTypes||[]).includes(t) ? "#0078D4" : "#555", fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{t}</button>
+                ))}
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "#555", marginBottom: 5 }}>Approximate number of instances?</div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {["1-5","5-15","15-50","50+"].map(k => (
+                  <button key={k} onClick={() => qSet("dbCount", k)} style={{ flex: 1, padding: "9px", borderRadius: 8, border: "1.5px solid " + (qAns.dbCount === k ? "#0078D4" : "#ddd"), background: qAns.dbCount === k ? "#eff6ff" : "white", color: qAns.dbCount === k ? "#0078D4" : "#555", fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{k}</button>
+                ))}
+              </div>
+            </Fragment>
+          ), valid: () => (qAns.dbTypes||[]).length > 0 && qAns.dbCount },
+          { title: "Reporting & Analytics", sub: "How many people consume reports and dashboards?", render: () => (
+            <Fragment>
+              <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+                {[["<50","Under 50"],["50-200","50-200"],["200-500","200-500"],["500+","500+"]].map(([k,l]) => (
+                  <button key={k} onClick={() => qSet("viewers", k)} style={{ flex: 1, padding: "12px 8px", borderRadius: 8, border: "1.5px solid " + (qAns.viewers === k ? "#0078D4" : "#ddd"), background: qAns.viewers === k ? "#eff6ff" : "white", color: qAns.viewers === k ? "#0078D4" : "#555", fontWeight: 600, fontSize: 13, cursor: "pointer", fontFamily: "inherit", textAlign: "center" }}>{l}</button>
+                ))}
+              </div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: "#555", marginBottom: 5 }}>Power BI Premium or Fabric today?</div>
+              <div style={{ display: "flex", gap: 6 }}>
+                {[["yes","Yes"],["no","No"],["unknown","Don't know"]].map(([k,l]) => (
+                  <button key={k} onClick={() => qSet("hasPremium", k)} style={{ flex: 1, padding: "9px", borderRadius: 8, border: "1.5px solid " + (qAns.hasPremium === k ? "#0078D4" : "#ddd"), background: qAns.hasPremium === k ? "#eff6ff" : "white", color: qAns.hasPremium === k ? "#0078D4" : "#555", fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>{l}</button>
+                ))}
+              </div>
+            </Fragment>
+          ), valid: () => qAns.viewers && qAns.hasPremium },
+          { title: "AI on Customer Data", sub: "Is AI relevant for this project?", render: () => (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {[["yes","Yes - concrete use-cases (search, summarization, automation)"],["maybe","Maybe - explore during assessment"],["no","No - not part of this project"]].map(([k,l]) => (
+                <button key={k} onClick={() => qSet("aiInterest", k)} style={{ padding: "12px 16px", borderRadius: 8, border: "1.5px solid " + (qAns.aiInterest === k ? "#0078D4" : "#ddd"), background: qAns.aiInterest === k ? "#eff6ff" : "white", color: qAns.aiInterest === k ? "#0078D4" : "#555", fontWeight: 500, fontSize: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>{l}</button>
+              ))}
+            </div>
+          ), valid: () => qAns.aiInterest },
+          { title: "Data Landscape", sub: "How many systems feed into reporting and processes?", render: () => (
+            <div style={{ display: "flex", gap: 6 }}>
+              {[["1-5","1-5 systems"],["5-15","5-15 systems"],["15+","15+ systems"]].map(([k,l]) => (
+                <button key={k} onClick={() => qSet("dataSources", k)} style={{ flex: 1, padding: "12px 8px", borderRadius: 8, border: "1.5px solid " + (qAns.dataSources === k ? "#0078D4" : "#ddd"), background: qAns.dataSources === k ? "#eff6ff" : "white", color: qAns.dataSources === k ? "#0078D4" : "#555", fontWeight: 600, fontSize: 13, cursor: "pointer", fontFamily: "inherit", textAlign: "center" }}>{l}</button>
+              ))}
+            </div>
+          ), valid: () => qAns.dataSources },
+          { title: "Agreement", sub: "Customer's Microsoft licensing agreement?", render: () => (
+            <Fragment>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {[["EA","Enterprise Agreement"],["MCA","MCA-E (Field Led)"],["CSP","Modern CSP"],["unknown","Don't know"]].map(([k,l]) => (
+                  <button key={k} onClick={() => qSet("agreement", k)} style={{ flex: "1 1 45%", padding: "12px 14px", borderRadius: 8, border: "1.5px solid " + (qAns.agreement === k ? "#0078D4" : "#ddd"), background: qAns.agreement === k ? "#eff6ff" : "white", color: qAns.agreement === k ? "#0078D4" : "#555", fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "center" }}>{l}</button>
+                ))}
+              </div>
+              {qAns.agreement === "CSP" && <div style={{ marginTop: 8, padding: "6px 10px", background: "#fff7ed", borderRadius: 6, border: "1px solid #fed7aa", fontSize: 11, color: "#b45309" }}>CSP = MCI Partner-Led path. AFO requires EA or MCA-E.</div>}
+            </Fragment>
+          ), valid: () => qAns.agreement },
+          { title: "Your Estimate", sub: "Based on your answers, here's what we'll populate", render: () => {
+            const dbMap = { "SQL Server": "SQL MI (PaaS)", "Oracle": "Oracle to PostgreSQL", "PostgreSQL": "PostgreSQL Flexible", "MySQL": "MySQL Flexible", "Cosmos DB": "Cosmos DB" };
+            const instCount = { "1-5": 3, "5-15": 10, "15-50": 30, "50+": 50 };
+            const vcoresPerInst = 4;
+            const viewerSku = { "<50": "F8", "50-200": "F32", "200-500": "F64", "500+": "F128" };
+            const viewerAcr = { "<50": 625, "50-200": 3240, "200-500": 8276, "500+": 16273 };
+            const instances = instCount[qAns.dbCount] || 3;
+            const totalVcores = instances * vcoresPerInst;
+            const items = [];
+            let afoAcr = 0, otherAcr = 0;
+            const dbTypes = (qAns.dbTypes||[]).filter(t => t !== "None");
+            dbTypes.forEach(t => {
+              const n = dbMap[t];
+              if (!n) return;
+              if (t === "Cosmos DB") {
+                const mo = instances * 46;
+                afoAcr += mo * 12;
+                items.push({ name: n + " (" + instances + "K RU/s, 1yr RI)", acr: mo * 12, afo: true, why: instances + "K RU/s estimated at ~1K RU per database instance, with 1yr Reserved Instance pricing" });
+              } else {
+                const up = t === "SQL Server" ? 62 : 80;
+                const mo = totalVcores * up;
+                afoAcr += mo * 12;
+                const riLabel = t === "SQL Server" ? " with 1yr RI + AHUB" : " with 1yr RI";
+                items.push({ name: n + " (" + totalVcores + " vCores" + riLabel + ")", acr: mo * 12, afo: true, why: instances + " instances x " + vcoresPerInst + " vCores each = " + totalVcores + " total vCores" + (t === "SQL Server" ? ". AHUB requires Software Assurance - verify with customer" : ". Adjust per instance sizing after assessment") });
+              }
+            });
+            if (qAns.viewers) {
+              const sku = viewerSku[qAns.viewers];
+              const acr = viewerAcr[qAns.viewers] * 12;
+              afoAcr += acr;
+              const whyViewer = qAns.viewers === "<50" ? "F8 ($625/mo) for small teams - basic capacity for dev/test and light reporting"
+                : qAns.viewers === "50-200" ? "F32 ($3,240/mo) for mid-size reporting - handles concurrent queries across 50-200 viewers"
+                : qAns.viewers === "200-500" ? "F64 ($8,276/mo) for 200-500 viewers - includes free Fabric viewer access, eliminates need for Power BI Pro licenses per viewer"
+                : "F128 ($16,273/mo) for 500+ viewers - highest concurrency, includes free viewer access at scale";
+              items.push({ name: "Microsoft Fabric " + sku, acr, afo: true, why: whyViewer });
+            }
+            if (qAns.aiInterest === "yes") {
+              afoAcr += 30000 + 9000;
+              items.push({ name: "Azure OpenAI Standard (10M tokens/mo)", acr: 30000, afo: true, why: "10M tokens/mo supports ~500 daily queries at ~700 tokens each. Covers a production chatbot or document search scenario" });
+              items.push({ name: "AI Search S1 (3 replicas)", acr: 9000, afo: true, why: "S1 with 3 replicas provides high-availability for RAG grounding. Required for production SLA (99.9%)" });
+            } else if (qAns.aiInterest === "maybe") {
+              afoAcr += 15000;
+              items.push({ name: "Azure OpenAI Standard (5M tokens/mo)", acr: 15000, afo: true, why: "5M tokens/mo for POC and exploration during assessment phase. Scale up after validating use-case" });
+            }
+            const totalInst = instances * (dbTypes.length || 1);
+            const monitorGB = Math.max(200, totalInst * 30);
+            const defCount = totalInst;
+            const infraItems = [
+              { name: "Azure Monitor", acr: monitorGB * 3 * 12, why: monitorGB + "GB/mo log ingestion estimated at ~30GB per database/server instance across " + totalInst + " workloads" },
+              { name: "Azure Networking", acr: 24000, why: "ExpressRoute (~$1.5K/mo) + Azure Firewall (~$500/mo) baseline for hybrid connectivity to on-prem during migration" },
+              { name: "Defender for Cloud P2", acr: defCount * 15 * 12, why: "Plan 2 for " + defCount + " servers covers vulnerability assessment, agentless scanning, and adaptive hardening" },
+            ];
+            infraItems.forEach(i => { otherAcr += i.acr; items.push({ ...i, afo: false }); });
+            const total = afoAcr + otherAcr;
+            const pct = total > 0 ? (afoAcr/total*100) : 0;
+            const eligible = pct >= 50;
+            const ecif = eligible ? Math.min(total*0.5, 500000) : 0;
+            return (
+              <div>
+                <div style={{ background: eligible ? "#ecfdf5" : "#fffbeb", border: "1.5px solid " + (eligible ? "#6ee7b7" : "#fcd34d"), borderRadius: 10, padding: "14px 16px", marginBottom: 14, textAlign: "center" }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, color: eligible ? "#059669" : "#b45309" }}>{eligible ? "AFO Eligible" : "Below AFO Threshold"}</div>
+                  <div style={{ fontSize: 13, color: eligible ? "#059669" : "#b45309" }}>{pct.toFixed(0)}% eligible workloads {eligible ? "- qualifies for up to " + fmt(ecif) + " ECIF" : "- needs more DB/Fabric/AI to reach 50%"}</div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
+                  <div style={{ background: "#f0f4ff", borderRadius: 8, padding: "10px", textAlign: "center" }}>
+                    <div style={{ fontSize: 10, color: "#64748b" }}>Est. Y1 ACR</div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: "#0078D4" }}>{fmt(total)}</div>
+                  </div>
+                  <div style={{ background: "#ecfdf5", borderRadius: 8, padding: "10px", textAlign: "center" }}>
+                    <div style={{ fontSize: 10, color: "#64748b" }}>AFO Eligible ACR</div>
+                    <div style={{ fontSize: 18, fontWeight: 700, color: "#059669" }}>{fmt(afoAcr)}</div>
+                  </div>
+                </div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "#555", marginBottom: 6 }}>Workloads to be populated:</div>
+                {items.map((w, i) => (
+                  <div key={i} style={{ padding: "8px 0", borderBottom: "1px solid #f5f5f5" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <div style={{ width: 6, height: 6, borderRadius: 2, background: w.afo ? "#059669" : "#f59e0b", flexShrink: 0, marginTop: 1 }} />
+                        <span style={{ color: "#333", fontWeight: 500 }}>{w.name}</span>
+                        {w.afo && <span style={{ fontSize: 8, padding: "1px 4px", borderRadius: 4, background: "#ecfdf5", color: "#059669", fontWeight: 600 }}>AFO</span>}
+                      </div>
+                      <span style={{ fontWeight: 600, color: "#555", flexShrink: 0 }}>{fmt(w.acr)}/yr</span>
+                    </div>
+                    <div style={{ fontSize: 10, color: "#999", marginTop: 2, paddingLeft: 12 }}>{w.why}</div>
+                  </div>
+                ))}
+                {qAns.agreement === "CSP" && <div style={{ marginTop: 10, padding: "6px 10px", background: "#fff7ed", borderRadius: 6, border: "1px solid #fed7aa", fontSize: 11, color: "#b45309" }}>Note: CSP uses MCI Partner path. AFO requires EA or MCA-E.</div>}
+              </div>
+            );
+          }, valid: () => true },
+        ];
+        const q = qs[qStep];
+        return (
+          <div style={{ position: "fixed", inset: 0, background: "rgba(10,22,40,0.7)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", zIndex: 99998, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+            <div style={{ maxWidth: 520, width: "100%", background: "white", borderRadius: 12, overflow: "hidden", maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.3)", animation: "fadeSlide 0.25s ease" }}>
+              <div style={{ background: HDR, padding: "16px 24px", color: "white" }}>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>AFO Pre-Assessment</div>
+                <div style={{ fontSize: 11, opacity: 0.6 }}>Estimate funding potential in 5 questions</div>
+              </div>
+              <div style={{ padding: "4px 24px 0", overflowY: "auto", flex: 1 }}>
+                <div style={{ display: "flex", gap: 3, margin: "12px 0" }}>
+                  {qs.map((_, i) => <div key={i} style={{ flex: 1, height: 3, borderRadius: 2, background: i <= qStep ? "#0078D4" : "#e0e0e0", transition: "background 0.3s" }} />)}
+                </div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#0078D4", textTransform: "uppercase", letterSpacing: 0.5 }}>{qStep < qs.length - 1 ? "Question " + (qStep + 1) + " of " + (qs.length - 1) : "Estimate"}</div>
+                <div style={{ fontSize: 17, fontWeight: 600, color: "#1a1a2e", marginBottom: 2 }}>{q.title}</div>
+                <div style={{ fontSize: 12, color: "#888", marginBottom: 14 }}>{q.sub}</div>
+                {q.render()}
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "14px 24px", borderTop: "1px solid #f0f0f0", marginTop: 14 }}>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button onClick={() => setShowQuest(false)} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #ddd", background: "white", color: "#888", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+                  {qStep > 0 && <button onClick={() => setQStep(qStep - 1)} style={{ padding: "8px 16px", borderRadius: 8, border: "1px solid #ddd", background: "white", color: "#555", fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>Back</button>}
+                </div>
+                {qStep < qs.length - 1 ? (
+                  <button onClick={() => setQStep(qStep + 1)} disabled={!q.valid()} style={{ padding: "8px 20px", borderRadius: 8, border: "none", background: q.valid() ? "#0078D4" : "#e0e0e0", color: q.valid() ? "white" : "#999", fontSize: 12, fontWeight: 600, cursor: q.valid() ? "pointer" : "default", fontFamily: "inherit" }}>Next</button>
+                ) : (
+                  <button onClick={applyQuestionnaire} disabled={!q.valid()} style={{ padding: "8px 20px", borderRadius: 8, border: "none", background: q.valid() ? "linear-gradient(135deg, #059669, #34d399)" : "#e0e0e0", color: q.valid() ? "white" : "#999", fontSize: 12, fontWeight: 700, cursor: q.valid() ? "pointer" : "default", fontFamily: "inherit" }}>Apply to Estimator</button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Excel Import Preview Modal */}
       {importPreview && (
