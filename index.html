@@ -608,6 +608,23 @@ function App() {
 
   // ── Visitor Gate (timed overlay) ──
 
+
+  // ── Password Gate ──
+  const [authed, setAuthed] = useState(() => {
+    try { return localStorage.getItem("afe_auth") === "ok"; } catch(e) { return false; }
+  });
+  const [pwInput, setPwInput] = useState("");
+  const [pwError, setPwError] = useState(false);
+  const checkPw = () => {
+    if (pwInput === "AzureFunding2026") {
+      try { localStorage.setItem("afe_auth", "ok"); } catch(e) {}
+      setAuthed(true);
+      setPwError(false);
+    } else {
+      setPwError(true);
+    }
+  };
+
   // ── AFO Pre-Assessment Questionnaire ──
   const [showQuest, setShowQuest] = useState(false);
   const [qStep, setQStep] = useState(0);
@@ -1194,6 +1211,33 @@ button{display:none!important}
 
 
 
+
+
+  // ── Password gate ──
+  if (!authed) {
+    return (
+      <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0a1628 0%, #1e3a5f 40%, #0078D4 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Segoe UI',sans-serif" }}>
+        <div style={{ maxWidth: 380, width: "100%" }}>
+          <div style={{ background: "white", borderRadius: 12, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+            <div style={{ background: HDR, padding: "28px 28px 20px", color: "white", textAlign: "center" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 6 }}>
+                <svg width="24" height="24" viewBox="0 0 20 20"><rect width="9" height="9" fill="#f25022" rx="1" /><rect x="11" width="9" height="9" fill="#7fba00" rx="1" /><rect y="11" width="9" height="9" fill="#00a4ef" rx="1" /><rect x="11" y="11" width="9" height="9" fill="#ffb900" rx="1" /></svg>
+                <span style={{ fontSize: 18, letterSpacing: -0.3 }}><span style={{ fontWeight: 300 }}>Azure</span> <span style={{ fontWeight: 700 }}>Funding Estimator</span></span>
+              </div>
+              <div style={{ fontSize: 12, opacity: 0.5 }}>Partner & Field Tool</div>
+            </div>
+            <div style={{ padding: "24px 28px" }}>
+              <div style={{ fontSize: 12, color: "#555", marginBottom: 14, textAlign: "center" }}>Enter access code to continue</div>
+              <input type="password" value={pwInput} onChange={(e) => { setPwInput(e.target.value); setPwError(false); }} onKeyDown={(e) => e.key === "Enter" && checkPw()} placeholder="Access code" aria-label="Access code" style={{ width: "100%", padding: "10px 14px", border: "1.5px solid " + (pwError ? "#dc2626" : "#e0e0e0"), borderRadius: 8, fontSize: 14, fontFamily: "inherit", outline: "none", boxSizing: "border-box", textAlign: "center", letterSpacing: 2 }} autoFocus />
+              {pwError && <div style={{ fontSize: 11, color: "#dc2626", textAlign: "center", marginTop: 6 }}>Incorrect code</div>}
+              <button onClick={checkPw} disabled={!pwInput} style={{ width: "100%", padding: "10px", marginTop: 12, background: pwInput ? "linear-gradient(135deg, #0078D4, #005a9e)" : "#e0e0e0", color: pwInput ? "white" : "#999", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: pwInput ? "pointer" : "default", fontFamily: "inherit", boxShadow: pwInput ? "0 4px 12px rgba(0,120,212,0.3)" : "none" }}>Open Tool</button>
+            </div>
+          </div>
+          <div style={{ textAlign: "center", marginTop: 12, fontSize: 10, color: "rgba(255,255,255,0.3)" }}>by Rai Chowdhury · Microsoft Cloud & AI</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ fontFamily: "'Segoe UI',sans-serif", minHeight: "100vh", background: "#f5f5f5", color: "#1a1a2e" }}>
@@ -2687,5 +2731,9 @@ h1{page-break-after:avoid}
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+<!-- Microsoft Clarity - replace w1c1zyts4q with your project ID from clarity.microsoft.com -->
+<script type="text/javascript">
+(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y)})(window,document,"clarity","script","w1c1zyts4q");
 </script>
 </body></html>
