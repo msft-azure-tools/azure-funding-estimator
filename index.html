@@ -611,7 +611,7 @@ function App() {
   // ── AFO Pre-Assessment Questionnaire ──
   const [showQuest, setShowQuest] = useState(false);
   const [qStep, setQStep] = useState(0);
-  const [qAns, setQAns] = useState({ dbTypes: [], dbCount: "", viewers: "", hasPremium: "", aiInterest: "", dataSources: "", agreement: "" });
+  const [qAns, setQAns] = useState({ dbTypes: [], dbCount: "", viewers: "", hasPremium: "", aiInterest: "", dataVolume: "", realtime: "", integration: "", dataSources: "", agreement: "", hasAzure: "" });
   const qSet = (k, v) => setQAns(p => ({ ...p, [k]: v }));
   const qToggle = (k, v) => setQAns(p => ({ ...p, [k]: (p[k]||[]).includes(v) ? p[k].filter(x=>x!==v) : [...(p[k]||[]), v] }));
 
@@ -657,9 +657,29 @@ function App() {
       newSel["oai-std"] = { on: true, qty: 5, sku: "", ri: false, riTerm: "payg", mo: 5 * 250 };
     }
 
+    // Storage based on data volume
+    const storageMap = { "small": 1, "medium": 5, "large": 10, "xlarge": 50 };
+    const storageTB = storageMap[qAns.dataVolume] || 1;
+    newSel["storage"] = { on: true, qty: storageTB, sku: "", ri: false, riTerm: "hot", mo: storageTB * 23 };
+
+    // RTI based on realtime needs
+    if (qAns.realtime === "realtime") {
+      newSel["fab-rti"] = { on: true, qty: 1, sku: "F32", ri: false, mo: skuMo("F32", false) };
+    } else if (qAns.realtime === "nearrt") {
+      newSel["fab-rti"] = { on: true, qty: 1, sku: "F8", ri: false, mo: skuMo("F8", false) };
+    }
+
+    // Integration based on middleware
+    if (qAns.integration === "biztalk") {
+      newSel["logicapps"] = { on: true, qty: 5, sku: "", ri: false, riTerm: "standard", mo: 5 * 185 };
+      newSel["servicebus"] = { on: true, qty: 10, sku: "", ri: false, riTerm: "std", mo: 10 * 10 };
+    } else if (qAns.integration === "basic") {
+      newSel["logicapps"] = { on: true, qty: 2, sku: "", ri: false, riTerm: "standard", mo: 2 * 185 };
+    }
+
     // Infra - scaled to actual workload size
-    const totalInstances = instances * ((qAns.dbTypes||[]).filter(t => t !== "None").length || 1);
-    const monitorGB = Math.max(200, totalInstances * 30); // ~30GB logs per instance/mo
+    const totalInstances = Math.max(5, instances * ((qAns.dbTypes||[]).filter(t => t !== "None").length || 1));
+    const monitorGB = Math.max(200, totalInstances * 30);
     newSel["monitor"] = { on: true, qty: monitorGB, sku: "", ri: false, riTerm: "payg", mo: monitorGB * 3 };
     newSel["networking"] = { on: true, qty: 1, sku: "", ri: false, riTerm: "payg", mo: 2000 };
     newSel["def"] = { on: true, qty: totalInstances, sku: "", ri: false, riTerm: "p2", mo: totalInstances * 15 };
@@ -1660,7 +1680,7 @@ button{display:none!important}
                       </button>
                     ))}
                   </div>
-                  <button onClick={() => { setShowQuest(true); setQStep(0); }} style={{ width: "100%", padding: "10px", background: "linear-gradient(135deg, #5C2D91, #7c3aed)", color: "white", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", marginBottom: 6 }}>🎯 Answer 5 questions - estimate AFO potential</button>
+                  <button onClick={() => { setShowQuest(true); setQStep(0); }} style={{ width: "100%", padding: "10px", background: "linear-gradient(135deg, #5C2D91, #7c3aed)", color: "white", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", marginBottom: 6 }}>🎯 Answer 8 questions - estimate AFO potential</button>
                   <div style={{ fontSize: 11, color: "#aaa", textAlign: "center" }}>Or select workloads manually on the left</div>
                 </div>
               )}
@@ -2425,6 +2445,30 @@ h1{page-break-after:avoid}
               ))}
             </div>
           ), valid: () => qAns.aiInterest },
+          { title: "Data Volume", sub: "How much data are we talking about in total?", render: () => (
+            <div style={{ display: "flex", gap: 6 }}>
+              {[["small","Under 100 GB"],["medium","100 GB - 1 TB"],["large","1 - 10 TB"],["xlarge","10 TB+"]].map(([k,l]) => (
+                <button key={k} onClick={() => qSet("dataVolume", k)} style={{ flex: 1, padding: "12px 8px", borderRadius: 8, border: "1.5px solid " + (qAns.dataVolume === k ? "#0078D4" : "#ddd"), background: qAns.dataVolume === k ? "#eff6ff" : "white", color: qAns.dataVolume === k ? "#0078D4" : "#555", fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "center" }}>{l}</button>
+              ))}
+            </div>
+          ), valid: () => qAns.dataVolume },
+          { title: "Realtime Needs", sub: "Do they need live dashboards or is daily/batch enough?", render: () => (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {[["batch","Daily or scheduled updates - batch processing is fine"],["nearrt","Near real-time - data should refresh within minutes"],["realtime","Real-time - live dashboards, streaming, event-driven"]].map(([k,l]) => (
+                <button key={k} onClick={() => qSet("realtime", k)} style={{ padding: "12px 16px", borderRadius: 8, border: "1.5px solid " + (qAns.realtime === k ? "#0078D4" : "#ddd"), background: qAns.realtime === k ? "#eff6ff" : "white", color: qAns.realtime === k ? "#0078D4" : "#555", fontWeight: 500, fontSize: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>{l}</button>
+              ))}
+            </div>
+          ), valid: () => qAns.realtime },
+          { title: "Integration & Middleware", sub: "Any existing integration platform or middleware?", render: () => (
+            <Fragment>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {[["biztalk","Yes - BizTalk, SSIS, or similar middleware"],["basic","Yes - scheduled jobs, FTP, manual file transfers"],["none","No - or not relevant for this project"]].map(([k,l]) => (
+                  <button key={k} onClick={() => qSet("integration", k)} style={{ padding: "12px 16px", borderRadius: 8, border: "1.5px solid " + (qAns.integration === k ? "#0078D4" : "#ddd"), background: qAns.integration === k ? "#eff6ff" : "white", color: qAns.integration === k ? "#0078D4" : "#555", fontWeight: 500, fontSize: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>{l}</button>
+                ))}
+              </div>
+              {qAns.integration === "biztalk" && <div style={{ marginTop: 8, padding: "6px 10px", background: "#eff6ff", borderRadius: 6, border: "1px solid #93c5fd", fontSize: 11, color: "#1e40af" }}>Logic Apps + Service Bus will be included as BizTalk replacement</div>}
+            </Fragment>
+          ), valid: () => qAns.integration },
           { title: "Data Landscape", sub: "How many systems feed into reporting and processes?", render: () => (
             <div style={{ display: "flex", gap: 6 }}>
               {[["1-5","1-5 systems"],["5-15","5-15 systems"],["15+","15+ systems"]].map(([k,l]) => (
@@ -2486,13 +2530,38 @@ h1{page-break-after:avoid}
               afoAcr += 15000;
               items.push({ name: "Azure OpenAI Standard (5M tokens/mo)", acr: 15000, afo: true, why: "5M tokens/mo for POC and exploration during assessment phase. Scale up after validating use-case" });
             }
+            // Storage based on data volume
+            const storageMap = { "small": { tb: 1, mo: 23 }, "medium": { tb: 5, mo: 23*5 }, "large": { tb: 10, mo: 23*10 }, "xlarge": { tb: 50, mo: 23*50 } };
+            const sv = storageMap[qAns.dataVolume] || storageMap["small"];
+            otherAcr += sv.mo * 12;
+            items.push({ name: "Azure Storage (" + sv.tb + " TB, Hot)", acr: sv.mo * 12, afo: false, why: sv.tb + " TB estimated based on " + (qAns.dataVolume === "small" ? "under 100GB" : qAns.dataVolume === "medium" ? "100GB-1TB" : qAns.dataVolume === "large" ? "1-10TB" : "10TB+") + " total data volume. Adjust tier (Hot/Cool/Archive) based on access patterns" });
+
+            // RTI based on realtime needs
+            if (qAns.realtime === "realtime") {
+              afoAcr += 3240 * 12;
+              items.push({ name: "Real-Time Intelligence (F32)", acr: 3240 * 12, afo: true, why: "F32 capacity for streaming analytics and live dashboards. AFO eligible as Fabric workload" });
+            } else if (qAns.realtime === "nearrt") {
+              afoAcr += 625 * 12;
+              items.push({ name: "Real-Time Intelligence (F8)", acr: 625 * 12, afo: true, why: "F8 capacity for near real-time refresh. Smaller SKU sufficient for minute-level updates" });
+            }
+
+            // Integration based on middleware answer
+            if (qAns.integration === "biztalk") {
+              otherAcr += 185 * 5 * 12 + 10 * 10 * 12;
+              items.push({ name: "Logic Apps Standard (5 workflows)", acr: 185 * 5 * 12, afo: false, why: "5 Standard WS1 workflows as BizTalk replacement. Each workflow handles one integration pattern (message routing, transformation, orchestration)" });
+              items.push({ name: "Service Bus Standard (10M msg)", acr: 10 * 10 * 12, afo: false, why: "Standard tier for message queuing and pub/sub. Decouples systems during and after migration from BizTalk" });
+            } else if (qAns.integration === "basic") {
+              otherAcr += 185 * 2 * 12;
+              items.push({ name: "Logic Apps Standard (2 workflows)", acr: 185 * 2 * 12, afo: false, why: "2 Standard workflows to replace scheduled jobs and file transfers with managed, monitored pipelines" });
+            }
+
             const totalInst = instances * (dbTypes.length || 1);
             const monitorGB = Math.max(200, totalInst * 30);
-            const defCount = totalInst;
+            const defCount = Math.max(5, totalInst);
             const infraItems = [
-              { name: "Azure Monitor", acr: monitorGB * 3 * 12, why: monitorGB + "GB/mo log ingestion estimated at ~30GB per database/server instance across " + totalInst + " workloads" },
-              { name: "Azure Networking", acr: 24000, why: "ExpressRoute (~$1.5K/mo) + Azure Firewall (~$500/mo) baseline for hybrid connectivity to on-prem during migration" },
-              { name: "Defender for Cloud P2", acr: defCount * 15 * 12, why: "Plan 2 for " + defCount + " servers covers vulnerability assessment, agentless scanning, and adaptive hardening" },
+              { name: "Azure Monitor", acr: monitorGB * 3 * 12, why: monitorGB + "GB/mo log ingestion - ~30GB per instance across " + totalInst + " workloads" },
+              { name: "Azure Networking", acr: 24000, why: "ExpressRoute (~$1.5K/mo) + Azure Firewall (~$500/mo) for hybrid connectivity to on-prem during migration" },
+              { name: "Defender for Cloud P2", acr: defCount * 15 * 12, why: "Plan 2 for " + defCount + " servers - vulnerability assessment, agentless scanning, adaptive hardening" },
             ];
             infraItems.forEach(i => { otherAcr += i.acr; items.push({ ...i, afo: false }); });
             const total = afoAcr + otherAcr;
