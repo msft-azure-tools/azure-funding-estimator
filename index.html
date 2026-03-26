@@ -1283,7 +1283,12 @@ button{display:none!important}
               </div>
               {saveStatus && <span style={{ fontSize: 12, padding: "3px 8px", background: "rgba(255,255,255,0.2)", borderRadius: 4 }}>{saveStatus}</span>}
               <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={handleExcelUpload} style={{ display: "none" }} />
-              <button onClick={() => fileRef.current && fileRef.current.click()} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.1)", color: "white", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "'Inter',sans-serif", letterSpacing: 0.1 }}>📊 Import</button>
+              <div style={{ position: "relative" }} className="import-wrap">
+                <button onClick={() => fileRef.current && fileRef.current.click()} style={{ padding: "5px 14px", background: "white", color: "#0078D4", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Inter',sans-serif", display: "flex", alignItems: "center", gap: 6, boxShadow: "0 1px 4px rgba(0,0,0,0.15)" }}>
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M4 6l4 4 4-4M2 12v2h12v-2" stroke="#0078D4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  Import from Azure Pricing Calculator
+                </button>
+              </div>
               <button onClick={() => saveProject()} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.1)", color: "white", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "'Inter',sans-serif", letterSpacing: 0.1 }}>💾 Save</button>
               {Object.keys(sel).length > 0 && <button onClick={() => setSel({})} style={{ padding: "5px 12px", background: "rgba(220,38,38,0.2)", color: "#fca5a5", border: "1px solid rgba(220,38,38,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>✕ Clear</button>}
               <div style={{ position: "relative" }}>
@@ -1763,7 +1768,11 @@ button{display:none!important}
                     ))}
                   </div>
                   <button onClick={() => { setShowQuest(true); setQStep(0); }} style={{ width: "100%", padding: "10px", background: "linear-gradient(135deg, #5C2D91, #7c3aed)", color: "white", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", marginBottom: 8 }}>🎯 Answer 8 questions - estimate AFO potential</button>
-                  <div style={{ fontSize: 11, color: "#999", textAlign: "center" }}>Or select workloads manually on the left</div>
+                  <button onClick={() => fileRef.current && fileRef.current.click()} style={{ width: "100%", padding: "9px", background: "#f0f7ff", border: "1.5px dashed #93c5fd", borderRadius: 8, fontSize: 12, fontWeight: 600, color: "#0078D4", cursor: "pointer", fontFamily: "'Inter',sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, marginBottom: 8 }}>
+                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M4 6l4 4 4-4M2 12v2h12v-2" stroke="#0078D4" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Import from Azure Pricing Calculator (.xlsx)
+                  </button>
+                  <div style={{ fontSize: 11, color: "#9ca3af", textAlign: "center", fontFamily: "'Inter',sans-serif" }}>Or select workloads manually on the left</div>
                 </div>
               )}
             </div>
