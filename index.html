@@ -1092,15 +1092,20 @@ function App() {
       recCredits = 0;
       recStrategy = "Split";
     } else if (!ok) {
-      // No AFO: best of (Std ECIF) OR (MCI pre+post) - can't stack
-      recCash = Math.max(stdEcif, mci.pre + mci.post);
+      // No AFO: compare MCI total (pre+post) vs Standard ECIF
+      // Prefer MCI if: (a) MCI total >= stdEcif, OR (b) MCI post >= stdEcif * 0.9 (within 10% — MCI is self-serve, no field dependency)
+      const mciTotal = mci.pre + mci.post;
+      const preferMci = mciTotal >= stdEcif || (mci.post >= stdEcif * 0.9 && mci.post > 0);
+      recCash = preferMci ? mciTotal : stdEcif;
       recCredits = 0;
-      recStrategy = recCash === stdEcif ? "Standard ECIF" : "MCI";
+      recStrategy = preferMci ? "MCI" : "Standard ECIF";
     }
 
     // Customer-visible funding = single-path amount (not split)
-    const custFunding = ok ? (ecif + mci.pre) : Math.max(stdEcif, mci.pre + mci.post);
-    const custFundingLabel = ok ? "AFO ECIF" + (mci.pre > 0 ? " + Assessment" : "") : (mci.pre + mci.post) >= stdEcif ? "MCI Partner Program" : "Standard ECIF";
+    const mciTotalFull = mci.pre + mci.post;
+    const preferMciFull = mciTotalFull >= stdEcif || (mci.post >= stdEcif * 0.9 && mci.post > 0);
+    const custFunding = ok ? (ecif + mci.pre) : (preferMciFull ? mciTotalFull : stdEcif);
+    const custFundingLabel = ok ? "AFO ECIF" + (mci.pre > 0 ? " + Assessment" : "") : preferMciFull ? "MCI Partner Program" : "Standard ECIF";
     const hasOda = rows.some(r => r.oda);
     return { el, ot, xcr, odaAcr, tot, pct, ok, rows, sc, ecif, stdEcif, db, fab, fo, accel, mci, recs, recCash, recCredits, recStrategy, custFunding, custFundingLabel, hasOda };
   }, [sel]);
