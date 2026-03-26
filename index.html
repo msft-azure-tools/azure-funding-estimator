@@ -1601,11 +1601,9 @@ button{display:none!important}
                                   </div>
 
                                   {/* Alternative option */}
-                                  <div style={{ marginTop: 10, padding: "6px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 4 }}>
-                                    <div style={{ fontSize: 10, color: "rgba(165,180,252,0.75)", fontFamily: "'Inter',sans-serif", lineHeight: 1.5 }}>
-                                      <strong>Alternative:</strong> {altLabel}
-                                    </div>
-                                    <div style={{ fontSize: 10, color: "#818cf8", marginTop: 2 }}>ECIF and MCI cannot be used on same project - choose one path.</div>
+                                  <div style={{ marginTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 10px", background: "rgba(255,255,255,0.05)", borderRadius: 6, borderLeft: "2px solid rgba(165,180,252,0.3)" }}>
+                                    <div style={{ fontSize: 10, color: "rgba(165,180,252,0.6)", fontFamily: "'Inter',sans-serif" }}>Alt: {altLabel}</div>
+                                    <div style={{ fontSize: 9, color: "rgba(165,180,252,0.4)", fontFamily: "'Inter',sans-serif", marginLeft: 6, flexShrink: 0 }}>can't stack</div>
                                   </div>
                                 </>
                               );
@@ -1615,13 +1613,20 @@ button{display:none!important}
 
                         {/* Split suggestion if not eligible */}
                         {!C.ok && C.el > 0 && (
-                          <div style={{ marginTop: 8, padding: "6px 8px", background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 4, fontSize: 11, color: "#fbbf24", lineHeight: 1.5 }}>
-                            💡 <strong>Split tip:</strong> Nominate DB/Fabric/Foundry ({fmt(C.el)}) as separate AFO project → unlocks <strong>{fmt(Math.min(C.el * 0.5, 500000))}</strong> ECIF (cash to partner).{C.el < 10000 && <span style={{ display: "block", marginTop: 4, fontSize: 10, color: "#f59e0b" }}>⚠ Small deal ({fmt(C.el)} ACR) - field may deprioritize. Consider adding more DB/Fabric/AI workloads first, or go MCI-only.</span>}
+                          <div style={{ marginTop: 8, background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.18)", borderRadius: 6, overflow: "hidden" }}>
+                            <div style={{ padding: "7px 10px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                              <div>
+                                <div style={{ fontSize: 10, color: "#fbbf24", fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, fontFamily: "'Inter',sans-serif" }}>Split strategy</div>
+                                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", marginTop: 2, fontFamily: "'Inter',sans-serif" }}>Nominate DB/Fabric/AI as separate AFO project</div>
+                              </div>
+                              <div style={{ fontSize: 16, fontWeight: 800, color: "#fbbf24", fontFamily: "'Inter',sans-serif", letterSpacing: -0.5 }}>{fmt(Math.min(C.el * 0.5, 500000))}</div>
+                            </div>
+                            {C.el < 10000 && <div style={{ padding: "4px 10px 6px", fontSize: 10, color: "rgba(251,191,36,0.5)", fontFamily: "'Inter',sans-serif", borderTop: "1px solid rgba(251,191,36,0.12)" }}>Small deal — field may deprioritize. Add more DB/Fabric/AI first.</div>}
                           </div>
                         )}
                         {!C.ok && C.el === 0 && (
-                          <div style={{ marginTop: 8, padding: "5px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 4, fontSize: 10, color: "#fbbf24", lineHeight: 1.5 }}>
-                            Add DB, Fabric, or AI Foundry workloads to unlock AFO (ECIF cash).
+                          <div style={{ marginTop: 8, padding: "6px 10px", background: "rgba(255,255,255,0.05)", borderRadius: 6, fontSize: 10, color: "rgba(165,180,252,0.5)", fontFamily: "'Inter',sans-serif" }}>
+                            Add DB, Fabric, or AI Foundry workloads to unlock AFO ECIF.
                           </div>
                         )}
                       </div>
@@ -1640,24 +1645,24 @@ button{display:none!important}
                     <div style={{ padding: "9px 14px", background: "#fffbf0", borderBottom: "1px solid #fde68a44", display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ fontSize: 14 }}>⚡</span>
                       <span style={{ fontSize: 11, fontWeight: 700, color: "#92400e", fontFamily: "'Inter',sans-serif", letterSpacing: 0.2 }}>Funding Maximizer</span>
-                      <span style={{ fontSize: 10, color: "#b45309", marginLeft: "auto" }}>{tips.length} tip{tips.length > 1 ? "s" : ""}</span>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: "#92400e", marginLeft: "auto", background: "#fde68a", padding: "1px 6px", borderRadius: 10, fontFamily: "'Inter',sans-serif" }}>{tips.length}</span>
                     </div>
                     {tips.map((tip, i) => (
-                      <div key={i} style={{ padding: "8px 12px", borderBottom: i < tips.length - 1 ? "1px solid #f5f5f5" : "none" }}>
-                        <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                          <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{tip.icon}</span>
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: "#333" }}>{tip.title}</div>
-                            <div style={{ fontSize: 11, color: "#666", marginTop: 1, lineHeight: 1.4 }}>{tip.desc}</div>
+                      <div key={i} style={{ padding: "8px 12px", borderBottom: i < tips.length - 1 ? "1px solid #fef9ee" : "none" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 12, flexShrink: 0, width: 18, textAlign: "center" }}>{tip.icon}</span>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: "#1c1c1c", lineHeight: 1.3, fontFamily: "'Inter',sans-serif" }}>{tip.title}</div>
+                            {tip.desc && <div style={{ fontSize: 10, color: "#9ca3af", marginTop: 1, lineHeight: 1.4, fontFamily: "'Inter',sans-serif", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tip.desc}</div>}
                             {tip.items && tip.items.length > 0 && (
-                              <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 4 }}>
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
                                 {tip.items.map((item, j) => (
-                                  <button key={j} onClick={() => { upd(item.id, "on", true); }} style={{ fontSize: 10, padding: "2px 8px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 4, color: "#1d4ed8", cursor: "pointer", fontWeight: 500 }}>+ {item.name}</button>
+                                  <button key={j} onClick={() => { upd(item.id, "on", true); }} style={{ fontSize: 10, padding: "2px 7px", background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 4, color: "#1d4ed8", cursor: "pointer", fontWeight: 500, fontFamily: "'Inter',sans-serif" }}>+ {item.name}</button>
                                 ))}
                               </div>
                             )}
                           </div>
-                          {tip.impact > 0 && <div style={{ fontSize: 11, fontWeight: 700, color: "#059669", flexShrink: 0, marginTop: 1 }}>+{fmt(tip.impact)}</div>}
+                          {tip.impact > 0 && <div style={{ fontSize: 12, fontWeight: 800, color: "#059669", flexShrink: 0, fontFamily: "'Inter',sans-serif", letterSpacing: -0.3 }}>+{fmt(tip.impact)}</div>}
                         </div>
                       </div>
                     ))}
@@ -1713,12 +1718,17 @@ button{display:none!important}
                 )}
               </div>
 
-              <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", padding: 10, fontSize: 12, color: "#999", marginBottom: 8 }}>
-                <strong style={{ color: "#666" }}>AFO Rules:</strong> ≥50% eligible (DB/Fabric/Foundry) · 2:1 ROI · ECIF max $500K · Post-sales · Field-nominated · Limited time, first come first served
+              <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8edf2", padding: "9px 12px", marginBottom: 8 }}>
+                <div style={{ fontSize: 9, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "'Inter',sans-serif", marginBottom: 6 }}>AFO Rules</div>
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                  {[["≥50% DB/Fabric/AI", "#eff6ff", "#1d4ed8"], ["2:1 ROI", "#eff6ff", "#1d4ed8"], ["Max $500K", "#eff6ff", "#1d4ed8"], ["Post-sales only", "#f3f4f6", "#6b7280"], ["Field-nominated", "#f3f4f6", "#6b7280"], ["Limited time", "#fef2f2", "#dc2626"]].map(([label, bg, color], i) => (
+                    <span key={i} style={{ fontSize: 10, fontWeight: 600, color, background: bg, padding: "2px 8px", borderRadius: 20, fontFamily: "'Inter',sans-serif" }}>{label}</span>
+                  ))}
+                </div>
               </div>
 
-              <div style={{ background: "#eff6ff", borderRadius: 12, border: "1px solid #bfdbfe", padding: 10, fontSize: 12, color: "#1e40af", marginBottom: 8 }}>
-                <strong>MACC eligible:</strong> All Azure F-SKU, compute, and PaaS workloads in this tool count toward Microsoft Azure Consumption Commitment (MACC). Customers with MACC can draw down Fabric, VMs, SQL, AI Foundry, and all Azure services against their existing commitment.
+              <div style={{ background: "#f0f7ff", borderRadius: 10, border: "1px solid #dbeafe", padding: "7px 12px", fontSize: 10, color: "#3b82f6", marginBottom: 8, fontFamily: "'Inter',sans-serif", lineHeight: 1.5 }}>
+                <span style={{ fontWeight: 700, color: "#1d4ed8" }}>MACC:</span> F-SKU, compute & PaaS workloads count toward customer's Azure Consumption Commitment.
               </div>
 
               {/* About This Tool */}
