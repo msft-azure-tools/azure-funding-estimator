@@ -82,7 +82,7 @@ const ITEMS = [
   { id:"pbi-pro-readers",cat:"pbi",name:"Power BI Pro - Report Viewers (only if F-SKU < F64)",tag:"Power BI Pro (readers <F64)",unit:"viewers",up:14,dq:0,xcr:true,note:"Only if F-SKU < F64. Tip: upgrading to F64 removes this cost AND generates more ACR → more Azure funding. Often cheaper total" },
   { id:"aks",cat:"accel",name:"AKS / App Service",tag:"AI Apps: AKS, App Service, Container Apps",unit:"nodes",up:300,dq:6 },
   { id:"databricks",cat:"accel",name:"Azure Databricks",tag:"Data: Azure Databricks",unit:"DBUs/mo",up:0.5,dq:5000,note:"MCI eligible via Data Platform engagement. Not AFO eligible - pair with Fabric for AFO. Has own Analytics Modernization Accelerator offer (>$100K ACR)" },
-  { id:"oracle-az",cat:"accel",name:"Oracle Database@Azure",tag:"Data: Oracle Database@Azure",unit:"OCPUs",up:500,dq:10,note:"Own Azure Accelerate offer: >$100K ACR, up to $500K ECIF. Separate from AFO - contact PSS" },
+  { id:"oracle-az",cat:"accel",name:"Oracle Database@Azure",tag:"Data: Oracle Database@Azure",unit:"OCPUs",up:500,dq:10,oda:true,note:"ODA ACR does NOT count toward AFO or MCI funding — it has its own separate Azure Accelerate offer (>$100K ACR, up to $500K ECIF, contact PSS). Only drag-along workloads (Oracle to SQL, Oracle to PG etc.) generate AFO ECIF." },
   { id:"infra-linux",cat:"accel",name:"Core M&M - Linux VMs",tag:"Core: Migrate & Modernize (Linux)",unit:"VMs",up:140,dq:15,riOpts:[{k:"1yr",label:"1yr RI (-35%)",up:91},{k:"3yr",label:"3yr RI (-55%)",up:63}],note:"Average estimate (~D4s v3). Actual cost varies by VM size ($60-$400+/VM). Use Azure Pricing Calculator for precise sizing" },
   { id:"infra-win",cat:"accel",name:"Core M&M - Windows VMs",tag:"Core: Migrate & Modernize (Windows)",unit:"VMs",up:240,dq:10,riOpts:[{k:"1yr",label:"1yr RI (-35%)",up:156},{k:"3yr",label:"3yr RI (-55%)",up:108},{k:"ahub",label:"AHUB (-40%)",up:144},{k:"1yr-ahub",label:"1yr RI + AHUB (-61%)",up:94},{k:"3yr-ahub",label:"3yr RI + AHUB (-73%)",up:65}],note:"Average estimate (~D4s v3 + Windows). Actual cost varies by VM size. AHUB requires SA or Windows Server subscription" },
   { id:"infra-mdc",cat:"accel",name:"Core M&M + Defender (MDC)",tag:"Core: Migrate & Modernize with MDC",unit:"VMs",up:215,dq:20,riOpts:[{k:"1yr",label:"1yr RI (-35%)",up:140},{k:"3yr",label:"3yr RI (-55%)",up:97},{k:"ahub",label:"AHUB (-40%)",up:129},{k:"1yr-ahub",label:"1yr RI + AHUB (-58%)",up:90},{k:"3yr-ahub",label:"3yr RI + AHUB (-70%)",up:65}],note:"AHUB for Windows portion. Defender for Cloud cost remains" },
@@ -332,7 +332,7 @@ function getScope(db, fab, fo, accel, rows, tot, cust) {
   const hasAks = rows.some(r => r.id === "aks");
   const hasIntegration = rows.some(r => ["logicapps","servicebus","eventgrid"].includes(r.id));
   const hasSecurity = rows.some(r => ["def","sentinel"].includes(r.id)) && !hasInfra && !db;
-  const hasOracle = rows.some(r => ["oracle-sql","oracle-pg","oracle-az"].includes(r.id));
+  const hasOracle = rows.some(r => ["oracle-sql","oracle-pg"].includes(r.id)); // oracle-az (ODA) excluded — separate PSS offer, not a migration
 
   // Collect active categories
   const cats = [];
@@ -1037,7 +1037,7 @@ function App() {
   };
 
   const C = useMemo(() => {
-    let el = 0, ot = 0, xcr = 0;
+    let el = 0, ot = 0, xcr = 0, odaAcr = 0;
     const rows = [];
     ITEMS.forEach((itm) => {
       const s = sel[itm.id];
@@ -1046,11 +1046,12 @@ function App() {
       const mo = s.mo || 0;
       const yr = mo * 12;
       if (itm.xcr) { xcr += yr; }
+      else if (itm.oda) { odaAcr += yr; }
       else if (cat.elig) { el += yr; }
       else { ot += yr; }
-      rows.push({ id: itm.id, name: itm.name, tag: itm.tag, color: cat.color, elig: cat.elig, mo, yr, sku: s.sku || "", xcr: !!itm.xcr });
+      rows.push({ id: itm.id, name: itm.name, tag: itm.tag, color: cat.color, elig: cat.elig, mo, yr, sku: s.sku || "", xcr: !!itm.xcr, oda: !!itm.oda });
     });
-    const tot = el + ot; // ACR only (excludes XCR)
+    const tot = el + ot; // ACR only (excludes XCR and ODA)
     const pct = tot > 0 ? (el / tot) * 100 : 0, ok = pct >= 50;
     const db = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "db"));
     const fab = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "fab"));
@@ -1100,7 +1101,8 @@ function App() {
     // Customer-visible funding = single-path amount (not split)
     const custFunding = ok ? (ecif + mci.pre) : Math.max(stdEcif, mci.pre + mci.post);
     const custFundingLabel = ok ? "AFO ECIF" + (mci.pre > 0 ? " + Assessment" : "") : (mci.pre + mci.post) >= stdEcif ? "MCI Partner Program" : "Standard ECIF";
-    return { el, ot, xcr, tot, pct, ok, rows, sc, ecif, stdEcif, db, fab, fo, accel, mci, recs, recCash, recCredits, recStrategy, custFunding, custFundingLabel };
+    const hasOda = rows.some(r => r.oda);
+    return { el, ot, xcr, odaAcr, tot, pct, ok, rows, sc, ecif, stdEcif, db, fab, fo, accel, mci, recs, recCash, recCredits, recStrategy, custFunding, custFundingLabel, hasOda };
   }, [sel]);
 
   const dyn = useMemo(() => getScope(C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn), [C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn]);
@@ -1468,6 +1470,9 @@ button{display:none!important}
                   <div style={{ background: "#fff7ed", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#D83B01" }}>{fmt(C.ot)}</div></div>
                   {C.xcr > 0 && <div style={{ background: "#fef3c7", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>XCR (not ACR)</div><div style={{ fontSize: 13, fontWeight: 700, color: "#d97706" }}>{fmt(C.xcr)}</div></div>}
                 </div>
+                {C.hasOda && <div style={{ marginTop: 8, padding: "8px 10px", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 6, fontSize: 11, color: "#92400e", lineHeight: 1.5 }}>
+                  <strong>⚠️ Oracle Database@Azure (ODA) — {fmt(C.odaAcr)}/yr</strong><br/>ODA-ACR räknas <strong>inte</strong> mot AFO eller MCI — kräver <strong>separat Azure Accelerate-nominering via PSS</strong> (eget erbjudande, &gt;00K ACR, upp till 00K ECIF). Drag-along workloads (Oracle to SQL/PG) är AFO-eligibla separat.
+                </div>}
                 {C.rows.length > 0 && <div style={{ marginTop: 8 }}>{C.rows.sort((a, b) => b.yr - a.yr).map((r, i) => (
                   <div key={i} style={{ marginBottom: 4 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}><span style={{ color: r.xcr ? "#d97706" : "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 155 }}>{r.name}{r.sku ? " (" + r.sku + ")" : ""}{r.xcr ? " ⚡" : ""}</span><span style={{ fontWeight: 600 }}>{fmt(r.yr)}</span></div>
@@ -2115,7 +2120,7 @@ button{display:none!important}
                   ))}</tbody>
                 </table>
 
-                <div style={{ fontSize: 11, color: "#999", borderTop: "1px solid #eee", paddingTop: 8 }}>Non-binding estimate for planning purposes. All amounts subject to Microsoft internal approval. AFO nomination via Azure Offer Navigator (field-nominated). Limited time, first come first served. Anthropic counts as XCR (not ACR) but can be forecasted as 100% ACR in MSX. Agent P3 excluded from AFO eligible workloads. GitHub Copilot is per-seat (XCR, not Azure ACR). Contact PSS/account team for formal nomination.</div>
+                <div style={{ fontSize: 11, color: "#999", borderTop: "1px solid #eee", paddingTop: 8 }}>Non-binding estimate for planning purposes. All amounts subject to Microsoft internal approval. AFO nomination via Azure Offer Navigator (field-nominated). Limited time, first come first served. Anthropic counts as XCR (not ACR) but can be forecasted as 100% ACR in MSX. Agent P3 excluded from AFO eligible workloads. GitHub Copilot is per-seat (XCR, not Azure ACR). Oracle Database@Azure (ODA) has its own separate Azure Accelerate offer — contact PSS; ODA ACR excluded from AFO/MCI calculations. Contact PSS/account team for formal nomination.</div>
               </div>
             </div>
 
