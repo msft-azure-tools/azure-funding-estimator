@@ -1471,7 +1471,7 @@ button{display:none!important}
                   {C.xcr > 0 && <div style={{ background: "#fef3c7", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>XCR (not ACR)</div><div style={{ fontSize: 13, fontWeight: 700, color: "#d97706" }}>{fmt(C.xcr)}</div></div>}
                 </div>
                 {C.hasOda && <div style={{ marginTop: 8, padding: "8px 10px", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 6, fontSize: 11, color: "#92400e", lineHeight: 1.5 }}>
-                  <strong>⚠️ Oracle Database@Azure (ODA) — {fmt(C.odaAcr)}/yr</strong><br/>ODA-ACR räknas <strong>inte</strong> mot AFO eller MCI — kräver <strong>separat Azure Accelerate-nominering via PSS</strong> (eget erbjudande, &gt;00K ACR, upp till 00K ECIF). Drag-along workloads (Oracle to SQL/PG) är AFO-eligibla separat.
+                  <strong>⚠️ Oracle Database@Azure (ODA) — {fmt(C.odaAcr)}/yr</strong><br/>ODA ACR does <strong>not</strong> count toward AFO or MCI — requires a <strong>separate Azure Accelerate nomination via PSS</strong> (own offer, &gt;$100K ACR, up to $500K ECIF). Drag-along workloads (Oracle to SQL/PG) are AFO-eligible separately.
                 </div>}
                 {C.rows.length > 0 && <div style={{ marginTop: 8 }}>{C.rows.sort((a, b) => b.yr - a.yr).map((r, i) => (
                   <div key={i} style={{ marginBottom: 4 }}>
