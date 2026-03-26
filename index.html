@@ -4,7 +4,7 @@
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='14.5' height='14.5' x='1' y='1' rx='2' fill='%23f25022'/%3E%3Crect width='14.5' height='14.5' x='16.5' y='1' rx='2' fill='%237fba00'/%3E%3Crect width='14.5' height='14.5' x='1' y='16.5' rx='2' fill='%2300a4ef'/%3E%3Crect width='14.5' height='14.5' x='16.5' y='16.5' rx='2' fill='%23ffb900'/%3E%3C/svg%3E">
 <style>
 * { box-sizing: border-box; }
-body { margin: 0; font-family: 'Segoe UI', -apple-system, sans-serif; }
+body { margin: 0; font-family: 'Inter', 'Segoe UI', -apple-system, sans-serif; }
 input[type="date"] { min-width: 130px; }
 input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 16px; height: 16px; border: 2px solid #ccc; border-radius: 4px; cursor: pointer; position: relative; flex-shrink: 0; transition: all 0.15s ease; background: white; }
 input[type="checkbox"]:checked { border-color: var(--accent, #0078D4); background: var(--accent, #0078D4); }
@@ -36,8 +36,18 @@ button:active { opacity: 0.75; }
   .grid-acr { grid-template-columns: 1fr !important; }
   .header-actions > div:first-child { width: 100% !important; }
 }
+/* Fluent polish */
+.workload-card { transition: box-shadow 0.15s ease; }
+.workload-card:hover { box-shadow: 0 4px 16px rgba(0,120,212,0.08) !important; }
+select { font-family: 'Inter', 'Segoe UI', sans-serif !important; }
+input[type="number"] { font-family: 'Inter', 'Segoe UI', sans-serif !important; }
+input::placeholder { color: rgba(255,255,255,0.35) !important; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #c5d0dc; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #0078D4; }
 </style>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head><body><div id="root"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -209,7 +219,7 @@ const EXCEL_MAP = [
 const skuMo = (sku, reserved) => { const f = FSKU.find((f) => f.s === sku) || FSKU[0]; return reserved ? f.ri : f.mo; };
 const fmt = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 const fmtRange = (tot) => { const lo = Math.min(tot * 0.14, 250000), hi = Math.min(tot * 0.33, 250000); return "~" + fmt(lo) + "-" + fmt(hi); }; // 3:1 to 7:1 ROI range
-const HDR = "linear-gradient(135deg, #0078D4 0%, #005a9e 50%, #003d6b 100%)";
+const HDR = "linear-gradient(135deg, #0a1e4a 0%, #0050a0 55%, #0078D4 100%)";
 
 /* MCI: Azure Accelerate Partner Nominated - verified from MCI Guide effective March 1, 2026.
    Market A (Sweden). Pre-sales = Assessment & POV. Post-sales = Deployment.
@@ -1231,13 +1241,13 @@ button{display:none!important}
   // ── Password gate ──
   if (!authed) {
     return (
-      <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0a1628 0%, #1e3a5f 40%, #0078D4 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Segoe UI',sans-serif" }}>
+      <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0a1628 0%, #1e3a5f 40%, #0078D4 100%)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Inter','Segoe UI',sans-serif" }}>
         <div style={{ maxWidth: 380, width: "100%" }}>
           <div style={{ background: "white", borderRadius: 12, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
             <div style={{ background: HDR, padding: "28px 28px 20px", color: "white", textAlign: "center" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 8 }}>
                 <svg width="24" height="24" viewBox="0 0 20 20"><rect width="9" height="9" fill="#f25022" rx="1" /><rect x="11" width="9" height="9" fill="#7fba00" rx="1" /><rect y="11" width="9" height="9" fill="#00a4ef" rx="1" /><rect x="11" y="11" width="9" height="9" fill="#ffb900" rx="1" /></svg>
-                <span style={{ fontSize: 18, letterSpacing: -0.3 }}><span style={{ fontWeight: 300 }}>Azure</span> <span style={{ fontWeight: 700 }}>Funding Estimator</span></span>
+                <div style={{ lineHeight: 1.2 }}><div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 400, fontFamily: "'Inter',sans-serif" }}>Azure</div><div style={{ fontSize: 20, fontWeight: 800, color: "white", letterSpacing: -0.5, fontFamily: "'Inter',sans-serif" }}>Funding Estimator</div></div>
               </div>
               <div style={{ fontSize: 12, opacity: 0.5 }}>Partner & Field Tool</div>
             </div>
@@ -1248,41 +1258,41 @@ button{display:none!important}
               <button onClick={checkPw} disabled={!pwInput} style={{ width: "100%", padding: "10px", marginTop: 12, background: pwInput ? "linear-gradient(135deg, #0078D4, #005a9e)" : "#e0e0e0", color: pwInput ? "white" : "#999", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 600, cursor: pwInput ? "pointer" : "default", fontFamily: "inherit", boxShadow: pwInput ? "0 4px 12px rgba(0,120,212,0.3)" : "none" }}>Open Tool</button>
             </div>
           </div>
-          <div style={{ textAlign: "center", marginTop: 20, display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}><div style={{ width: 20, height: 1, background: "rgba(255,255,255,0.3)" }} /><div style={{ fontSize: 14, letterSpacing: 5, color: "rgba(255,255,255,0.7)", fontFamily: "'Bebas Neue', sans-serif" }}>RAI CHOWDHURY</div><div style={{ width: 20, height: 1, background: "rgba(255,255,255,0.3)" }} /></div>
+          <div style={{ textAlign: "center", marginTop: 20, display: "flex", alignItems: "center", justifyContent: "center", gap: 12 }}><div style={{ width: 20, height: 1, background: "rgba(255,255,255,0.3)" }} /><div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.65)", fontFamily: "'Inter', sans-serif", letterSpacing: 0.3 }}>Rai Chowdhury</div><div style={{ width: 20, height: 1, background: "rgba(255,255,255,0.3)" }} /></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ fontFamily: "'Segoe UI',sans-serif", minHeight: "100vh", background: "#f5f5f5", color: "#1a1a2e" }}>
+    <div style={{ fontFamily: "'Inter','Segoe UI',sans-serif", minHeight: "100vh", background: "#f3f5f8", color: "#1a1a2e" }}>
       <div style={{ background: HDR, padding: "16px 28px 0", color: "white" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }} className="header-row">
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <svg width="24" height="24" viewBox="0 0 20 20"><rect width="9" height="9" fill="#f25022" rx="1" /><rect x="11" width="9" height="9" fill="#7fba00" rx="1" /><rect y="11" width="9" height="9" fill="#00a4ef" rx="1" /><rect x="11" y="11" width="9" height="9" fill="#ffb900" rx="1" /></svg>
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}><div style={{ fontSize: 18, lineHeight: 1.1, letterSpacing: -0.3 }}><span style={{ fontWeight: 300 }}>Azure</span> <span style={{ fontWeight: 700 }}>Funding Estimator</span></div><div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.3)" }} /><div style={{ fontSize: 14, letterSpacing: 4, color: "rgba(255,255,255,0.8)", fontFamily: "'Bebas Neue', sans-serif", lineHeight: 1 }}>RAI CHOWDHURY</div></div>
+                <div style={{ display: "flex", alignItems: "center", gap: 14 }}><div style={{ lineHeight: 1.15 }}><div style={{ fontSize: 10, fontWeight: 500, color: "rgba(255,255,255,0.5)", letterSpacing: 0.3, fontFamily: "'Inter',sans-serif" }}>Azure</div><div style={{ fontSize: 16, fontWeight: 800, color: "#ffffff", letterSpacing: -0.4, fontFamily: "'Inter',sans-serif", lineHeight: 1 }}>Funding Estimator</div></div><a href="mailto:rachowdhury@microsoft.com" style={{ textDecoration: "none", marginLeft: 4 }}><div style={{ background: "rgba(255,255,255,0.11)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 8, padding: "5px 11px" }}><div style={{ fontSize: 8, color: "rgba(255,255,255,0.38)", letterSpacing: 2, textTransform: "uppercase", fontFamily: "'Inter',sans-serif", marginBottom: 2 }}>Built by</div><div style={{ fontSize: 13, fontWeight: 800, color: "#ffffff", letterSpacing: -0.2, fontFamily: "'Inter',sans-serif", lineHeight: 1.15 }}>Rai Chowdhury</div><div style={{ fontSize: 9, color: "rgba(255,255,255,0.42)", fontFamily: "'Inter',sans-serif", marginTop: 1 }}>rachowdhury@microsoft.com</div></div></a></div>
                 
               </div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }} className="header-actions">
-              <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.12)", borderRadius: 6, padding: "4px 10px" }}>
-                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>Customer:</span>
-                <input value={sow.cn} onChange={(e) => us("cn", e.target.value)} placeholder="Enter name..." aria-label="Customer name" style={{ background: "transparent", border: "none", color: "white", fontSize: 12, fontWeight: 600, fontFamily: "inherit", outline: "none", width: 160 }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.09)", borderRadius: 7, padding: "5px 12px", border: "1px solid rgba(255,255,255,0.18)" }}>
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", fontFamily: "'Inter',sans-serif", fontWeight: 400 }}>Customer:</span>
+                <input value={sow.cn} onChange={(e) => us("cn", e.target.value)} placeholder="Enter name..." aria-label="Customer name" style={{ background: "transparent", border: "none", color: "white", fontSize: 12, fontWeight: 700, fontFamily: "'Inter',sans-serif", outline: "none", width: 160 }} />
               </div>
               {saveStatus && <span style={{ fontSize: 12, padding: "3px 8px", background: "rgba(255,255,255,0.2)", borderRadius: 4 }}>{saveStatus}</span>}
               <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={handleExcelUpload} style={{ display: "none" }} />
-              <button onClick={() => fileRef.current && fileRef.current.click()} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>📊 Import</button>
-              <button onClick={() => saveProject()} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>💾 Save</button>
+              <button onClick={() => fileRef.current && fileRef.current.click()} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.1)", color: "white", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "'Inter',sans-serif", letterSpacing: 0.1 }}>📊 Import</button>
+              <button onClick={() => saveProject()} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.1)", color: "white", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "'Inter',sans-serif", letterSpacing: 0.1 }}>💾 Save</button>
               {Object.keys(sel).length > 0 && <button onClick={() => setSel({})} style={{ padding: "5px 12px", background: "rgba(220,38,38,0.2)", color: "#fca5a5", border: "1px solid rgba(220,38,38,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>✕ Clear</button>}
               <div style={{ position: "relative" }}>
-                <button onClick={() => { setShowSaves(!showSaves); if (!showSaves) loadSavedList(); }} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>📂{savedList.length > 0 ? " " + savedList.length : ""}</button>
+                <button onClick={() => { setShowSaves(!showSaves); if (!showSaves) loadSavedList(); }} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.1)", color: "white", border: "1px solid rgba(255,255,255,0.2)", borderRadius: 6, fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "'Inter',sans-serif", letterSpacing: 0.1 }}>📂{savedList.length > 0 ? " " + savedList.length : ""}</button>
                 {showSaves && (
                   <div style={{ position: "absolute", top: "110%", right: 0, width: 260, background: "white", borderRadius: 8, boxShadow: "0 8px 30px rgba(0,0,0,0.2)", zIndex: 999, overflow: "hidden" }}>
                     <div style={{ padding: "8px 10px", background: "#f8f9fa", fontSize: 13, fontWeight: 700, color: "#666", borderBottom: "1px solid #e8e8ec" }}>Saved Projects</div>
                     {savedList.length === 0 ? (
-                      <div style={{ padding: 12, fontSize: 12, color: "#999", textAlign: "center" }}>No saved projects</div>
+                      <div style={{ padding: 12, fontSize: 11, color: "#9aa3af", fontFamily: "'Inter',sans-serif", textAlign: "center" }}>No saved projects</div>
                     ) : savedList.map((k, i) => {
                       const label = k.replace("afo:", "").replace(/_/g, " ");
                       return (
@@ -1307,7 +1317,7 @@ button{display:none!important}
               const active = t.match ? t.match.includes(pg) : pg === t.k;
               const disabled = t.k !== "calc" && C.tot === 0;
               return (
-              <button key={t.k} onClick={() => { if (disabled) return; setPg(t.k); }} style={{ padding: "8px 18px", border: "none", background: active ? "rgba(255,255,255,0.15)" : "transparent", color: active ? "white" : "rgba(255,255,255,0.5)", fontSize: 12, fontWeight: active ? 600 : 400, cursor: disabled ? "default" : "pointer", borderBottom: active ? "2px solid white" : "2px solid transparent", borderRadius: "6px 6px 0 0", opacity: disabled ? 0.3 : 1 }}>
+              <button key={t.k} onClick={() => { if (disabled) return; setPg(t.k); }} style={{ padding: "8px 18px", border: "none", background: active ? "rgba(255,255,255,0.15)" : "transparent", color: active ? "white" : "rgba(255,255,255,0.45)", fontSize: 12, fontWeight: active ? 600 : 400, cursor: disabled ? "default" : "pointer", borderBottom: active ? "3px solid rgba(255,255,255,0.9)" : "3px solid transparent", borderRadius: "6px 6px 0 0", opacity: disabled ? 0.3 : 1 }}>
                 {t.label}
               </button>
               );
@@ -1327,12 +1337,12 @@ button{display:none!important}
                 const cnt = items.filter((i) => sel[i.id] && sel[i.id].on).length;
                 const open = exCat[cat.key];
                 return (
-                  <div key={cat.key} style={{ background: "white", borderRadius: 12, marginBottom: 8, border: "1px solid #e8e8ec", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                    <button onClick={() => setExCat((p) => ({ ...p, [cat.key]: !p[cat.key] }))} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 14px", border: "none", background: "transparent", cursor: "pointer", fontSize: 13, fontWeight: 600 }}>
+                  <div key={cat.key} className="workload-card" style={{ background: "white", borderRadius: 10, marginBottom: 6, border: "1px solid #e8edf2", overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+                    <button onClick={() => setExCat((p) => ({ ...p, [cat.key]: !p[cat.key] }))} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", border: "none", background: "transparent", cursor: "pointer", fontSize: 12, fontWeight: 700, fontFamily: "'Inter',sans-serif", letterSpacing: -0.1 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <span style={{ fontSize: 18, width: 24, textAlign: "center" }}>{cat.icon}</span>
                         <span style={{ color: cat.color }}>{cat.label}</span>
-                        {cat.elig && <span style={{ fontSize: 10, fontWeight: 700, background: "#dcfce7", color: "#166534", padding: "1px 5px", borderRadius: 6 }}>AFO ELIGIBLE</span>}
+                        {cat.elig && <span style={{ fontSize: 9, fontWeight: 700, background: "#dcfce7", color: "#15803d", padding: "2px 8px", borderRadius: 20, letterSpacing: 0.5, textTransform: "uppercase", fontFamily: "'Inter',sans-serif" }}>AFO ELIGIBLE</span>}
                         {!cat.elig && cat.badge && <span style={{ fontSize: 10, fontWeight: 700, background: cat.key === "accel" ? "#fff3e0" : cat.key === "pbi" ? "#fef9c3" : "#f5f5f5", color: cat.key === "accel" ? "#e65100" : cat.key === "pbi" ? "#854d0e" : "#888", padding: "1px 5px", borderRadius: 6 }}>{cat.badge}</span>}
                         {cnt > 0 && <span style={{ fontSize: 11, fontWeight: 600, background: cat.color + "15", color: cat.color, padding: "1px 5px", borderRadius: 6 }}>{cnt}</span>}
                       </div>
@@ -1351,7 +1361,7 @@ button{display:none!important}
                           return (
                             <div key={itm.id} style={{ padding: "5px 0", borderTop: "1px solid #f5f5f7" }}>
                               <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
-                              <label style={{ display: "flex", alignItems: "center", gap: 4, minWidth: 145, flex: "1 1 145px", cursor: "pointer", fontSize: 12, color: on ? "#1a1a2e" : "#aaa", fontWeight: on ? 500 : 400 }}>
+                              <label style={{ display: "flex", alignItems: "center", gap: 4, minWidth: 145, flex: "1 1 145px", cursor: "pointer", fontSize: 12, color: on ? "#111827" : "#bbb", fontWeight: on ? 600 : 400 }}>
                                 <input type="checkbox" checked={on} onChange={(e) => upd(itm.id, "on", e.target.checked)} style={{ "--accent": cat.color }} />
                                 <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{itm.name}</span>
                               </label>
@@ -1391,12 +1401,12 @@ button{display:none!important}
                                     <input type="number" value={Math.round(mo)} onChange={(e) => upd(itm.id, "mo", +e.target.value)} style={{ width: 58, padding: "2px", border: "1px solid #e0e0e0", borderRadius: 4, fontSize: 13, textAlign: "right", background: "white" }} />
                                     <span style={{ fontSize: 11, color: "#999" }}>/mo</span>
                                   </div>
-                                  <div style={{ fontSize: 13, fontWeight: 600, minWidth: 58, textAlign: "right" }}>{fmt(yr)}<span style={{ fontSize: 10, color: "#999" }}>/yr</span></div>
+                                  <div style={{ fontSize: 12, fontWeight: 700, minWidth: 60, textAlign: "right", fontFamily: "'Inter',sans-serif", color: "#111827", letterSpacing: -0.3 }}>{fmt(yr)}<span style={{ fontSize: 10, color: "#999" }}>/yr</span></div>
                                 </div>
                               )}
                               </div>
-                              {on && itm.note && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#999", fontStyle: "italic", background: "#f8f9fa", padding: "2px 6px", borderRadius: 4, display: "inline-block" }}>{itm.note}</div>}
-                              {on && itm.fab && ri && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 4, display: "inline-block" }}>1yr reserved: ~41% savings vs PAYG. Lower ACR = lower funding, but customer saves more.</div>}
+                              {on && itm.note && <div style={{ marginLeft: 22, marginTop: 3, fontSize: 10, color: "#8a929e", background: "#f7f8fa", padding: "3px 8px", borderRadius: 4, display: "inline-block", lineHeight: 1.5 }}>{itm.note}</div>}
+                              {on && itm.fab && ri && <div style={{ marginLeft: 22, marginTop: 3, fontSize: 10, color: "#0078D4", background: "#eff6ff", padding: "3px 8px", borderRadius: 4, display: "inline-block", lineHeight: 1.5 }}>1yr reserved: ~41% savings vs PAYG. Lower ACR = lower funding, but customer saves more.</div>}
                               {on && itm.riOpts && s.riTerm && s.riTerm !== "payg" && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 4, display: "inline-block" }}>Reserved pricing: lower ACR = lower funding thresholds, but customer saves on monthly cost.</div>}
                             </div>
                           );
@@ -1412,18 +1422,18 @@ button{display:none!important}
             <div style={{ position: "sticky", top: 10 }}>
 
               {/* ── DUAL-PATH ELIGIBILITY VISUAL ── */}
-              <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 14, marginBottom: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#999", marginBottom: 8, letterSpacing: 0.5 }}>Eligibility Overview</div>
+              <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8edf2", padding: 14, marginBottom: 8, boxShadow: "0 1px 4px rgba(10,30,74,0.06)" }}>
+                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", color: "#9aa3af", marginBottom: 8, letterSpacing: 1.2, fontFamily: "'Inter',sans-serif" }}>Eligibility Overview</div>
 
                 {C.tot === 0 ? <div style={{ fontSize: 13, color: "#ccc" }}>Select workloads to see eligibility...</div> : (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }} className="grid-2col">
                     {/* Field-Led (AFO) */}
                     <div style={{ borderRadius: 8, padding: 10, background: C.ok ? "linear-gradient(135deg,#ecfdf5,#d1fae5)" : "linear-gradient(135deg,#f8f9fa,#f0f1f3)", border: "1.5px solid " + (C.ok ? "#6ee7b7" : "#d1d5db"), textAlign: "center" }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: "#999", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Field-Led</div>
+                      <div style={{ fontSize: 9, fontWeight: 700, color: "#9aa3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4, fontFamily: "'Inter',sans-serif" }}>Field-Led</div>
                       {/* Ring indicator */}
                       <div style={{ width: 56, height: 56, borderRadius: "50%", margin: "0 auto 6px", position: "relative", background: `conic-gradient(${C.ok ? "#059669" : "#94a3b8"} ${C.pct * 3.6}deg, ${C.ok ? "#d1fae5" : "#e2e8f0"} 0)` }}>
                         <div style={{ position: "absolute", inset: 6, borderRadius: "50%", background: "white", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: C.ok ? "#059669" : "#64748b" }}>{C.pct.toFixed(0)}%</span>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: C.ok ? "#059669" : "#64748b", fontFamily: "'Inter',sans-serif" }}>{C.pct.toFixed(0)}%</span>
                         </div>
                       </div>
                       <div style={{ fontSize: 13, fontWeight: 700, color: C.ok ? "#059669" : "#64748b" }}>{C.ok ? "✓ AFO ELIGIBLE" : "Standard ECIF / MCI path"}</div>
@@ -1436,8 +1446,8 @@ button{display:none!important}
                     </div>
 
                     {/* Partner-Led (MCI) */}
-                    <div style={{ borderRadius: 8, padding: 10, background: C.tot >= 5000 ? "linear-gradient(135deg,#eff6ff,#dbeafe)" : "#f9fafb", border: "1.5px solid " + (C.tot >= 5000 ? "#93c5fd" : "#e5e7eb"), textAlign: "center" }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: "#999", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Partner-Led</div>
+                    <div style={{ borderRadius: 8, padding: 10, background: C.tot >= 5000 ? "#eff6ff" : "#f8fafc", border: "1.5px solid " + (C.tot >= 5000 ? "#bfdbfe" : "#e2e8f0"), textAlign: "center" }}>
+                      <div style={{ fontSize: 9, fontWeight: 700, color: "#9aa3af", textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 4, fontFamily: "'Inter',sans-serif" }}>Partner-Led</div>
                       {/* Ring indicator */}
                       {(() => {
                         const tiers = [5000, 15000, 50000, 100000, 250000];
@@ -1451,7 +1461,7 @@ button{display:none!important}
                           </div>
                         );
                       })()}
-                      <div style={{ fontSize: 13, fontWeight: 700, color: C.tot >= 5000 ? "#2563eb" : "#999" }}>{C.tot >= 5000 ? "✓ MCI ELIGIBLE" : "✗ ACR < $5K"}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: C.tot >= 5000 ? "#2563eb" : "#999", fontFamily: "'Inter',sans-serif" }}>{C.tot >= 5000 ? "✓ MCI ELIGIBLE" : "✗ ACR < $5K"}</div>
                       <div style={{ fontSize: 10, color: "#999", marginTop: 2 }}>Partner self-serve via PC</div>
                       <div style={{ fontSize: 10, color: "#999", marginTop: 1 }}>Up to {fmt(C.mci.pre + C.mci.post)}</div>
                       <div style={{ display: "flex", gap: 2, justifyContent: "center", marginTop: 4 }}>
@@ -1463,16 +1473,16 @@ button{display:none!important}
                 )}
 
                 {/* Scenario badge */}
-                {C.sc && C.tot > 0 && <div style={{ marginTop: 8, fontSize: 12, color: "#666", padding: "4px 8px", background: "#f8f9fa", borderRadius: 6, textAlign: "center" }}>Scenario: <strong>{C.sc}</strong></div>}
+                {C.sc && C.tot > 0 && <div style={{ marginTop: 8, fontSize: 11, color: "#6b7280", padding: "4px 10px", background: "#f0f4f8", borderRadius: 20, textAlign: "center", display: "inline-block", width: "100%", fontFamily: "'Inter',sans-serif" }}>Scenario: <strong>{C.sc}</strong></div>}
               </div>
 
               {/* ── YEAR 1 ACR ── */}
               <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 14, marginBottom: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#999", marginBottom: 4 }}>Year 1 ACR</div>
-                <div style={{ textAlign: "center", marginBottom: 8 }}><AnimNum value={C.tot} format={fmt} style={{ fontSize: 24, fontWeight: 700, color: "#0078D4" }} /><div style={{ fontSize: 12, color: "#999" }}>{fmt(C.tot / 12)}/mo{C.xcr > 0 ? " (+ " + fmt(C.xcr) + " XCR)" : ""}</div></div>
+                <div style={{ fontSize: 9, fontWeight: 600, textTransform: "uppercase", color: "#9ca3af", marginBottom: 4, letterSpacing: 1.5, fontFamily: "'Inter',sans-serif" }}>Year 1 ACR</div>
+                <div style={{ textAlign: "center", marginBottom: 8 }}><AnimNum value={C.tot} format={fmt} style={{ fontSize: 30, fontWeight: 800, color: "#0078D4", fontFamily: "'Inter',sans-serif", letterSpacing: -1 }} /><div style={{ fontSize: 12, color: "#999" }}>{fmt(C.tot / 12)}/mo{C.xcr > 0 ? " (+ " + fmt(C.xcr) + " XCR)" : ""}</div></div>
                 <div style={{ display: "grid", gridTemplateColumns: C.xcr > 0 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 4 }} className="grid-acr">
-                  <div style={{ background: "#eff6ff", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>AFO Eligible ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>{fmt(C.el)}</div></div>
-                  <div style={{ background: "#fff7ed", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#D83B01" }}>{fmt(C.ot)}</div></div>
+                  <div style={{ background: "#eff6ff", padding: "6px 4px", borderRadius: 6, textAlign: "center" }}><div style={{ fontSize: 10 }}>AFO Eligible ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>{fmt(C.el)}</div></div>
+                  <div style={{ background: "#fff7ed", padding: "6px 4px", borderRadius: 6, textAlign: "center" }}><div style={{ fontSize: 10 }}>ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#D83B01" }}>{fmt(C.ot)}</div></div>
                   {C.xcr > 0 && <div style={{ background: "#fef3c7", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>XCR (not ACR)</div><div style={{ fontSize: 13, fontWeight: 700, color: "#d97706" }}>{fmt(C.xcr)}</div></div>}
                 </div>
                 {C.hasOda && <div style={{ marginTop: 8, padding: "8px 10px", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 6, fontSize: 11, color: "#92400e", lineHeight: 1.5 }}>
@@ -1488,7 +1498,7 @@ button{display:none!important}
 
               {/* ── YOUR FUNDING PLAN (unified) ── */}
               {C.tot > 0 && (
-                <div style={{ borderRadius: 10, marginBottom: 8, overflow: "hidden", background: "linear-gradient(135deg,#0a1628,#1e3a5f)" }}>
+                <div style={{ borderRadius: 10, marginBottom: 8, overflow: "hidden", background: "linear-gradient(160deg, #071630 0%, #0b2550 45%, #0d3878 100%)" }}>
                   {/* Big total */}
                   {(() => {
                     const lines = [];
@@ -1511,13 +1521,13 @@ button{display:none!important}
 
                     return (
                       <div style={{ padding: 14 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: "#a5b4fc", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Your Funding Plan</div>
+                        <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(165,180,252,0.8)", textTransform: "uppercase", letterSpacing: 2.5, marginBottom: 10, fontFamily: "'Inter',sans-serif" }}>Your Funding Plan</div>
 
                         {C.ok ? (
                           <>
                             {/* AFO eligible - show stacked funding */}
-                            <AnimNum value={grandTotal} format={fmt} style={{ fontSize: 24, fontWeight: 700, color: "white", textAlign: "center", display: "block" }} />
-                            <div style={{ fontSize: 11, color: "#a5b4fc", textAlign: "center", marginBottom: 8 }}>total stackable funding</div>
+                            <AnimNum value={grandTotal} format={fmt} style={{ fontSize: 32, fontWeight: 800, color: "white", textAlign: "center", display: "block", fontFamily: "'Inter',sans-serif", letterSpacing: -1 }} />
+                            <div style={{ fontSize: 10, color: "rgba(165,180,252,0.75)", textAlign: "center", marginBottom: 8, fontFamily: "'Inter',sans-serif" }}>total stackable funding</div>
 
                             <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", height: 14, marginBottom: 12 }}>
                               {lines.map((l, i) => (
@@ -1525,27 +1535,27 @@ button{display:none!important}
                               ))}
                             </div>
 
-                            <div style={{ fontSize: 10, fontWeight: 700, color: "#a5b4fc", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Cash to Partner</div>
+                            <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(165,180,252,0.7)", textTransform: "uppercase", letterSpacing: 2, marginBottom: 6, fontFamily: "'Inter',sans-serif" }}>Cash to Partner</div>
                             {cashLines.map((l, i) => (
-                              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0", borderBottom: i < cashLines.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
+                              <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0", borderBottom: i < cashLines.length - 1 ? "1px solid rgba(255,255,255,0.07)" : "none", padding: "7px 0" }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                   <div style={{ width: 8, height: 8, borderRadius: 2, background: l.color, flexShrink: 0 }} />
                                   <div>
                                     <div style={{ fontSize: 12, color: "white", fontWeight: 600 }}>{l.label}</div>
-                                    <div style={{ fontSize: 10, color: "#a5b4fc" }}>{l.sub}</div>
+                                    <div style={{ fontSize: 10, color: "rgba(165,180,252,0.75)", fontFamily: "'Inter',sans-serif" }}>{l.sub}</div>
                                   </div>
                                 </div>
                                 <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>{fmt(l.amount)}</div>
                               </div>
                             ))}
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", marginTop: 2, borderTop: "1px solid rgba(255,255,255,0.15)" }}>
-                              <div style={{ fontSize: 12, fontWeight: 600, color: "#a5b4fc" }}>Subtotal cash</div>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(165,180,252,0.75)", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "'Inter',sans-serif" }}>Subtotal cash</div>
                               <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>{fmt(cashTotal)}</div>
                             </div>
 
                             
 
-                            {note && <div style={{ marginTop: 10, padding: "5px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 4, fontSize: 10, color: "#a5b4fc", lineHeight: 1.5 }}>{note}</div>}
+                            {note && <div style={{ marginTop: 10, padding: "5px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 4, fontSize: 10, color: "rgba(165,180,252,0.75)", fontFamily: "'Inter',sans-serif", lineHeight: 1.5 }}>{note}</div>}
                           </>
                         ) : isNonAfo ? (
                           <>
@@ -1564,7 +1574,7 @@ button{display:none!important}
                               return (
                                 <>
                                   <AnimNum value={bestTotal} format={fmt} style={{ fontSize: 24, fontWeight: 700, color: "white", textAlign: "center", display: "block" }} />
-                                  <div style={{ fontSize: 11, color: "#a5b4fc", textAlign: "center", marginBottom: 8 }}>recommended co-investment</div>
+                                  <div style={{ fontSize: 10, color: "rgba(165,180,252,0.75)", textAlign: "center", marginBottom: 8, fontFamily: "'Inter',sans-serif" }}>recommended co-investment</div>
 
                                   <div style={{ display: "flex", borderRadius: 6, overflow: "hidden", height: 14, marginBottom: 12 }}>
                                     {bestLines.map((l, i) => (
@@ -1572,27 +1582,27 @@ button{display:none!important}
                                     ))}
                                   </div>
 
-                                  <div style={{ fontSize: 10, fontWeight: 700, color: "#a5b4fc", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Cash to Partner · {best === "MCI" ? "Partner-Led" : "Field-Led"}</div>
+                                  <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(165,180,252,0.75)", textTransform: "uppercase", letterSpacing: 1.8, marginBottom: 6, fontFamily: "'Inter',sans-serif" }}>Cash to Partner · {best === "MCI" ? "Partner-Led" : "Field-Led"}</div>
                                   {bestLines.map((l, i) => (
                                     <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 0", borderBottom: i < bestLines.length - 1 ? "1px solid rgba(255,255,255,0.08)" : "none" }}>
                                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                                         <div style={{ width: 8, height: 8, borderRadius: 2, background: l.color, flexShrink: 0 }} />
                                         <div>
                                           <div style={{ fontSize: 12, color: "white", fontWeight: 600 }}>{l.label}</div>
-                                          <div style={{ fontSize: 10, color: "#a5b4fc" }}>{l.sub}</div>
+                                          <div style={{ fontSize: 10, color: "rgba(165,180,252,0.75)", fontFamily: "'Inter',sans-serif" }}>{l.sub}</div>
                                         </div>
                                       </div>
                                       <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>{fmt(l.amount)}</div>
                                     </div>
                                   ))}
                                   <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", marginTop: 2, borderTop: "1px solid rgba(255,255,255,0.15)" }}>
-                                    <div style={{ fontSize: 12, fontWeight: 600, color: "#a5b4fc" }}>Total cash</div>
+                                    <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(165,180,252,0.75)", textTransform: "uppercase", letterSpacing: 1.5, fontFamily: "'Inter',sans-serif" }}>Total cash</div>
                                     <div style={{ fontSize: 14, fontWeight: 700, color: "white" }}>{fmt(bestTotal)}</div>
                                   </div>
 
                                   {/* Alternative option */}
                                   <div style={{ marginTop: 10, padding: "6px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 4 }}>
-                                    <div style={{ fontSize: 10, color: "#a5b4fc", lineHeight: 1.5 }}>
+                                    <div style={{ fontSize: 10, color: "rgba(165,180,252,0.75)", fontFamily: "'Inter',sans-serif", lineHeight: 1.5 }}>
                                       <strong>Alternative:</strong> {altLabel}
                                     </div>
                                     <div style={{ fontSize: 10, color: "#818cf8", marginTop: 2 }}>ECIF and MCI cannot be used on same project - choose one path.</div>
@@ -1626,10 +1636,10 @@ button{display:none!important}
                 const tips = getMaximizerTips();
                 if (tips.length === 0) return null;
                 return (
-                  <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", marginBottom: 8 }}>
-                    <div style={{ padding: "8px 12px", background: "linear-gradient(135deg, #fef3c7, #fde68a)", display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ background: "white", borderRadius: 10, border: "1px solid #fde68a88", overflow: "hidden", boxShadow: "0 1px 4px rgba(217,119,6,0.08)", marginBottom: 8 }}>
+                    <div style={{ padding: "9px 14px", background: "#fffbf0", borderBottom: "1px solid #fde68a44", display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ fontSize: 14 }}>⚡</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#92400e" }}>Funding Maximizer</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#92400e", fontFamily: "'Inter',sans-serif", letterSpacing: 0.2 }}>Funding Maximizer</span>
                       <span style={{ fontSize: 10, color: "#b45309", marginLeft: "auto" }}>{tips.length} tip{tips.length > 1 ? "s" : ""}</span>
                     </div>
                     {tips.map((tip, i) => (
@@ -2125,7 +2135,7 @@ button{display:none!important}
                   ))}</tbody>
                 </table>
 
-                <div style={{ fontSize: 11, color: "#999", borderTop: "1px solid #eee", paddingTop: 8 }}>Non-binding estimate for planning purposes. All amounts subject to Microsoft internal approval. AFO nomination via Azure Offer Navigator (field-nominated). Limited time, first come first served. Anthropic counts as XCR (not ACR) but can be forecasted as 100% ACR in MSX. Agent P3 excluded from AFO eligible workloads. GitHub Copilot is per-seat (XCR, not Azure ACR). Oracle Database@Azure (ODA) has its own separate Azure Accelerate offer — contact PSS; ODA ACR excluded from AFO/MCI calculations. Contact PSS/account team for formal nomination.</div>
+                <div style={{ fontSize: 10, color: "#aab0bc", borderTop: "1px solid #eef0f4", paddingTop: 8, fontFamily: "'Inter',sans-serif", lineHeight: 1.6 }}>Non-binding estimate for planning purposes. All amounts subject to Microsoft internal approval. AFO nomination via Azure Offer Navigator (field-nominated). Limited time, first come first served. Anthropic counts as XCR (not ACR) but can be forecasted as 100% ACR in MSX. Agent P3 excluded from AFO eligible workloads. GitHub Copilot is per-seat (XCR, not Azure ACR). Oracle Database@Azure (ODA) has its own separate Azure Accelerate offer — contact PSS; ODA ACR excluded from AFO/MCI calculations. Contact PSS/account team for formal nomination.</div>
               </div>
             </div>
 
