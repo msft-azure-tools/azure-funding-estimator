@@ -2396,22 +2396,7 @@ button{display:none!important}
                           <div style={{ marginBottom: 4 }}>
                             <span style={{ fontWeight: 600, color: "#334155" }}>Scope and Responsibilities:</span> The responsible team will include {del.team}, who will be responsible for executing the deliverables above.
                           </div>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 8, padding: "8px 0", borderTop: "1px solid #e8e8ec" }} className="grid-3col">
-                            <div style={{ background: "#eff6ff", padding: 8, borderRadius: 6, textAlign: "center" }}>
-                              <div style={{ fontSize: 10, color: "#64748b" }}>Hours</div>
-                              <div style={{ fontSize: 16, fontWeight: 700, color: "#0078D4" }}>{del.hours}h</div>
-                              <div style={{ fontSize: 10, color: "#999" }}>{del.hoursPerWeek}h/week</div>
-                            </div>
-                            <div style={{ background: "#ecfdf5", padding: 8, borderRadius: 6, textAlign: "center" }}>
-                              <div style={{ fontSize: 10, color: "#64748b" }}>Duration</div>
-                              <div style={{ fontSize: 16, fontWeight: 700, color: "#059669" }}>{Math.ceil(del.hours / del.hoursPerWeek)}w</div>
-                              <div style={{ fontSize: 10, color: "#999" }}>{Math.ceil(del.hours / del.hoursPerWeek)} weeks</div>
-                            </div>
-                            <div style={{ background: "#f5f3ff", padding: 8, borderRadius: 6, textAlign: "center" }}>
-                              <div style={{ fontSize: 10, color: "#64748b" }}>Work Type</div>
-                              <div style={{ fontSize: 11, fontWeight: 600, color: "#7c3aed", marginTop: 4 }}>{del.workType}</div>
-                            </div>
-                          </div>
+
                         </div>
                       </div>
                     ))}
