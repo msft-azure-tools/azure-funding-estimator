@@ -82,7 +82,7 @@ const ITEMS = [
   { id:"pbi-pro-readers",cat:"pbi",name:"Power BI Pro - Report Viewers (only if F-SKU < F64)",tag:"Power BI Pro (readers <F64)",unit:"viewers",up:14,dq:0,xcr:true,note:"Only if F-SKU < F64. Tip: upgrading to F64 removes this cost AND generates more ACR → more Azure funding. Often cheaper total" },
   { id:"aks",cat:"accel",name:"AKS / App Service",tag:"AI Apps: AKS, App Service, Container Apps",unit:"nodes",up:300,dq:6 },
   { id:"databricks",cat:"accel",name:"Azure Databricks",tag:"Data: Azure Databricks",unit:"DBUs/mo",up:0.5,dq:5000,note:"MCI eligible via Data Platform engagement. Not AFO eligible - pair with Fabric for AFO. Has own Analytics Modernization Accelerator offer (>$100K ACR)" },
-  { id:"oracle-az",cat:"accel",name:"Oracle Database@Azure",tag:"Data: Oracle Database@Azure",unit:"OCPUs",up:500,dq:10,note:"Own Azure Accelerate offer: >$100K ACR, up to $500K ECIF. Separate from AFO - contact PSS" },
+  { id:"oracle-az",cat:"accel",name:"Oracle Database@Azure",tag:"Data: Oracle Database@Azure",unit:"OCPUs",up:500,dq:10,odaOnly:true,note:"ODA ACR does NOT count toward AFO or MCI. Own Azure Accelerate offer: >$100K ACR, up to $500K ECIF. Requires PSS nomination. Only drag-along workloads (Oracle→SQL, Oracle→PG) generate AFO ECIF" },
   { id:"infra-linux",cat:"accel",name:"Core M&M - Linux VMs",tag:"Core: Migrate & Modernize (Linux)",unit:"VMs",up:140,dq:15,riOpts:[{k:"1yr",label:"1yr RI (-35%)",up:91},{k:"3yr",label:"3yr RI (-55%)",up:63}],note:"Average estimate (~D4s v3). Actual cost varies by VM size ($60-$400+/VM). Use Azure Pricing Calculator for precise sizing" },
   { id:"infra-win",cat:"accel",name:"Core M&M - Windows VMs",tag:"Core: Migrate & Modernize (Windows)",unit:"VMs",up:240,dq:10,riOpts:[{k:"1yr",label:"1yr RI (-35%)",up:156},{k:"3yr",label:"3yr RI (-55%)",up:108},{k:"ahub",label:"AHUB (-40%)",up:144},{k:"1yr-ahub",label:"1yr RI + AHUB (-61%)",up:94},{k:"3yr-ahub",label:"3yr RI + AHUB (-73%)",up:65}],note:"Average estimate (~D4s v3 + Windows). Actual cost varies by VM size. AHUB requires SA or Windows Server subscription" },
   { id:"infra-mdc",cat:"accel",name:"Core M&M + Defender (MDC)",tag:"Core: Migrate & Modernize with MDC",unit:"VMs",up:215,dq:20,riOpts:[{k:"1yr",label:"1yr RI (-35%)",up:140},{k:"3yr",label:"3yr RI (-55%)",up:97},{k:"ahub",label:"AHUB (-40%)",up:129},{k:"1yr-ahub",label:"1yr RI + AHUB (-58%)",up:90},{k:"3yr-ahub",label:"3yr RI + AHUB (-70%)",up:65}],note:"AHUB for Windows portion. Defender for Cloud cost remains" },
@@ -117,6 +117,85 @@ const CATS = [
   { key: "pbi", label: "Power BI Licensing", color: "#E8B800", elig: false, badge: "M365 (XCR)", icon: "📈" },
   { key: "oth", label: "Other Azure Services", color: "#8B8B8B", elig: false, badge: "", icon: "⚙️" },
 ];
+
+/* Solution Plays — two-level mapping per workload:
+   play = Official Microsoft Solution Play (MSX, Investment Request, AFO nomination)
+   scenario = Azure Accelerate Scenario (MCI Partner Center nomination)
+   Source: MS Solution Play list + Azure Accelerate Partner Pitch Deck, March 2026. */
+const SOLUTION_PLAYS = {
+  // ── Migrate and Modernize Your Estate ──
+  "infra-linux":  { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  "infra-win":    { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  "sql-mi":       { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  "sql-db":       { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  "sql-hyper":    { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  "sql-vm":       { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  "sql-paygo":    { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  "mysql":        { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  "postgres":     { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  "cosmos":       { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  "oracle-sql":   { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  "oracle-pg":    { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  "avs":          { play: "Migrate and Modernize Your Estate", scenario: "Migrate & Modernize VMware", short: "AVS", color: "#D83B01" },
+  "avd":          { play: "Migrate and Modernize Your Estate", scenario: "Migrate to VDI", short: "VDI", color: "#8764B8" },
+  "sap":          { play: "Migrate and Modernize Your Estate", scenario: "Migrate SAP", short: "SAP", color: "#E8A800" },
+  "logicapps":    { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  "servicebus":   { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  "eventgrid":    { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
+  // ── Protect Cloud AI Platform and Apps / Modern SecOps ──
+  "infra-mdc":    { play: "Protect Cloud AI Platform and Apps", scenario: "Core M&M + Defender for Cloud", short: "M&M + MDC", color: "#00A4EF", uplift: "+15% payout" },
+  "def":          { play: "Protect Cloud AI Platform and Apps", scenario: "Core M&M + Defender for Cloud", short: "SecOps", color: "#00A4EF" },
+  "sentinel":     { play: "Modern SecOps with Unified Platform", scenario: "Core M&M + Defender for Cloud", short: "SecOps", color: "#00A4EF" },
+  // ── Innovate with Azure AI Apps and Agents ──
+  "oai-std":      { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  "oai-ptu":      { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  "anthro":       { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  "meta":         { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  "mistral":      { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  "other-m":      { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  "xai":          { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  "search":       { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  "speech":       { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  "vision":       { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  "aks":          { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  "functions":    { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  "apim":         { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  // ── Data Platform (Fabric/Databricks) ──
+  "fab-mig":      { play: "Innovate with Azure AI Apps and Agents", scenario: "Data Platform", short: "Data Platform", color: "#107C10" },
+  "fab-new":      { play: "Innovate with Azure AI Apps and Agents", scenario: "Data Platform", short: "Data Platform", color: "#107C10" },
+  "fab-pbi":      { play: "Innovate with Azure AI Apps and Agents", scenario: "Data Platform", short: "Data Platform", color: "#107C10" },
+  "fab-rti":      { play: "Innovate with Azure AI Apps and Agents", scenario: "Data Platform", short: "Data Platform", color: "#107C10" },
+  "fab-sql":      { play: "Innovate with Azure AI Apps and Agents", scenario: "Data Platform", short: "Data Platform", color: "#107C10" },
+  "fab-cos":      { play: "Innovate with Azure AI Apps and Agents", scenario: "Data Platform", short: "Data Platform", color: "#107C10" },
+  "databricks":   { play: "Innovate with Azure AI Apps and Agents", scenario: "Data Platform", short: "Data Platform", color: "#107C10" },
+  // ── ODA — own Azure Accelerate offer, separate from standard plays ──
+  "oracle-az":    { play: "Migrate and Modernize Your Estate", scenario: "ODA Accelerate (separate offer)", short: "ODA", color: "#C03B20" },
+  // ── Other (supporting, no primary play) ──
+  "storage":      { play: null, scenario: null, short: null, color: null },
+  "networking":   { play: null, scenario: null, short: null, color: null },
+  "monitor":      { play: null, scenario: null, short: null, color: null },
+  "backup":       { play: null, scenario: null, short: null, color: null },
+  "frontdoor":    { play: null, scenario: null, short: null, color: null },
+  "keyvault":     { play: null, scenario: null, short: null, color: null },
+  "purview":      { play: null, scenario: null, short: null, color: null },
+  "iot":          { play: null, scenario: null, short: null, color: null },
+  "eventhubs":    { play: null, scenario: null, short: null, color: null },
+  "redis":        { play: null, scenario: null, short: null, color: null },
+  "oth":          { play: null, scenario: null, short: null, color: null },
+};
+
+function getSolutionPlays(rows) {
+  const plays = new Map();
+  rows.forEach(r => {
+    const sp = SOLUTION_PLAYS[r.id];
+    if (sp && sp.play) {
+      const key = sp.play;
+      if (!plays.has(key)) plays.set(key, { ...sp, ids: [r.id], acr: r.yr, scenarios: new Set([sp.scenario].filter(Boolean)) });
+      else { const p = plays.get(key); p.ids.push(r.id); p.acr += r.yr; if (sp.scenario) p.scenarios.add(sp.scenario); }
+    }
+  });
+  return Array.from(plays.values()).map(p => ({ ...p, scenarios: Array.from(p.scenarios) }));
+}
 
 const FSKU = [
   { s: "F2", cu: 2, mo: 263, ri: 156 }, { s: "F4", cu: 4, mo: 526, ri: 313 }, { s: "F8", cu: 8, mo: 1051, ri: 625 },
@@ -287,6 +366,16 @@ function getRecommendation(el, ot, tot, pct, ok, rows, mci, stdEcif) {
     recs.push({ type: "tip", title: "Add DB, Fabric, or AI Foundry to unlock AFO",
       body: `Even a small eligible workload can flip the mix. Adding ${fmt(tot)} in DB/Fabric/Foundry would make this 50% eligible and unlock ECIF (cash to partner).`,
       action: "Explore data modernization or AI use cases with the customer" });
+  }
+
+  // ODA-specific recommendation
+  const hasOda = rows.some(r => r.id === "oracle-az");
+  if (hasOda) {
+    const odaRow = rows.find(r => r.id === "oracle-az");
+    const odaAcr = odaRow ? odaRow.yr : 0;
+    recs.push({ type: "warn", title: "ODA ACR excluded from funding calculations",
+      body: `Oracle Database@Azure (${fmt(odaAcr)}/yr) has its own Azure Accelerate offer — separate from AFO and MCI. Requires >$100K ACR and PSS nomination for up to $500K ECIF. Only drag-along workloads (Oracle→SQL, Oracle→PostgreSQL) generate standard AFO ECIF.`,
+      action: "Contact PSS for ODA-specific Azure Accelerate nomination" });
   }
 
   return recs;
@@ -517,7 +606,7 @@ function getRisks(rows) {
   return risks.slice(0, 5);
 }
 
-/* ECIF Milestone Deliverables - auto-generated per workload category */
+/* ECIF Milestone Deliverables - auto-generated per workload category with Solution Play mapping */
 function getMilestoneDeliverables(rows, cust) {
   const cats = new Set();
   const ids = new Set();
@@ -525,49 +614,59 @@ function getMilestoneDeliverables(rows, cust) {
   const cn = cust === "[CUSTOMER NAME]" ? "the customer" : cust;
   const deliverables = [];
 
+  const getPlay = (wIds) => {
+    const plays = {};
+    wIds.forEach(id => { const sp = SOLUTION_PLAYS[id]; if (sp && sp.play) { plays[sp.play] = plays[sp.play] || sp; } });
+    const arr = Object.values(plays);
+    return arr.length >= 1 ? arr[0] : null;
+  };
+
   if (cats.has("db")) {
+    const dbIds = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "db"; }).map(r => r.id);
     const dbNames = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "db"; }).map(r => r.name);
     const dbCount = dbNames.length;
+    const sp = getPlay(dbIds);
     deliverables.push({
       title: "Database Migration and Modernization",
+      solutionPlay: sp ? sp.play : null, solutionPlayShort: sp ? sp.short : null, solutionPlayColor: sp ? sp.color : null, solutionPlayScenario: sp ? sp.scenario : null,
       services: "Conduct database discovery and assessment, develop a migration strategy and wave plan, execute migration and validation, and perform performance tuning and operational handover.",
       environment: "The service will be delivered on " + dbNames.join(", ") + " using Azure Database services for migration/modernization, with Azure landing zone and security controls.",
       method: "The work will be carried out using a structured approach including database discovery, assessment, strategy development, execution, and validation, following Microsoft Cloud Adoption Framework best practices.",
       technical: "Azure Database services (" + dbNames.join(", ") + "), Azure landing zone with security controls, Azure Migrate, Database Migration Service.",
       team: "Database architects and migration specialists",
-      hours: Math.max(40, dbCount * 30),
-      hoursPerWeek: 20,
-      workType: "Implementation (Post-Sales)"
+      hours: Math.max(40, dbCount * 30), hoursPerWeek: 20, workType: "Implementation (Post-Sales)"
     });
   }
 
   if (cats.has("fab")) {
+    const fabIds = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "fab"; }).map(r => r.id);
     const fabNames = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "fab"; }).map(r => r.name + (r.sku ? " (" + r.sku + ")" : ""));
+    const sp = getPlay(fabIds);
     deliverables.push({
       title: "Unified Analytics Platform Establishment",
+      solutionPlay: sp ? sp.play : null, solutionPlayShort: sp ? sp.short : null, solutionPlayColor: sp ? sp.color : null, solutionPlayScenario: sp ? sp.scenario : null,
       services: "Design analytics architecture, provision Fabric capacity, develop data pipelines (Bronze/Silver/Gold), create semantic models and reports, and establish a governance framework.",
       environment: "The service will be delivered using Microsoft Fabric (" + fabNames.join(", ") + "), OneLake, and Power BI.",
       method: "The work will be carried out using a structured approach including architecture design, capacity provisioning, pipeline development, semantic model creation, and governance framework establishment, following best practices.",
       technical: "Microsoft Fabric (" + fabNames.join(", ") + "), OneLake, Power BI, Azure Data Factory for pipeline orchestration.",
       team: "Data architects, data engineers, and BI analysts",
-      hours: 120,
-      hoursPerWeek: 20,
-      workType: "Implementation (Post-Sales)"
+      hours: 120, hoursPerWeek: 20, workType: "Implementation (Post-Sales)"
     });
   }
 
   if (cats.has("fo")) {
+    const foIds = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "fo"; }).map(r => r.id);
     const foNames = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "fo"; }).map(r => r.name);
+    const sp = getPlay(foIds);
     deliverables.push({
       title: "AI Platform and Foundry Deployment",
+      solutionPlay: sp ? sp.play : null, solutionPlayShort: sp ? sp.short : null, solutionPlayColor: sp ? sp.color : null, solutionPlayScenario: sp ? sp.scenario : null,
       services: "Design AI reference architecture, provision AI Foundry, implement RAG pipeline with data grounding, develop pilot AI agent/Copilot scenario, and establish AI governance model.",
       environment: "The service will be delivered using Azure AI Foundry (" + foNames.join(", ") + ") with Responsible AI governance controls.",
       method: "The work will be carried out using a structured approach including architecture design, model selection, RAG pipeline implementation, pilot development, and safety validation, following Microsoft Responsible AI principles.",
       technical: "Azure AI Foundry, " + foNames.join(", ") + ", Azure AI Search for RAG grounding, Azure Key Vault for secrets management.",
       team: "AI architects, ML engineers, and data scientists",
-      hours: 80,
-      hoursPerWeek: 20,
-      workType: "Implementation (Post-Sales)"
+      hours: 80, hoursPerWeek: 20, workType: "Implementation (Post-Sales)"
     });
   }
 
@@ -576,23 +675,34 @@ function getMilestoneDeliverables(rows, cust) {
     const hasAks = ids.has("aks");
     const hasIntegration = ids.has("logicapps") || ids.has("servicebus") || ids.has("eventgrid") || ids.has("apim");
     const hasInfra = ids.has("infra-win") || ids.has("infra-linux") || ids.has("infra-mdc");
+    const hasMdc = ids.has("infra-mdc");
+    const hasOda = ids.has("oracle-az");
     const accelNames = accelItems.map(r => r.name);
-    const title = hasAks && hasIntegration ? "Application and Integration Modernization" : hasAks ? "Application Modernization" : hasIntegration ? "Integration Platform Modernization" : hasInfra ? "Infrastructure Migration" : "Cloud Platform Deployment";
+    const accelIds = accelItems.map(r => r.id);
+    const sp = getPlay(accelIds);
+    const title = hasAks && hasIntegration ? "Application and Integration Modernization"
+      : hasAks ? "Application Modernization"
+      : hasIntegration ? "Integration Platform Modernization"
+      : hasInfra ? (hasMdc ? "Infrastructure Migration with Security" : "Infrastructure Migration")
+      : hasOda ? "Oracle Database@Azure Deployment"
+      : "Cloud Platform Deployment";
     const services = [];
     if (hasAks) services.push("conduct application portfolio assessment, develop container strategy and architecture, provision AKS cluster, containerize and deploy applications, set up CI/CD pipeline");
     if (hasIntegration) services.push("migrate integration workflows to Azure Logic Apps, configure Service Bus messaging, set up API Management gateway");
     if (hasInfra) services.push("execute server migration waves, configure landing zone networking, validate performance post-migration");
-    if (!hasAks && !hasIntegration && !hasInfra) services.push("provision and configure Azure platform services, validate connectivity and performance");
+    if (hasMdc) services.push("enable Microsoft Defender for Cloud, configure security policies, establish CSPM");
+    if (hasOda) services.push("provision Oracle Database@Azure, configure networking and connectivity, validate database performance");
+    if (!hasAks && !hasIntegration && !hasInfra && !hasOda) services.push("provision and configure Azure platform services, validate connectivity and performance");
     deliverables.push({
       title: title,
+      solutionPlay: sp ? sp.play : null, solutionPlayShort: sp ? sp.short : null, solutionPlayColor: sp ? sp.color : null, solutionPlayScenario: sp ? sp.scenario : null,
       services: services.join("; ") + ".",
       environment: "The service will be delivered using " + accelNames.join(", ") + ".",
       method: "The work will be carried out using a structured approach including assessment, strategy development, provisioning, deployment, and validation, following Microsoft Cloud Adoption Framework best practices.",
       technical: accelNames.join(", ") + " and supporting Azure platform services.",
       team: hasAks ? "Application architects, developers, and DevOps engineers" : hasIntegration ? "Integration architects and developers" : "Cloud architects and infrastructure engineers",
       hours: hasAks && hasIntegration ? 100 : hasAks ? 80 : hasIntegration ? 60 : hasInfra ? 80 : 40,
-      hoursPerWeek: 20,
-      workType: "Implementation (Post-Sales)"
+      hoursPerWeek: 20, workType: "Implementation (Post-Sales)"
     });
   }
 
@@ -1194,7 +1304,7 @@ function App() {
   };
 
   const C = useMemo(() => {
-    let el = 0, ot = 0, xcr = 0;
+    let el = 0, ot = 0, xcr = 0, odaAcr = 0;
     const rows = [];
     ITEMS.forEach((itm) => {
       const s = sel[itm.id];
@@ -1203,11 +1313,13 @@ function App() {
       const mo = s.mo || 0;
       const yr = mo * 12;
       if (itm.xcr) { xcr += yr; }
+      else if (itm.odaOnly) { odaAcr += yr; } // ODA ACR excluded from AFO & MCI - own Azure Accelerate offer
       else if (cat.elig) { el += yr; }
       else { ot += yr; }
-      rows.push({ id: itm.id, name: itm.name, tag: itm.tag, color: cat.color, elig: cat.elig, mo, yr, sku: s.sku || "", xcr: !!itm.xcr });
+      rows.push({ id: itm.id, name: itm.name, tag: itm.tag, color: cat.color, elig: cat.elig, mo, yr, sku: s.sku || "", xcr: !!itm.xcr, odaOnly: !!itm.odaOnly });
     });
-    const tot = el + ot; // ACR only (excludes XCR)
+    const tot = el + ot; // Fundable ACR (excludes XCR and ODA — used for AFO/MCI calculations)
+    const totAll = el + ot + odaAcr; // Total ACR including ODA (for display/SOW)
     const pct = tot > 0 ? (el / tot) * 100 : 0, ok = pct >= 50;
     const db = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "db"));
     const fab = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "fab"));
@@ -1257,7 +1369,7 @@ function App() {
     // Customer-visible funding = single-path amount (not split)
     const custFunding = ok ? (ecif + mci.pre) : Math.max(stdEcif, mci.pre + mci.post);
     const custFundingLabel = ok ? "AFO ECIF" + (mci.pre > 0 ? " + Assessment" : "") : (mci.pre + mci.post) >= stdEcif ? "MCI Partner Program" : "Standard ECIF";
-    return { el, ot, xcr, tot, pct, ok, rows, sc, ecif, stdEcif, db, fab, fo, accel, mci, recs, recCash, recCredits, recStrategy, custFunding, custFundingLabel };
+    return { el, ot, xcr, odaAcr, tot, totAll, pct, ok, rows, sc, ecif, stdEcif, db, fab, fo, accel, mci, recs, recCash, recCredits, recStrategy, custFunding, custFundingLabel, solutionPlays: getSolutionPlays(rows) };
   }, [sel]);
 
   const dyn = useMemo(() => getScope(C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn), [C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn]);
@@ -2299,6 +2411,16 @@ button{display:none!important}
                   </div>
                   <div style={{ fontSize: 10, color: "#999", marginTop: 4 }}>All nominations via Azure Offer Navigator (field-led) and/or Partner Center (partner-led).</div>
                 </div>
+
+                {/* ODA separate funding note */}
+                {C.odaAcr > 0 && (
+                  <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 6, padding: 10, marginBottom: 8 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#991b1b", marginBottom: 4 }}>⚠ Oracle Database@Azure — Separate Funding Path</div>
+                    <div style={{ fontSize: 11, color: "#7f1d1d", lineHeight: 1.6 }}>
+                      ODA ACR ({fmt(C.odaAcr)}/yr) is <strong>excluded</strong> from AFO and MCI calculations above. ODA has its own Azure Accelerate offer: &gt;$100K ACR, up to $500K ECIF via PSS nomination. Only drag-along workloads (Oracle→SQL, Oracle→PG) generate standard AFO ECIF.
+                    </div>
+                  </div>
+                )}
                 {/* ── ROI / BUSINESS CASE ── */}
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Business Case Summary</h2>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }} className="grid-2col">
@@ -2374,6 +2496,27 @@ button{display:none!important}
                   })()}
                 </div>
 
+                {/* ── SOLUTION PLAYS ── */}
+                {C.solutionPlays.length > 0 && (
+                  <div style={{ marginBottom: 16 }}>
+                    <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 8px", paddingBottom: 4, borderBottom: "2px solid #0078D4" }}>Solution Plays</h2>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 4 }}>
+                      {C.solutionPlays.map((sp, i) => (
+                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", background: sp.color + "10", border: "1px solid " + sp.color + "30", borderRadius: 6 }}>
+                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: sp.color, flexShrink: 0 }} />
+                          <div>
+                            <div style={{ fontSize: 11, fontWeight: 600, color: "#333" }}>{sp.play}</div>
+                            {sp.scenarios && sp.scenarios.length > 0 && (
+                              <div style={{ fontSize: 9, color: "#888", marginTop: 1 }}>Accelerate: {sp.scenarios.join(", ")}{sp.uplift ? " · " + sp.uplift : ""}</div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 4 }}>Solution Plays auto-mapped from selected workloads. Use for MSX Investment Request and AFO/MCI nomination.</div>
+                  </div>
+                )}
+
                 {/* ── ECIF MILESTONE DELIVERABLES ── */}
                 {msDeliverables.length > 0 && (
                   <>
@@ -2383,7 +2526,17 @@ button{display:none!important}
                       const displayTitle = msName || del.title;
                       return (
                       <div key={i} style={{ marginBottom: 16, padding: 12, background: "#f8f9fa", borderRadius: 8, border: "1px solid #e8e8ec", pageBreakInside: "avoid" }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#333", marginBottom: 8 }}>{i + 1}. {displayTitle}</div>
+                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#333" }}>{i + 1}. {displayTitle}</div>
+                          {del.solutionPlay && (
+                            <div style={{ display: "flex", gap: 4, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                              <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 6px", borderRadius: 4, background: del.solutionPlayColor + "18", color: del.solutionPlayColor, whiteSpace: "nowrap", border: "1px solid " + del.solutionPlayColor + "30" }}>{del.solutionPlay}</span>
+                              {del.solutionPlayScenario && del.solutionPlayScenario !== del.solutionPlay && (
+                                <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 6px", borderRadius: 4, background: "#f0f4fa", color: "#5b6b80", whiteSpace: "nowrap", border: "1px solid #e0e7ef" }}>{del.solutionPlayScenario}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
                         <div style={{ fontSize: 12, lineHeight: 1.7, color: "#666" }}>
                           <div style={{ marginBottom: 8 }}>
                             <span style={{ fontWeight: 600, color: "#334155" }}>Description of the Task:</span>
@@ -3024,13 +3177,15 @@ h1{page-break-after:avoid}
             <div style={{ background: HDR, padding: "16px 24px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>What's New</div>
-                <div style={{ fontSize: 11, opacity: 0.5 }}>v2.0 - March 2026</div>
+                <div style={{ fontSize: 11, opacity: 0.5 }}>v2.1 - March 2026</div>
               </div>
               <button onClick={() => setShowChangelog(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", color: "white", borderRadius: 8, padding: "4px 10px", cursor: "pointer", fontSize: 12, fontFamily: "inherit" }}>Close</button>
             </div>
             <div style={{ padding: "16px 24px", overflowY: "auto", flex: 1 }}>
               {[
-                { icon: "🎯", title: "AFO Pre-Assessment", desc: "8 questions to estimate funding potential before the workshop" },
+                { icon: "🎯", title: "Solution Plays Auto-Mapping", desc: "Workloads auto-map to MS Solution Plays (MSX) and Azure Accelerate Scenarios (MCI). Shown on milestone deliverables and in SOW." },
+                { icon: "⚠️", title: "ODA Funding Logic Fix", desc: "Oracle Database@Azure ACR now correctly excluded from AFO and MCI calculations. ODA has its own Azure Accelerate offer via PSS nomination." },
+                { icon: "📋", title: "AFO Pre-Assessment", desc: "8 questions to estimate funding potential before the workshop" },
                 { icon: "📈", title: "Consumption Ramp Timeline", desc: "Visual chart showing when each service starts consuming and monthly ACR build-up" },
                 { icon: "📋", title: "Funding Justification", desc: "Auto-generated section covering Strategic Alignment, Risk, ROI and Program fit for nominations" },
                 { icon: "⬇", title: "Export / Import Cases", desc: "Save cases as JSON files and share with colleagues or load on another device" },
@@ -3041,7 +3196,7 @@ h1{page-break-after:avoid}
                 { icon: "🔒", title: "Access Code", desc: "Password protection for partner and field use" },
                 { icon: "✨", title: "Design Polish", desc: "Consolidated typography, spacing, and colors for a cleaner look" },
               ].map((item, i) => (
-                <div key={i} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: i < 9 ? "1px solid #f0f0f0" : "none" }}>
+                <div key={i} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: i < 11 ? "1px solid #f0f0f0" : "none" }}>
                   <span style={{ fontSize: 20, flexShrink: 0, marginTop: 2 }}>{item.icon}</span>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: "#333" }}>{item.title}</div>
