@@ -989,7 +989,18 @@ function App() {
       const res = await window.storage.get(key);
       if (res && res.value) {
         const data = JSON.parse(res.value);
-        if (data.sow) setSow(data.sow);
+        if (data.sow) {
+          // Normalize milestone fields from JSON (name→n, desc→d, hours→h, date→x)
+          if (data.sow.milestones) {
+            data.sow.milestones = data.sow.milestones.map(ms => ({
+              n: ms.n || ms.name || "",
+              h: ms.h || ms.hours || "",
+              d: ms.d || ms.desc || "",
+              x: ms.x || ms.date || "",
+            }));
+          }
+          setSow(prev => ({ ...prev, ...data.sow }));
+        }
         if (data.sel) setSel(data.sel);
         setSaveStatus("Loaded: " + (data.name || key));
         setShowSaves(false);
@@ -1030,7 +1041,23 @@ function App() {
     reader.onload = (ev) => {
       try {
         const data = JSON.parse(ev.target.result);
-        if (data.sow) setSow(data.sow);
+        if (data.sow) {
+          // Merge with defaults to prevent missing fields
+          setSow(prev => {
+            const merged = { ...prev, ...data.sow };
+            // Ensure milestones have correct shape
+            if (data.sow.milestones) {
+              merged.milestones = data.sow.milestones.map(m => ({
+                n: m.n || m.name || "",
+                h: m.h || m.hours || "",
+                d: m.d || m.date || "",
+                x: m.x || m.desc || ""
+              }));
+            }
+            if (!merged.customRows) merged.customRows = [];
+            return merged;
+          });
+        }
         if (data.sel) {
           setSel(data.sel);
           setExCat(prev => {
@@ -2093,7 +2120,7 @@ button{display:none!important}
                             <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", height: "100%" }}>
                               <div style={{ height: (d.total / maxMo * 100) + "%", display: "flex", flexDirection: "column-reverse", borderRadius: "4px 4px 0 0", overflow: "hidden", transition: "height 0.3s", minHeight: d.total > 0 ? 2 : 0 }}>
                                 {d.breakdown.map((b, j) => (
-                                  <div key={j} style={{ height: (b.mo / d.total * 100) + "%", background: b.color, minHeight: 1 }} title={b.name + ": " + fmt(b.mo) + "/mo"} />
+                                  <div key={j} style={{ height: (d.total > 0 ? (b.mo / d.total * 100) : 0) + "%", background: b.color, minHeight: 1 }} title={b.name + ": " + fmt(b.mo) + "/mo"} />
                                 ))}
                               </div>
                             </div>
