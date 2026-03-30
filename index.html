@@ -2246,6 +2246,50 @@ button{display:none!important}
                   </div>
                 )}
 
+
+                {/* ── FUNDING JUSTIFICATION ── */}
+                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 8px", paddingBottom: 4, borderBottom: "2px solid #0078D4" }}>Funding Justification</h2>
+                <div style={{ marginBottom: 16, fontSize: 12, lineHeight: 1.8, color: "#666" }}>
+                  {(() => {
+                    const cn = sow.cn === "[CUSTOMER NAME]" ? "the customer" : sow.cn;
+                    const hasDb = C.db;
+                    const hasFab = C.fab;
+                    const hasFo = C.fo;
+                    const hasAccel = C.accel;
+                    const workloadTypes = [hasDb && "database modernization", hasFab && "analytics/Fabric", hasFo && "AI Foundry", hasAccel && "cloud-native infrastructure"].filter(Boolean);
+                    const wlStr = workloadTypes.length > 1 ? workloadTypes.slice(0, -1).join(", ") + " and " + workloadTypes[workloadTypes.length - 1] : workloadTypes[0] || "Azure modernization";
+
+                    return (
+                      <div>
+                        <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Strategic Alignment</div>
+                        <div style={{ marginBottom: 12, paddingLeft: 8 }}>
+                          This project directly supports Microsoft's {C.ok ? "Azure Frontier Offer (AFO)" : "Azure Accelerate"} objectives by driving {wlStr} consumption in the Swedish mid-market. {hasDb ? "Database migration from on-premises to Azure PaaS reduces competitive exposure to AWS RDS/Aurora and Google Cloud SQL. " : ""}{hasFab ? "Fabric adoption displaces competing analytics platforms (Snowflake, Databricks standalone, Google BigQuery) and consolidates the customer on Microsoft's unified data platform. " : ""}{hasFo ? "AI Foundry workloads establish Azure as the customer's AI platform, pre-empting AWS Bedrock and Google Vertex AI. " : ""}Estimated Y1 ACR: {fmt(C.tot)}{C.ok ? " with " + C.pct.toFixed(0) + "% AFO eligible workloads." : "."}
+                        </div>
+
+                        <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Customer & Partner Financial Commitment</div>
+                        <div style={{ marginBottom: 12, paddingLeft: 8 }}>
+                          {cn} commits to {fmt(C.tot)}/yr in Azure consumption ({fmt(C.tot / 12)}/mo). {mCalc.totalE > 0 ? "The partner (Accigo) invests " + fmt(mCalc.totalE) + " in implementation services. " : "Partner implementation scope to be confirmed. "}Microsoft's co-investment of {fmt(C.custFunding)} represents a {C.tot > 0 ? (C.custFunding / C.tot * 100).toFixed(1) : 0}% investment relative to Y1 ACR - well within the {C.ok ? "2:1 ROI" : "3:1-7:1 ROI"} framework. The customer bears 100% of Azure consumption cost.
+                        </div>
+
+                        <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Soft Outcomes for Microsoft</div>
+                        <div style={{ marginBottom: 12, paddingLeft: 8 }}>
+                          {hasDb ? "Migrating " + C.rows.filter(r => ITEMS.find(i => i.id === r.id && i.cat === "db")).length + " database workload(s) to Azure PaaS creates long-term platform lock-in and recurring consumption. " : ""}{hasFab ? "Fabric consolidation replaces fragmented BI tooling and creates a referenceable Swedish customer case for Microsoft Fabric. " : ""}{hasFo ? "AI Foundry adoption positions " + cn + " as an early AI adopter in the Swedish market - potential reference customer for Foundry go-to-market. " : ""}Successful delivery strengthens the Accigo partnership and creates a repeatable model for similar mid-market customers.
+                        </div>
+
+                        <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Risk if Funding Not Approved</div>
+                        <div style={{ marginBottom: 12, paddingLeft: 8 }}>
+                          Without co-investment, the project timeline extends 6-12 months as {cn} will need to self-fund the entire implementation. This increases the risk of competitive displacement - {hasDb ? "AWS and GCP are actively targeting database migration opportunities" : "competitors are actively prospecting"} in this segment. The partner (Accigo) has capacity allocated now; delay risks losing partner commitment to other projects. {C.ok ? "AFO funding is first-come-first-served and may not be available in H2." : ""}
+                        </div>
+
+                        <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Why This Program</div>
+                        <div style={{ paddingLeft: 8 }}>
+                          {C.ok ? "AFO/ECIF is the optimal program because " + C.pct.toFixed(0) + "% of projected ACR falls within eligible workload categories (DB/Fabric/AI Foundry), exceeding the 50% threshold. Standard ECIF would yield only " + fmtRange(C.tot) + " (3:1-7:1 ROI) vs AFO's " + fmt(C.ecif) + " (2:1 ROI). MCI Partner-Led (" + fmt(C.mci.pre + C.mci.post) + ") is available but cannot be stacked with ECIF on the same project scope." : "MCI Partner-Led is recommended as the primary path since AFO eligible workloads represent only " + C.pct.toFixed(0) + "% of ACR (below 50% threshold). Standard ECIF (" + fmtRange(C.tot) + ") is the alternative but offers lower funding. MCI provides " + fmt(C.mci.pre + C.mci.post) + " without field nomination dependency."}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+
                 {/* ── ASSUMPTIONS ── */}
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Assumptions & Dependencies</h2>
                 <div style={{ marginBottom: 16, fontSize: 13, lineHeight: 1.7, color: "#666" }}>
