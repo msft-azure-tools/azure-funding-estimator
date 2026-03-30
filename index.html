@@ -517,6 +517,88 @@ function getRisks(rows) {
   return risks.slice(0, 5);
 }
 
+/* ECIF Milestone Deliverables - auto-generated per workload category */
+function getMilestoneDeliverables(rows, cust) {
+  const cats = new Set();
+  const ids = new Set();
+  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.id); if (itm) { cats.add(itm.cat); ids.add(r.id); } });
+  const cn = cust === "[CUSTOMER NAME]" ? "the customer" : cust;
+  const deliverables = [];
+
+  if (cats.has("db")) {
+    const dbNames = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "db"; }).map(r => r.name);
+    const dbCount = dbNames.length;
+    deliverables.push({
+      title: "Database Migration and Modernization",
+      services: "Conduct database discovery and assessment, develop a migration strategy and wave plan, execute migration and validation, and perform performance tuning and operational handover.",
+      environment: "The service will be delivered on " + dbNames.join(", ") + " using Azure Database services for migration/modernization, with Azure landing zone and security controls.",
+      method: "The work will be carried out using a structured approach including database discovery, assessment, strategy development, execution, and validation, following Microsoft Cloud Adoption Framework best practices.",
+      technical: "Azure Database services (" + dbNames.join(", ") + "), Azure landing zone with security controls, Azure Migrate, Database Migration Service.",
+      team: "Database architects and migration specialists",
+      hours: Math.max(40, dbCount * 30),
+      hoursPerWeek: 20,
+      workType: "Implementation (Post-Sales)"
+    });
+  }
+
+  if (cats.has("fab")) {
+    const fabNames = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "fab"; }).map(r => r.name + (r.sku ? " (" + r.sku + ")" : ""));
+    deliverables.push({
+      title: "Unified Analytics Platform Establishment",
+      services: "Design analytics architecture, provision Fabric capacity, develop data pipelines (Bronze/Silver/Gold), create semantic models and reports, and establish a governance framework.",
+      environment: "The service will be delivered using Microsoft Fabric (" + fabNames.join(", ") + "), OneLake, and Power BI.",
+      method: "The work will be carried out using a structured approach including architecture design, capacity provisioning, pipeline development, semantic model creation, and governance framework establishment, following best practices.",
+      technical: "Microsoft Fabric (" + fabNames.join(", ") + "), OneLake, Power BI, Azure Data Factory for pipeline orchestration.",
+      team: "Data architects, data engineers, and BI analysts",
+      hours: 120,
+      hoursPerWeek: 20,
+      workType: "Implementation (Post-Sales)"
+    });
+  }
+
+  if (cats.has("fo")) {
+    const foNames = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "fo"; }).map(r => r.name);
+    deliverables.push({
+      title: "AI Platform and Foundry Deployment",
+      services: "Design AI reference architecture, provision AI Foundry, implement RAG pipeline with data grounding, develop pilot AI agent/Copilot scenario, and establish AI governance model.",
+      environment: "The service will be delivered using Azure AI Foundry (" + foNames.join(", ") + ") with Responsible AI governance controls.",
+      method: "The work will be carried out using a structured approach including architecture design, model selection, RAG pipeline implementation, pilot development, and safety validation, following Microsoft Responsible AI principles.",
+      technical: "Azure AI Foundry, " + foNames.join(", ") + ", Azure AI Search for RAG grounding, Azure Key Vault for secrets management.",
+      team: "AI architects, ML engineers, and data scientists",
+      hours: 80,
+      hoursPerWeek: 20,
+      workType: "Implementation (Post-Sales)"
+    });
+  }
+
+  const accelItems = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "accel"; });
+  if (accelItems.length > 0) {
+    const hasAks = ids.has("aks");
+    const hasIntegration = ids.has("logicapps") || ids.has("servicebus") || ids.has("eventgrid") || ids.has("apim");
+    const hasInfra = ids.has("infra-win") || ids.has("infra-linux") || ids.has("infra-mdc");
+    const accelNames = accelItems.map(r => r.name);
+    const title = hasAks && hasIntegration ? "Application and Integration Modernization" : hasAks ? "Application Modernization" : hasIntegration ? "Integration Platform Modernization" : hasInfra ? "Infrastructure Migration" : "Cloud Platform Deployment";
+    const services = [];
+    if (hasAks) services.push("conduct application portfolio assessment, develop container strategy and architecture, provision AKS cluster, containerize and deploy applications, set up CI/CD pipeline");
+    if (hasIntegration) services.push("migrate integration workflows to Azure Logic Apps, configure Service Bus messaging, set up API Management gateway");
+    if (hasInfra) services.push("execute server migration waves, configure landing zone networking, validate performance post-migration");
+    if (!hasAks && !hasIntegration && !hasInfra) services.push("provision and configure Azure platform services, validate connectivity and performance");
+    deliverables.push({
+      title: title,
+      services: services.join("; ") + ".",
+      environment: "The service will be delivered using " + accelNames.join(", ") + ".",
+      method: "The work will be carried out using a structured approach including assessment, strategy development, provisioning, deployment, and validation, following Microsoft Cloud Adoption Framework best practices.",
+      technical: accelNames.join(", ") + " and supporting Azure platform services.",
+      team: hasAks ? "Application architects, developers, and DevOps engineers" : hasIntegration ? "Integration architects and developers" : "Cloud architects and infrastructure engineers",
+      hours: hasAks && hasIntegration ? 100 : hasAks ? 80 : hasIntegration ? 60 : hasInfra ? 80 : 40,
+      hoursPerWeek: 20,
+      workType: "Implementation (Post-Sales)"
+    });
+  }
+
+  return deliverables;
+}
+
 /* Debounced input components - prevents full App re-render on every keystroke */
 function DInp({ v, fn, st, ph }) {
   const [local, setLocal] = useState(v);
@@ -1183,6 +1265,7 @@ function App() {
   const assumptions = useMemo(() => getAssumptions(C.rows), [C.rows]);
   const acceptance = useMemo(() => getAcceptance(sow.milestones.map(m => m.n), C.rows), [sow.milestones, C.rows]);
   const risks = useMemo(() => getRisks(C.rows), [C.rows]);
+  const msDeliverables = useMemo(() => getMilestoneDeliverables(C.rows, sow.cn), [C.rows, sow.cn]);
 
   // Milestone ECIF auto-calc
   const mCalc = useMemo(() => {
@@ -2264,22 +2347,22 @@ button{display:none!important}
                       <div>
                         <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Strategic Alignment</div>
                         <div style={{ marginBottom: 12, paddingLeft: 8 }}>
-                          This project directly supports Microsoft's {C.ok ? "Azure Frontier Offer (AFO)" : "Azure Accelerate"} objectives by driving {wlStr} consumption in the Swedish mid-market. {hasDb ? "Database migration from on-premises to Azure PaaS reduces competitive exposure to AWS RDS/Aurora and Google Cloud SQL. " : ""}{hasFab ? "Fabric adoption displaces competing analytics platforms (Snowflake, Databricks standalone, Google BigQuery) and consolidates the customer on Microsoft's unified data platform. " : ""}{hasFo ? "AI Foundry workloads establish Azure as the customer's AI platform, pre-empting AWS Bedrock and Google Vertex AI. " : ""}Estimated Y1 ACR: {fmt(C.tot)}{C.ok ? " with " + C.pct.toFixed(0) + "% AFO eligible workloads." : "."}
+                          This project directly supports Microsoft's {C.ok ? "Azure Frontier Offer (AFO)" : "Azure Accelerate"} objectives by driving {wlStr} consumption in the mid-market segment. {hasDb ? "Database migration from on-premises to Azure PaaS reduces competitive exposure to AWS RDS/Aurora and Google Cloud SQL. " : ""}{hasFab ? "Fabric adoption displaces competing analytics platforms (Snowflake, Databricks standalone, Google BigQuery) and consolidates the customer on Microsoft's unified data platform. " : ""}{hasFo ? "AI Foundry workloads establish Azure as the customer's AI platform, pre-empting AWS Bedrock and Google Vertex AI. " : ""}Estimated Y1 ACR: {fmt(C.tot)}{C.ok ? " with " + C.pct.toFixed(0) + "% AFO eligible workloads." : "."}
                         </div>
 
                         <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Customer & Partner Financial Commitment</div>
                         <div style={{ marginBottom: 12, paddingLeft: 8 }}>
-                          {cn} commits to {fmt(C.tot)}/yr in Azure consumption ({fmt(C.tot / 12)}/mo). {mCalc.totalE > 0 ? "The partner (Accigo) invests " + fmt(mCalc.totalE) + " in implementation services. " : "Partner implementation scope to be confirmed. "}Microsoft's co-investment of {fmt(C.custFunding)} represents a {C.tot > 0 ? (C.custFunding / C.tot * 100).toFixed(1) : 0}% investment relative to Y1 ACR - well within the {C.ok ? "2:1 ROI" : "3:1-7:1 ROI"} framework. The customer bears 100% of Azure consumption cost.
+                          {cn} commits to {fmt(C.tot)}/yr in Azure consumption ({fmt(C.tot / 12)}/mo). {mCalc.totalE > 0 ? "The partner (" + (sow.sup || "TBD").replace(/ \(External\)/,"").replace(/ \(Internal\)/,"") + ") invests " + fmt(mCalc.totalE) + " in implementation services. " : "Partner implementation scope to be confirmed. "}Microsoft's co-investment of {fmt(C.custFunding)} represents a {C.tot > 0 ? (C.custFunding / C.tot * 100).toFixed(1) : 0}% investment relative to Y1 ACR - well within the {C.ok ? "2:1 ROI" : "3:1-7:1 ROI"} framework. The customer bears 100% of Azure consumption cost.
                         </div>
 
                         <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Soft Outcomes for Microsoft</div>
                         <div style={{ marginBottom: 12, paddingLeft: 8 }}>
-                          {hasDb ? "Migrating " + C.rows.filter(r => ITEMS.find(i => i.id === r.id && i.cat === "db")).length + " database workload(s) to Azure PaaS creates long-term platform lock-in and recurring consumption. " : ""}{hasFab ? "Fabric consolidation replaces fragmented BI tooling and creates a referenceable Swedish customer case for Microsoft Fabric. " : ""}{hasFo ? "AI Foundry adoption positions " + cn + " as an early AI adopter in the Swedish market - potential reference customer for Foundry go-to-market. " : ""}Successful delivery strengthens the Accigo partnership and creates a repeatable model for similar mid-market customers.
+                          {hasDb ? "Migrating " + C.rows.filter(r => ITEMS.find(i => i.id === r.id && i.cat === "db")).length + " database workload(s) to Azure PaaS creates long-term platform lock-in and recurring consumption. " : ""}{hasFab ? "Fabric consolidation replaces fragmented BI tooling and creates a referenceable customer case for Microsoft Fabric. " : ""}{hasFo ? "AI Foundry adoption positions " + cn + " as an early AI adopter in the market - potential reference customer for Foundry go-to-market. " : ""}Successful delivery strengthens the partner relationship and creates a repeatable model for similar mid-market customers.
                         </div>
 
                         <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Risk if Funding Not Approved</div>
                         <div style={{ marginBottom: 12, paddingLeft: 8 }}>
-                          Without co-investment, the project timeline extends 6-12 months as {cn} will need to self-fund the entire implementation. This increases the risk of competitive displacement - {hasDb ? "AWS and GCP are actively targeting database migration opportunities" : "competitors are actively prospecting"} in this segment. The partner (Accigo) has capacity allocated now; delay risks losing partner commitment to other projects. {C.ok ? "AFO funding is first-come-first-served and may not be available in H2." : ""}
+                          Without co-investment, the project timeline extends 6-12 months as {cn} will need to self-fund the entire implementation. This increases the risk of competitive displacement - {hasDb ? "AWS and GCP are actively targeting database migration opportunities" : "competitors are actively prospecting"} in this segment. The partner has capacity allocated now; delay risks losing partner commitment to other projects. {C.ok ? "AFO funding is first-come-first-served and may not be available in H2." : ""}
                         </div>
 
                         <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Why This Program</div>
@@ -2290,6 +2373,50 @@ button{display:none!important}
                     );
                   })()}
                 </div>
+
+                {/* ── ECIF MILESTONE DELIVERABLES ── */}
+                {msDeliverables.length > 0 && (
+                  <>
+                    <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 8px", paddingBottom: 4, borderBottom: "2px solid #0078D4" }}>ECIF Milestone Deliverables</h2>
+                    {msDeliverables.map((del, i) => (
+                      <div key={i} style={{ marginBottom: 16, padding: 12, background: "#f8f9fa", borderRadius: 8, border: "1px solid #e8e8ec", pageBreakInside: "avoid" }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#333", marginBottom: 8 }}>{i + 1}. {del.title}</div>
+                        <div style={{ fontSize: 12, lineHeight: 1.7, color: "#666" }}>
+                          <div style={{ marginBottom: 8 }}>
+                            <span style={{ fontWeight: 600, color: "#334155" }}>Description of the Task:</span>
+                            <div style={{ paddingLeft: 8, marginTop: 2 }}>
+                              <div><span style={{ fontWeight: 600 }}>Services:</span> {del.services}</div>
+                              <div><span style={{ fontWeight: 600 }}>Customer environment:</span> {del.environment}</div>
+                              <div><span style={{ fontWeight: 600 }}>Execution method:</span> {del.method}</div>
+                            </div>
+                          </div>
+                          <div style={{ marginBottom: 4 }}>
+                            <span style={{ fontWeight: 600, color: "#334155" }}>Technical Considerations:</span> {del.technical}
+                          </div>
+                          <div style={{ marginBottom: 4 }}>
+                            <span style={{ fontWeight: 600, color: "#334155" }}>Scope and Responsibilities:</span> The responsible team will include {del.team}, who will be responsible for executing the deliverables above.
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 8, padding: "8px 0", borderTop: "1px solid #e8e8ec" }} className="grid-3col">
+                            <div style={{ background: "#eff6ff", padding: 8, borderRadius: 6, textAlign: "center" }}>
+                              <div style={{ fontSize: 10, color: "#64748b" }}>Hours</div>
+                              <div style={{ fontSize: 16, fontWeight: 700, color: "#0078D4" }}>{del.hours}h</div>
+                              <div style={{ fontSize: 10, color: "#999" }}>{del.hoursPerWeek}h/week</div>
+                            </div>
+                            <div style={{ background: "#ecfdf5", padding: 8, borderRadius: 6, textAlign: "center" }}>
+                              <div style={{ fontSize: 10, color: "#64748b" }}>Duration</div>
+                              <div style={{ fontSize: 16, fontWeight: 700, color: "#059669" }}>{Math.ceil(del.hours / del.hoursPerWeek)}w</div>
+                              <div style={{ fontSize: 10, color: "#999" }}>{Math.ceil(del.hours / del.hoursPerWeek)} weeks</div>
+                            </div>
+                            <div style={{ background: "#f5f3ff", padding: 8, borderRadius: 6, textAlign: "center" }}>
+                              <div style={{ fontSize: 10, color: "#64748b" }}>Work Type</div>
+                              <div style={{ fontSize: 11, fontWeight: 600, color: "#7c3aed", marginTop: 4 }}>{del.workType}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
 
                 {/* ── ASSUMPTIONS ── */}
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Assumptions & Dependencies</h2>
