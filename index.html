@@ -2378,9 +2378,12 @@ button{display:none!important}
                 {msDeliverables.length > 0 && (
                   <>
                     <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 8px", paddingBottom: 4, borderBottom: "2px solid #0078D4" }}>ECIF Milestone Deliverables</h2>
-                    {msDeliverables.map((del, i) => (
+                    {msDeliverables.map((del, i) => {
+                      const msName = sow.milestones[i] && sow.milestones[i].n ? sow.milestones[i].n : "";
+                      const displayTitle = msName || del.title;
+                      return (
                       <div key={i} style={{ marginBottom: 16, padding: 12, background: "#f8f9fa", borderRadius: 8, border: "1px solid #e8e8ec", pageBreakInside: "avoid" }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#333", marginBottom: 8 }}>{i + 1}. {del.title}</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#333", marginBottom: 8 }}>{i + 1}. {displayTitle}</div>
                         <div style={{ fontSize: 12, lineHeight: 1.7, color: "#666" }}>
                           <div style={{ marginBottom: 8 }}>
                             <span style={{ fontWeight: 600, color: "#334155" }}>Description of the Task:</span>
@@ -2399,7 +2402,7 @@ button{display:none!important}
 
                         </div>
                       </div>
-                    ))}
+                    )})}
                   </>
                 )}
 
