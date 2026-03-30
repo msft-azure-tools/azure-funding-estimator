@@ -634,6 +634,7 @@ function App() {
   };
 
   // ── AFO Pre-Assessment Questionnaire ──
+  const [conStart, setConStart] = useState({});
   const [showQuest, setShowQuest] = useState(false);
   const [qStep, setQStep] = useState(0);
   const [qAns, setQAns] = useState({ dbTypes: [], dbCount: "", viewers: "", hasPremium: "", aiInterest: "", dataVolume: "", realtime: "", integration: "", dataSources: "", agreement: "", hasAzure: "" });
@@ -2031,6 +2032,96 @@ button{display:none!important}
                       </div>
                       {custPays > 0 && <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 6, textAlign: "center" }}>Partner decides how to allocate ECIF across milestones - maximum flexibility</div>}
                       {pct >= 100 && <div style={{ fontSize: 10, color: "#059669", marginTop: 6, textAlign: "center", fontWeight: 600 }}>✓ Entire project covered by Microsoft co-investment</div>}
+                    </div>
+                  );
+                })()}
+
+                {/* ── Consumption Ramp Timeline ── */}
+                {C.rows.length > 0 && (() => {
+                  // Calculate monthly ACR ramp over 12 months
+                  const months = Array.from({length: 12}, (_, i) => i + 1);
+                  const colors = ["#0078D4", "#059669", "#7c3aed", "#f59e0b", "#dc2626", "#0ea5e9", "#84cc16", "#e11d48", "#6366f1", "#14b8a6"];
+                  
+                  // Assign default start months based on workload type
+                  const getDefaultStart = (id) => {
+                    const itm = ITEMS.find(i => i.id === id);
+                    if (!itm) return 1;
+                    if (itm.cat === "db") return 3; // DBs start after assessment
+                    if (itm.cat === "fab") return 4; // Fabric after DB migration
+                    if (itm.cat === "fo") return 4; // AI after data is ready
+                    if (itm.cat === "accel") return 2; // Infra early
+                    return 2;
+                  };
+
+                  const activeRows = C.rows.filter(r => r.mo > 50).slice(0, 8); // Top 8 by cost, skip tiny ones
+                  
+                  // Build monthly data
+                  const monthlyData = months.map(m => {
+                    let total = 0;
+                    const breakdown = [];
+                    activeRows.forEach((r, idx) => {
+                      const start = conStart[r.id] || getDefaultStart(r.id);
+                      if (m >= start) {
+                        total += r.mo;
+                        breakdown.push({ name: r.name, mo: r.mo, color: colors[idx % colors.length] });
+                      }
+                    });
+                    return { month: m, total, breakdown };
+                  });
+
+                  const maxMo = Math.max(...monthlyData.map(d => d.total), 1);
+                  const y1Total = monthlyData.reduce((s, d) => s + d.total, 0);
+
+                  return (
+                    <div style={{ marginBottom: 12 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>Consumption Ramp (Monthly ACR)</div>
+                        <div style={{ fontSize: 11, color: "#666" }}>Y1 realized: <strong>{fmt(y1Total)}</strong></div>
+                      </div>
+
+                      {/* Stacked bar chart */}
+                      <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 120, marginBottom: 4, padding: "0 0 20px", position: "relative" }}>
+                        {/* Y-axis labels */}
+                        <div style={{ position: "absolute", left: 0, top: 0, bottom: 20, width: 45, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                          <span style={{ fontSize: 10, color: "#999" }}>{fmt(maxMo)}</span>
+                          <span style={{ fontSize: 10, color: "#999" }}>{fmt(maxMo / 2)}</span>
+                          <span style={{ fontSize: 10, color: "#999" }}>$0</span>
+                        </div>
+                        {/* Bars */}
+                        <div style={{ display: "flex", alignItems: "flex-end", gap: 2, flex: 1, height: "100%", marginLeft: 48 }}>
+                          {monthlyData.map((d, i) => (
+                            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", height: "100%" }}>
+                              <div style={{ height: (d.total / maxMo * 100) + "%", display: "flex", flexDirection: "column-reverse", borderRadius: "4px 4px 0 0", overflow: "hidden", transition: "height 0.3s", minHeight: d.total > 0 ? 2 : 0 }}>
+                                {d.breakdown.map((b, j) => (
+                                  <div key={j} style={{ height: (b.mo / d.total * 100) + "%", background: b.color, minHeight: 1 }} title={b.name + ": " + fmt(b.mo) + "/mo"} />
+                                ))}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {/* X-axis labels */}
+                      <div style={{ display: "flex", gap: 2, marginLeft: 48 }}>
+                        {months.map(m => (
+                          <div key={m} style={{ flex: 1, textAlign: "center", fontSize: 10, color: "#999" }}>M{m}</div>
+                        ))}
+                      </div>
+
+                      {/* Start month controls */}
+                      <div style={{ marginTop: 8, fontSize: 11, fontWeight: 600, color: "#666", marginBottom: 4 }}>Consumption start per workload:</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }} className="grid-2col">
+                        {activeRows.map((r, idx) => (
+                          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
+                            <div style={{ width: 8, height: 8, borderRadius: 2, background: colors[idx % colors.length], flexShrink: 0 }} />
+                            <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#666" }}>{r.name}</span>
+                            <select value={conStart[r.id] || getDefaultStart(r.id)} onChange={(e) => setConStart(p => ({ ...p, [r.id]: +e.target.value }))} style={{ padding: "1px 4px", border: "1px solid #ddd", borderRadius: 4, fontSize: 11, background: "white", cursor: "pointer" }}>
+                              {months.map(m => <option key={m} value={m}>M{m}</option>)}
+                            </select>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div style={{ fontSize: 10, color: "#999", marginTop: 8, fontStyle: "italic" }}>Adjust start months to show realistic ramp-up. Earlier consumption = stronger AFO case.</div>
                     </div>
                   );
                 })()}
