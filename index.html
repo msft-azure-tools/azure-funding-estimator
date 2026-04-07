@@ -2225,7 +2225,7 @@ button{display:none!important}
                     <p style={{ margin: "0 0 8px" }}><strong>What it does:</strong> Estimates Azure workload costs across 47 services, calculates potential funding through AFO (ECIF), Standard ECIF, and MCI Partner Nominated programs, generates Statements of Work, and produces customer-facing investment summaries.</p>
                     <p style={{ margin: "0 0 8px" }}><strong>Data sources:</strong> Azure list pricing (approximate, March 2026), Microsoft Commercial Partner Incentives Guide (9 March 2026, Market A), and Azure Frontier Offer partner documentation.</p>
                     <p style={{ margin: "0 0 8px" }}><strong>Limitations:</strong> All prices are planning estimates - actual Azure pricing varies by region, tier, and negotiated discounts. Funding amounts are indicative and subject to Microsoft internal approval, program availability, and eligibility verification. Always validate with Azure Pricing Calculator and your Microsoft PSS/account team before submitting nominations.</p>
-                    <p style={{ margin: "0 0 4px" }}><strong>Coverage:</strong> 58 workloads · 6 categories · 7 quick-start scenarios · Fabric F-SKU pricing (F2-F256) · RI and AHUB options · MCI Market A tiers (XXS-L) · AFO 50% eligibility engine · Smart split recommendations · Dynamic SOW with milestones · Customer-facing summary view</p>
+                    <p style={{ margin: "0 0 4px" }}><strong>Coverage:</strong> 58 workloads · 6 categories · 7 quick-start scenarios · Fabric F-SKU pricing (F2-F256) · Phased SKU upgrade ramps · RI and AHUB options · MCI Market A tiers (XXS-L) · AFO 50% eligibility engine · Smart split recommendations · Dynamic SOW with milestones · ECIF Workscope .xlsx export · Customer-facing summary view</p>
                   </div>
                 )}
               </div>
@@ -3504,12 +3504,14 @@ h1{page-break-after:avoid}
             <div style={{ background: HDR, padding: "16px 24px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>What's New</div>
-                <div style={{ fontSize: 11, opacity: 0.5 }}>v2.1 - March 2026</div>
+                <div style={{ fontSize: 11, opacity: 0.5 }}>v2.2 - April 2026</div>
               </div>
               <button onClick={() => setShowChangelog(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", color: "white", borderRadius: 8, padding: "4px 10px", cursor: "pointer", fontSize: 12, fontFamily: "inherit" }}>Close</button>
             </div>
             <div style={{ padding: "16px 24px", overflowY: "auto", flex: 1 }}>
               {[
+                { icon: "📊", title: "Phased Fabric SKU Ramps (NEW)", desc: "Model F16 → F32 → F64 capacity upgrades within a single Fabric row. Click '+ ramp' next to PAYG/Reserved to add upgrade phases with start months. Auto-computes blended monthly avg + exact Y1 total. SOW shows the full ramp chain with PHASED RAMP badge and schedule line. Consumption Ramp chart now visualizes real stepping instead of flat lines." },
+                { icon: "📤", title: "ECIF Workscope Export (NEW)", desc: "One-click export of the SOW to Microsoft's Universal v2.1 .xlsx template, ready for direct upload to the ECIF Workscope app. Customer, partner, milestones, scope, and rate card all auto-mapped. Click '▸ ECIF Export' next to Export Word in the SOW. No more manual re-entry for partners." },
                 { icon: "🎯", title: "Solution Plays Auto-Mapping", desc: "Workloads auto-map to MS Solution Plays (MSX) and Azure Accelerate Scenarios (MCI). Shown on milestone deliverables and in SOW." },
                 { icon: "⚠️", title: "ODA Funding Logic Fix", desc: "Oracle Database@Azure ACR now correctly excluded from AFO and MCI calculations. ODA has its own Azure Accelerate offer via PSS nomination." },
                 { icon: "📋", title: "AFO Pre-Assessment", desc: "8 questions to estimate funding potential before the workshop" },
@@ -3522,8 +3524,8 @@ h1{page-break-after:avoid}
                 { icon: "📊", title: "Strategy-Aware SOW", desc: "Top bar adapts to show AFO or MCI path based on your workloads" },
                 { icon: "🔒", title: "Access Code", desc: "Password protection for partner and field use" },
                 { icon: "✨", title: "Design Polish", desc: "Consolidated typography, spacing, and colors for a cleaner look" },
-              ].map((item, i) => (
-                <div key={i} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: i < 11 ? "1px solid #f0f0f0" : "none" }}>
+              ].map((item, i, arr) => (
+                <div key={i} style={{ display: "flex", gap: 12, padding: "10px 0", borderBottom: i < arr.length - 1 ? "1px solid #f0f0f0" : "none" }}>
                   <span style={{ fontSize: 20, flexShrink: 0, marginTop: 2 }}>{item.icon}</span>
                   <div>
                     <div style={{ fontSize: 13, fontWeight: 600, color: "#333" }}>{item.title}</div>
