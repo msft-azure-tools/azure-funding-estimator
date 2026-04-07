@@ -1475,6 +1475,11 @@ function App() {
       if (field === "qty" && itm.fab) recalcFab();
       if (field === "ri" && itm.fab) recalcFab();
       if (field === "phases" && itm.fab) recalcFab();
+      if (field === "baselineSku" && itm.fab) {
+        // Empty string means "clear baseline"
+        if (val === "" || val === null) delete n.baselineSku;
+        // Recalc not needed since baseline only affects funding calculation, not display mo
+      }
       if (field === "riTerm" && itm.riOpts) {
         const opt = itm.riOpts.find(o => o.k === val);
         n.mo = (n.qty || itm.dq) * (opt ? opt.up : itm.up);
@@ -1486,6 +1491,7 @@ function App() {
 
   const C = useMemo(() => {
     let el = 0, ot = 0, xcr = 0, odaAcr = 0;
+    let elFull = 0, otFull = 0; // Full (customer-pays) totals for display
     const rows = [];
     ITEMS.forEach((itm) => {
       const s = sel[itm.id];
@@ -1495,14 +1501,20 @@ function App() {
       const phased = itm.fab && s.phases && s.phases.length > 1 ? computeFabPhased(s.phases, s.qty || 1, s.ri) : null;
       const mo = phased ? phased.mo : (s.mo || 0);
       const yr = phased ? phased.yr : mo * 12;
+      // Baseline: existing customer consumption that is NOT incremental.
+      // Per AFO rules, only incremental Y1 ACR counts toward eligibility/funding.
+      // Currently supported on Fabric rows where customer may already run a base SKU.
+      const baselineYr = itm.fab && s.baselineSku ? skuMo(s.baselineSku, s.ri) * (s.qty || 1) * 12 : 0;
+      const incrYr = Math.max(0, yr - baselineYr);
       if (itm.xcr) { xcr += yr; }
-      else if (itm.odaOnly) { odaAcr += yr; } // ODA ACR excluded from AFO & MCI - own Azure Accelerate offer
-      else if (cat.elig) { el += yr; }
-      else { ot += yr; }
-      rows.push({ id: itm.id, name: itm.name, tag: itm.tag, color: cat.color, elig: cat.elig, mo, yr, sku: s.sku || "", xcr: !!itm.xcr, odaOnly: !!itm.odaOnly, phases: s.phases || null, monthly: phased ? phased.monthly : null });
+      else if (itm.odaOnly) { odaAcr += incrYr; }
+      else if (cat.elig) { el += incrYr; elFull += yr; }
+      else { ot += incrYr; otFull += yr; }
+      rows.push({ id: itm.id, name: itm.name, tag: itm.tag, color: cat.color, elig: cat.elig, mo, yr, incrYr, baselineYr, baselineSku: s.baselineSku || null, sku: s.sku || "", xcr: !!itm.xcr, odaOnly: !!itm.odaOnly, phases: s.phases || null, monthly: phased ? phased.monthly : null });
     });
-    const tot = el + ot; // Fundable ACR (excludes XCR and ODA — used for AFO/MCI calculations)
-    const totAll = el + ot + odaAcr; // Total ACR including ODA (for display/SOW)
+    const tot = el + ot; // Fundable INCREMENTAL ACR (used for AFO/MCI calculations)
+    const totFull = elFull + otFull; // Customer-pays total (display only)
+    const totAll = el + ot + odaAcr; // Total fundable ACR including ODA (for display/SOW)
     const pct = tot > 0 ? (el / tot) * 100 : 0, ok = pct >= 50;
     const db = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "db"));
     const fab = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "fab"));
@@ -1552,7 +1564,7 @@ function App() {
     // Customer-visible funding = single-path amount (not split)
     const custFunding = ok ? (ecif + mci.pre) : Math.max(stdEcif, mci.pre + mci.post);
     const custFundingLabel = ok ? "AFO ECIF" + (mci.pre > 0 ? " + Assessment" : "") : (mci.pre + mci.post) >= stdEcif ? "MCI Partner Program" : "Standard ECIF";
-    return { el, ot, xcr, odaAcr, tot, totAll, pct, ok, rows, sc, ecif, stdEcif, db, fab, fo, accel, mci, recs, recCash, recCredits, recStrategy, custFunding, custFundingLabel, solutionPlays: getSolutionPlays(rows) };
+    return { el, ot, xcr, odaAcr, tot, totFull, totAll, totBaseline: totFull - tot, pct, ok, rows, sc, ecif, stdEcif, db, fab, fo, accel, mci, recs, recCash, recCredits, recStrategy, custFunding, custFundingLabel, solutionPlays: getSolutionPlays(rows) };
   }, [sel]);
 
   const dyn = useMemo(() => getScope(C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn), [C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn]);
@@ -1799,6 +1811,10 @@ button{display:none!important}
                           const ri = !!s.ri;
                           const phases = s.phases || null;
                           const hasRamp = phases && phases.length > 1;
+                          const baselineSku = s.baselineSku || "";
+                          const baselineMo = baselineSku ? skuMo(baselineSku, ri) * (qt || 1) : 0;
+                          const baselineYr = baselineMo * 12;
+                          const incrYr = Math.max(0, yr - baselineYr);
                           // Helpers for phase editing
                           const addRampPhase = () => {
                             const curSku = sku;
@@ -1901,6 +1917,22 @@ button{display:none!important}
                                     );
                                   })}
                                   <div style={{ fontSize: 10, color: "#166534", marginTop: 4, fontStyle: "italic" }}>Y1 blended: {fmt(mo)}/mo avg ({fmt(yr)} total). Each phase activates from its start month onwards.</div>
+                                </div>
+                              )}
+                              {/* ── Existing Baseline (excluded from fundable ACR) ── */}
+                              {on && itm.fab && (
+                                <div style={{ marginLeft: 22, marginTop: 4, padding: "5px 8px", background: baselineSku ? "#fffbeb" : "#fafafa", border: "1px solid " + (baselineSku ? "#fbbf24" : "#e8e8ec"), borderRadius: 6, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                                  <span style={{ fontSize: 10, fontWeight: 700, color: baselineSku ? "#92400e" : "#999", textTransform: "uppercase", letterSpacing: 0.3 }}>📍 Existing baseline</span>
+                                  <select value={baselineSku} onChange={(e) => upd(itm.id, "baselineSku", e.target.value)} style={{ padding: "2px 5px", border: "1px solid " + (baselineSku ? "#fbbf24" : "#ddd"), borderRadius: 4, fontSize: 11, background: "white", color: baselineSku ? "#92400e" : "#666", fontWeight: 600, cursor: "pointer" }}>
+                                    <option value="">None (all new)</option>
+                                    {FSKU.map((f) => <option key={f.s} value={f.s}>{f.s} ({fmt(skuMo(f.s, ri) * (qt || 1))}/mo)</option>)}
+                                  </select>
+                                  {baselineSku && (
+                                    <span style={{ fontSize: 10, color: "#92400e", lineHeight: 1.4 }}>
+                                      Customer already runs <strong>{baselineSku}</strong> · Baseline excluded: <strong>{fmt(baselineYr)}/yr</strong> · Fundable incremental: <strong style={{ color: "#059669" }}>{fmt(incrYr)}/yr</strong>
+                                    </span>
+                                  )}
+                                  {!baselineSku && <span style={{ fontSize: 10, color: "#999", fontStyle: "italic" }}>Set if customer already runs an F-SKU today (only the upgrade delta is fundable per AFO/MCI rules)</span>}
                                 </div>
                               )}
                             </div>
@@ -2404,24 +2436,35 @@ button{display:none!important}
                   <tbody>
                     {C.rows.filter(r => !r.xcr).sort((a, b) => b.yr - a.yr).map((r, i) => {
                       const isPhased = r.phases && r.phases.length > 1;
+                      const hasBaseline = r.baselineSku && r.baselineYr > 0;
                       const phaseLabel = isPhased ? r.phases.map(p => p.sku).join(" → ") : r.sku;
                       const phaseSchedule = isPhased ? r.phases.map((p, j) => "M" + (p.startMo || 1) + ":" + p.sku).join(" · ") : "";
+                      const showExtraRow = isPhased || hasBaseline;
                       return (
                       <Fragment key={i}>
                       <tr style={{ background: i % 2 ? "#fafafa" : "white" }}>
-                        <td style={{ padding: "4px 6px", borderBottom: isPhased ? "none" : "1px solid #f0f0f0" }}><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, background: r.color, marginRight: 4 }} />{r.tag}{phaseLabel ? " (" + phaseLabel + ")" : ""}{isPhased && <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: "#dcfce7", color: "#166534" }}>📈 PHASED RAMP</span>}{!r.elig && <span style={{ fontSize: 10, color: "#94a3b8" }}> (Accelerate)</span>}</td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: isPhased ? "none" : "1px solid #f0f0f0" }}>{fmt(r.mo)}{isPhased && <div style={{ fontSize: 9, color: "#166534", fontWeight: 600 }}>blended avg</div>}</td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", fontWeight: 600, borderBottom: isPhased ? "none" : "1px solid #f0f0f0" }}>{fmt(r.yr)}</td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: isPhased ? "none" : "1px solid #f0f0f0" }}>{C.tot > 0 ? ((r.yr / C.tot) * 100).toFixed(0) + "%" : "-"}</td>
+                        <td style={{ padding: "4px 6px", borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, background: r.color, marginRight: 4 }} />{r.tag}{phaseLabel ? " (" + phaseLabel + ")" : ""}{isPhased && <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: "#dcfce7", color: "#166534" }}>📈 PHASED RAMP</span>}{hasBaseline && <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: "#fef3c7", color: "#92400e" }}>📍 BASELINE {r.baselineSku}</span>}{!r.elig && <span style={{ fontSize: 10, color: "#94a3b8" }}> (Accelerate)</span>}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}>{fmt(r.mo)}{isPhased && <div style={{ fontSize: 9, color: "#166534", fontWeight: 600 }}>blended avg</div>}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", fontWeight: 600, borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}>{fmt(r.yr)}{hasBaseline && <div style={{ fontSize: 9, color: "#059669", fontWeight: 700 }}>incr: {fmt(r.incrYr)}</div>}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}>{C.totFull > 0 ? ((r.yr / C.totFull) * 100).toFixed(0) + "%" : "-"}</td>
                         <td />
                       </tr>
-                      {isPhased && (
+                      {showExtraRow && (
                         <tr style={{ background: i % 2 ? "#fafafa" : "white" }}>
-                          <td colSpan={5} style={{ padding: "0 6px 4px 22px", borderBottom: "1px solid #f0f0f0", fontSize: 10, color: "#166534", fontStyle: "italic" }}>
-                            Schedule: {r.phases.map((p, j) => {
-                              const phaseMo = skuMo(p.sku, sel[r.id]?.ri) * (sel[r.id]?.qty || 1);
-                              return "M" + (p.startMo || 1) + " " + p.sku + " (" + fmt(phaseMo) + "/mo)";
-                            }).join(" → ")}
+                          <td colSpan={5} style={{ padding: "0 6px 4px 22px", borderBottom: "1px solid #f0f0f0", fontSize: 10, fontStyle: "italic" }}>
+                            {isPhased && (
+                              <div style={{ color: "#166534" }}>
+                                Schedule: {r.phases.map((p, j) => {
+                                  const phaseMo = skuMo(p.sku, sel[r.id]?.ri) * (sel[r.id]?.qty || 1);
+                                  return "M" + (p.startMo || 1) + " " + p.sku + " (" + fmt(phaseMo) + "/mo)";
+                                }).join(" → ")}
+                              </div>
+                            )}
+                            {hasBaseline && (
+                              <div style={{ color: "#92400e" }}>
+                                Customer already runs <strong>{r.baselineSku}</strong> ({fmt(r.baselineYr)}/yr baseline). Per AFO/MCI rules, only incremental ACR ({fmt(r.incrYr)}) is fundable — baseline is excluded.
+                              </div>
+                            )}
                           </td>
                         </tr>
                       )}
@@ -2436,7 +2479,25 @@ button{display:none!important}
                         <td style={{ padding: "4px 6px", borderBottom: "1px solid #dbeafe", textAlign: "center" }}><button onClick={() => rmSowRow(i)} style={{ border: "none", background: "transparent", color: "#ccc", cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1 }}>×</button></td>
                       </tr>
                     ))}
-                    <tr style={{ fontWeight: 700 }}><td style={{ padding: "5px 6px", borderTop: "2px solid #333" }}>Total ACR</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{fmt((C.tot + sow.customRows.reduce((s, r) => s + (r.mo || 0) * 12, 0)) / 12)}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{fmt(C.tot + sow.customRows.reduce((s, r) => s + (r.mo || 0) * 12, 0))}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>100%</td><td style={{ borderTop: "2px solid #333" }} /></tr>
+                    <tr style={{ fontWeight: 700 }}><td style={{ padding: "5px 6px", borderTop: "2px solid #333" }}>Total ACR (customer-pays)</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{fmt((C.totFull + sow.customRows.reduce((s, r) => s + (r.mo || 0) * 12, 0)) / 12)}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{fmt(C.totFull + sow.customRows.reduce((s, r) => s + (r.mo || 0) * 12, 0))}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>100%</td><td style={{ borderTop: "2px solid #333" }} /></tr>
+                    {C.totBaseline > 0 && (
+                      <Fragment>
+                        <tr style={{ fontWeight: 600, background: "#fffbeb" }}>
+                          <td style={{ padding: "4px 6px", color: "#92400e", fontSize: 11 }}>− Existing baseline (excluded)</td>
+                          <td />
+                          <td style={{ padding: "4px 6px", textAlign: "right", color: "#92400e" }}>−{fmt(C.totBaseline)}</td>
+                          <td />
+                          <td />
+                        </tr>
+                        <tr style={{ fontWeight: 700, background: "#ecfdf5" }}>
+                          <td style={{ padding: "5px 6px", color: "#059669", borderTop: "1px solid #6ee7b7" }}>= Fundable Incremental ACR</td>
+                          <td />
+                          <td style={{ padding: "5px 6px", textAlign: "right", color: "#059669", borderTop: "1px solid #6ee7b7" }}>{fmt(C.tot + sow.customRows.reduce((s, r) => s + (r.mo || 0) * 12, 0))}</td>
+                          <td style={{ padding: "5px 6px", textAlign: "right", color: "#059669", borderTop: "1px solid #6ee7b7", fontSize: 10 }}>used for AFO/MCI</td>
+                          <td style={{ borderTop: "1px solid #6ee7b7" }} />
+                        </tr>
+                      </Fragment>
+                    )}
                     {C.xcr > 0 && C.rows.filter(r => r.xcr).map((r, i) => (
                       <tr key={"x" + i} style={{ background: "#fffbeb" }}>
                         <td style={{ padding: "4px 6px", borderBottom: "1px solid #fef3c7" }}><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, background: "#fbbf24", marginRight: 4 }} />{r.tag} <span style={{ fontSize: 10, color: "#d97706" }}>(XCR, not ACR)</span></td>
@@ -3510,6 +3571,7 @@ h1{page-break-after:avoid}
             </div>
             <div style={{ padding: "16px 24px", overflowY: "auto", flex: 1 }}>
               {[
+                { icon: "📍", title: "Existing Baseline / Incremental ACR (NEW)", desc: "Per AFO rules, only INCREMENTAL Y1 ACR counts toward funding. Mark a customer's existing F-SKU baseline on Fabric rows and the tool automatically excludes it from fundable ACR. SOW shows both Total (customer-pays) and Fundable Incremental, so you nominate the right number and don't risk over-claiming on submissions." },
                 { icon: "📊", title: "Phased Fabric SKU Ramps (NEW)", desc: "Model F16 → F32 → F64 capacity upgrades within a single Fabric row. Click '+ ramp' next to PAYG/Reserved to add upgrade phases with start months. Auto-computes blended monthly avg + exact Y1 total. SOW shows the full ramp chain with PHASED RAMP badge and schedule line. Consumption Ramp chart now visualizes real stepping instead of flat lines." },
                 { icon: "📤", title: "ECIF Workscope Export (NEW)", desc: "One-click export of the SOW to Microsoft's Universal v2.1 .xlsx template, ready for direct upload to the ECIF Workscope app. Customer, partner, milestones, scope, and rate card all auto-mapped. Click '▸ ECIF Export' next to Export Word in the SOW. No more manual re-entry for partners." },
                 { icon: "🎯", title: "Solution Plays Auto-Mapping", desc: "Workloads auto-map to MS Solution Plays (MSX) and Azure Accelerate Scenarios (MCI). Shown on milestone deliverables and in SOW." },
