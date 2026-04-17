@@ -73,8 +73,10 @@ const ITEMS = [
   { id:"other-m",cat:"fo",name:"Other (DeepSeek/Phi)",tag:"AI: Foundry - Other",unit:"M tok/mo",up:27,dq:25 },
   { id:"xai",cat:"fo",name:"X.ai / Grok",tag:"AI: Foundry - X.ai",unit:"M tok/mo",up:100,dq:10 },
   { id:"search",cat:"fo",name:"AI Search",tag:"AI: Search",unit:"replicas",up:250,dq:3,riOpts:[{k:"basic",label:"Basic (~$75/replica/mo)",up:75},{k:"s1",label:"Standard S1 (~$250/replica/mo)",up:250},{k:"s2",label:"Standard S2 (~$1,000/replica/mo)",up:1000},{k:"s3",label:"Standard S3 (~$2,000/replica/mo)",up:2000}],note:"Price per Search Unit (replica x partition). Basic for dev/test, S1 for production, S2/S3 for large-scale. Default = S1" },
-  { id:"speech",cat:"fo",name:"Speech/Language",tag:"AI: Tools - Speech",unit:"M chars/mo",up:16,dq:20 },
-  { id:"vision",cat:"fo",name:"Vision/Content",tag:"AI: Tools - Vision",unit:"K img/mo",up:1.5,dq:300 },
+  { id:"translator",cat:"fo",name:"Azure AI Translator",tag:"AI: Tools - Speech (Speech, Language, Translation)",unit:"M chars/mo",up:10,dq:20,note:"Document Translation preserves formatting (PDF, PPTX, DOCX). Text Translation for real-time. Both AFO-eligible under Speech/Language/Translation" },
+  { id:"docintel",cat:"fo",name:"Azure AI Document Intelligence",tag:"AI: Tools - Vision (Vision, Content Understanding etc.)",unit:"K pages/mo",up:30,dq:5,note:"Extracts text, tables, key-value pairs from PDFs/images. Prebuilt models (~$30/1K pages), Custom models (~$50/1K pages). Essential for RAG pipelines with structured documents" },
+  { id:"speech",cat:"fo",name:"Speech/Language (Other)",tag:"AI: Tools - Speech",unit:"M chars/mo",up:16,dq:20 },
+  { id:"vision",cat:"fo",name:"Vision/Content (Other)",tag:"AI: Tools - Vision",unit:"K img/mo",up:1.5,dq:300 },
   { id:"ghc-biz",cat:"oth",name:"GitHub Copilot Business (XCR, not ACR)",tag:"GitHub Copilot Business",unit:"seats",up:19,dq:30,xcr:true,note:"Seats = XCR, no direct seat funding. Strategy: bundle with Azure infra (AKS, App Service, GitHub Actions runners) → nominate as MCI: AI Apps & Developer. Payout based on Azure ACR, not seats" },
   { id:"ghc-ent",cat:"oth",name:"GitHub Copilot Enterprise (XCR, not ACR)",tag:"GitHub Copilot Enterprise",unit:"seats",up:39,dq:0,xcr:true,note:"Enterprise tier ($39/seat). Same funding rules as Business - seats are XCR. Bundle with Azure infra for MCI eligibility" },
   { id:"pbi-pro-only",cat:"pbi",name:"Power BI Pro (Shared Capacity - no F-SKU needed)",tag:"Power BI Pro (shared capacity)",unit:"users",up:14,dq:50,xcr:true,note:"M365 license (XCR), no direct seat funding. Strategy: bundle with Azure data sources (SQL DB, PostgreSQL, Cosmos DB) + upgrade to Fabric F-SKU → unlocks AFO/ECIF/MCI on the Azure ACR. CSP rebate 3.75-7% on M365 billed revenue" },
@@ -156,6 +158,8 @@ const SOLUTION_PLAYS = {
   "xai":          { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
   "search":       { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
   "speech":       { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  "translator":   { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
+  "docintel":     { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
   "vision":       { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
   "aks":          { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
   "functions":    { play: "Innovate with Azure AI Apps and Agents", scenario: "AI Apps, Agents & Developer", short: "AI Apps", color: "#B4009E" },
@@ -259,6 +263,8 @@ const EXCEL_MAP = [
   { match: (t) => /Storage Account/i.test(t), id: "storage", extractQty: (d) => { const m = d.match(/([\d,]+)\s*GB\s*Capacity/i); return m ? Math.max(1, Math.round(parseInt(m[1].replace(/,/g,"")) / 1000)) : 1; }},
   { match: (t) => /AI Search|Cognitive Search/i.test(t), id: "search", extractQty: (d) => { const m = d.match(/(\d+)\s*Unit/i); return m ? parseInt(m[1]) : 1; }},
   { match: (t) => /OpenAI/i.test(t), id: "oai-std", extractQty: () => 10 },
+  { match: (t) => /Translator/i.test(t), id: "translator", extractQty: (d) => { const m = d.match(/([\d,]+)\s*characters/i); return m ? Math.max(1, Math.round(parseInt(m[1].replace(/,/g,"")) / 1000000)) : 2; }},
+  { match: (t) => /Document Intelligence|Form Recognizer/i.test(t), id: "docintel", extractQty: (d) => { const m = d.match(/([\d,]+)\s*pages/i); return m ? Math.max(1, Math.round(parseInt(m[1].replace(/,/g,"")) / 1000)) : 5; }},
   { match: (t) => /App Service/i.test(t), id: "aks", extractQty: (d) => { const m = d.match(/(\d+)\s+P\d/); return m ? parseInt(m[1]) : 1; }},
   { match: (t) => /Monitor/i.test(t), id: "monitor", extractQty: (d) => { const m = d.match(/(\d+)\s*GB\s*Daily/i); return m ? parseInt(m[1]) * 30 : 500; }},
   { match: (t) => /Defender/i.test(t), id: "def", extractQty: (d) => { const m = d.match(/(\d+)\s*Plan\s*[12]/i); return m ? parseInt(m[1]) : 10; }},
@@ -3565,13 +3571,16 @@ h1{page-break-after:avoid}
             <div style={{ background: HDR, padding: "16px 24px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>What's New</div>
-                <div style={{ fontSize: 11, opacity: 0.5 }}>v2.2 - April 2026</div>
+                <div style={{ fontSize: 11, opacity: 0.5 }}>v2.3 - April 2026</div>
               </div>
               <button onClick={() => setShowChangelog(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", color: "white", borderRadius: 8, padding: "4px 10px", cursor: "pointer", fontSize: 12, fontFamily: "inherit" }}>Close</button>
             </div>
             <div style={{ padding: "16px 24px", overflowY: "auto", flex: 1 }}>
               {[
-                { icon: "📍", title: "Existing Baseline / Incremental ACR (NEW)", desc: "Per AFO rules, only INCREMENTAL Y1 ACR counts toward funding. Mark a customer's existing F-SKU baseline on Fabric rows and the tool automatically excludes it from fundable ACR. SOW shows both Total (customer-pays) and Fundable Incremental, so you nominate the right number and don't risk over-claiming on submissions." },
+                { icon: "🌐", title: "Azure AI Translator (NEW)", desc: "Dedicated workload row under AI Foundry. Document Translation preserves formatting (PDF, PPTX, DOCX), Text Translation for real-time. AFO-eligible under 'AI: Tools - Speech (Speech, Language, Translation)'. Auto-maps from Azure Pricing Calculator import." },
+                { icon: "📄", title: "Azure AI Document Intelligence (NEW)", desc: "Dedicated workload row under AI Foundry. Extracts text, tables, and key-value pairs from PDFs and images. Essential for RAG pipelines with structured documents. AFO-eligible under 'AI: Tools - Vision'. Auto-maps from Pricing Calculator import (also matches legacy 'Form Recognizer')." },
+                { icon: "📊", title: "Improved Excel Import (NEW)", desc: "Pricing Calculator import now auto-maps Translator and Document Intelligence to their dedicated workload rows instead of showing them as unmapped." },
+                { icon: "📍", title: "Existing Baseline / Incremental ACR", desc: "Per AFO rules, only INCREMENTAL Y1 ACR counts toward funding. Mark a customer's existing F-SKU baseline on Fabric rows and the tool automatically excludes it from fundable ACR. SOW shows both Total (customer-pays) and Fundable Incremental, so you nominate the right number and don't risk over-claiming on submissions." },
                 { icon: "📊", title: "Phased Fabric SKU Ramps (NEW)", desc: "Model F16 → F32 → F64 capacity upgrades within a single Fabric row. Click '+ ramp' next to PAYG/Reserved to add upgrade phases with start months. Auto-computes blended monthly avg + exact Y1 total. SOW shows the full ramp chain with PHASED RAMP badge and schedule line. Consumption Ramp chart now visualizes real stepping instead of flat lines." },
                 { icon: "📤", title: "ECIF Workscope Export (NEW)", desc: "One-click export of the SOW to Microsoft's Universal v2.1 .xlsx template, ready for direct upload to the ECIF Workscope app. Customer, partner, milestones, scope, and rate card all auto-mapped. Click '▸ ECIF Export' next to Export Word in the SOW. No more manual re-entry for partners." },
                 { icon: "🎯", title: "Solution Plays Auto-Mapping", desc: "Workloads auto-map to MS Solution Plays (MSX) and Azure Accelerate Scenarios (MCI). Shown on milestone deliverables and in SOW." },
