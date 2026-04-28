@@ -191,11 +191,11 @@ const SOLUTION_PLAYS = {
 function getSolutionPlays(rows) {
   const plays = new Map();
   rows.forEach(r => {
-    const sp = SOLUTION_PLAYS[r.id];
+    const sp = SOLUTION_PLAYS[r.baseId || r.id];
     if (sp && sp.play) {
       const key = sp.play;
-      if (!plays.has(key)) plays.set(key, { ...sp, ids: [r.id], acr: r.yr, scenarios: new Set([sp.scenario].filter(Boolean)) });
-      else { const p = plays.get(key); p.ids.push(r.id); p.acr += r.yr; if (sp.scenario) p.scenarios.add(sp.scenario); }
+      if (!plays.has(key)) plays.set(key, { ...sp, ids: [r.baseId || r.id], acr: r.yr, scenarios: new Set([sp.scenario].filter(Boolean)) });
+      else { const p = plays.get(key); p.ids.push(r.baseId || r.id); p.acr += r.yr; if (sp.scenario) p.scenarios.add(sp.scenario); }
     }
   });
   return Array.from(plays.values()).map(p => ({ ...p, scenarios: Array.from(p.scenarios) }));
@@ -293,6 +293,13 @@ const EXCEL_MAP = [
 
 const skuMo = (sku, reserved) => { const f = FSKU.find((f) => f.s === sku) || FSKU[0]; return reserved ? f.ri : f.mo; };
 
+// Multi-instance support: a row id can be either "fab-mig" (base) or "fab-mig#2" (instance).
+// All ITEMS lookups, label rendering and category logic must work on the BASE id.
+const baseId = (rowId) => (typeof rowId === "string" ? rowId.split("#")[0] : rowId);
+const getItem = (rowId) => ITEMS.find((x) => x.id === baseId(rowId));
+const isInstance = (rowId) => typeof rowId === "string" && rowId.includes("#");
+const instanceNum = (rowId) => isInstance(rowId) ? +rowId.split("#")[1] : 1;
+
 // Phased Fabric SKU calculation. Given an array of upgrade phases, returns
 // the actual 12-month cost array, blended monthly average, and yearly total.
 // phases: [{sku, startMo}, ...] - phase 1 always starts at month 1
@@ -354,7 +361,7 @@ function getRecommendation(el, ot, tot, pct, ok, rows, mci, stdEcif) {
         action: "Partner submits MCI pre-sales claim independently" });
     }
 
-    if (rows.some(r => ITEMS.find(i => i.id === r.id && i.cat === "fo")) && !rows.some(r => ITEMS.find(i => i.id === r.id && (i.cat === "db" || i.cat === "fab")))) {
+    if (rows.some(r => ITEMS.find(i => i.id === r.baseId && i.cat === "fo")) && !rows.some(r => ITEMS.find(i => i.id === r.baseId && (i.cat === "db" || i.cat === "fab")))) {
       recs.push({ type: "warn", title: "Standalone AI Foundry - bundle recommended",
         body: "AI Foundry without DB or Fabric is not recommended for AFO. Add at least one Database or Fabric workload to strengthen the nomination.",
         action: "Add DB or Fabric workloads" });
@@ -493,9 +500,9 @@ function getScope(db, fab, fo, accel, rows, tot, cust) {
 
 /* Next Workload Recommendations - suggests natural follow-up projects */
 function getNextWorkloads(rows) {
-  const ids = new Set(rows.map(r => r.id));
+  const ids = new Set(rows.map(r => r.baseId || r.id));
   const cats = new Set();
-  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.id); if (itm) cats.add(itm.cat); });
+  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.baseId); if (itm) cats.add(itm.cat); });
 
   const next = [];
 
@@ -557,9 +564,9 @@ function getNextWorkloads(rows) {
 
 /* Auto-generate SOW Assumptions based on active workloads */
 function getAssumptions(rows) {
-  const ids = new Set(rows.map(r => r.id));
+  const ids = new Set(rows.map(r => r.baseId || r.id));
   const cats = new Set();
-  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.id); if (itm) cats.add(itm.cat); });
+  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.baseId); if (itm) cats.add(itm.cat); });
   const a = [
     "Customer has an active Azure subscription with sufficient quota.",
     "Customer assigns a project contact with decision-making authority.",
@@ -593,7 +600,7 @@ function getAssumptions(rows) {
 /* Auto-generate Acceptance Criteria per milestone */
 function getAcceptance(msNames, rows) {
   const cats = new Set();
-  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.id); if (itm) cats.add(itm.cat); });
+  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.baseId); if (itm) cats.add(itm.cat); });
   const ac = [];
   const m1 = ["Environments discovered and documented", "Architecture design reviewed and approved"];
   if (cats.has("db")) m1.push("Database assessment report with TCO analysis delivered");
@@ -619,8 +626,8 @@ function getAcceptance(msNames, rows) {
 /* Auto-generate Risks & Mitigations */
 function getRisks(rows) {
   const cats = new Set();
-  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.id); if (itm) cats.add(itm.cat); });
-  const ids = new Set(rows.map(r => r.id));
+  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.baseId); if (itm) cats.add(itm.cat); });
+  const ids = new Set(rows.map(r => r.baseId || r.id));
   const risks = [];
   risks.push({ risk: "Scope creep extends timeline and budget", lh: "Medium", imp: "High", mit: "Formal change request process. Written approval required." });
   if (cats.has("db")) risks.push({ risk: "Data quality issues delay migration", lh: "High", imp: "Medium", mit: "Early data profiling in M1. Remediation plan before migration." });
@@ -636,20 +643,20 @@ function getRisks(rows) {
 function getMilestoneDeliverables(rows, cust) {
   const cats = new Set();
   const ids = new Set();
-  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.id); if (itm) { cats.add(itm.cat); ids.add(r.id); } });
+  rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.baseId); if (itm) { cats.add(itm.cat); ids.add(r.baseId); } });
   const cn = cust === "[CUSTOMER NAME]" ? "the customer" : cust;
   const deliverables = [];
 
   const getPlay = (wIds) => {
     const plays = {};
-    wIds.forEach(id => { const sp = SOLUTION_PLAYS[id]; if (sp && sp.play) { plays[sp.play] = plays[sp.play] || sp; } });
+    wIds.forEach(id => { const sp = SOLUTION_PLAYS[baseId(id)]; if (sp && sp.play) { plays[sp.play] = plays[sp.play] || sp; } });
     const arr = Object.values(plays);
     return arr.length >= 1 ? arr[0] : null;
   };
 
   if (cats.has("db")) {
-    const dbIds = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "db"; }).map(r => r.id);
-    const dbNames = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "db"; }).map(r => r.name);
+    const dbIds = rows.filter(r => { const it = ITEMS.find(i => i.id === r.baseId); return it && it.cat === "db"; }).map(r => r.id);
+    const dbNames = rows.filter(r => { const it = ITEMS.find(i => i.id === r.baseId); return it && it.cat === "db"; }).map(r => r.name);
     const dbCount = dbNames.length;
     const sp = getPlay(dbIds);
     deliverables.push({
@@ -665,8 +672,8 @@ function getMilestoneDeliverables(rows, cust) {
   }
 
   if (cats.has("fab")) {
-    const fabIds = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "fab"; }).map(r => r.id);
-    const fabNames = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "fab"; }).map(r => r.name + (r.sku ? " (" + r.sku + ")" : ""));
+    const fabIds = rows.filter(r => { const it = ITEMS.find(i => i.id === r.baseId); return it && it.cat === "fab"; }).map(r => r.id);
+    const fabNames = rows.filter(r => { const it = ITEMS.find(i => i.id === r.baseId); return it && it.cat === "fab"; }).map(r => r.name + (r.sku ? " (" + r.sku + ")" : ""));
     const sp = getPlay(fabIds);
     deliverables.push({
       title: "Unified Analytics Platform Establishment",
@@ -681,8 +688,8 @@ function getMilestoneDeliverables(rows, cust) {
   }
 
   if (cats.has("fo")) {
-    const foIds = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "fo"; }).map(r => r.id);
-    const foNames = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "fo"; }).map(r => r.name);
+    const foIds = rows.filter(r => { const it = ITEMS.find(i => i.id === r.baseId); return it && it.cat === "fo"; }).map(r => r.id);
+    const foNames = rows.filter(r => { const it = ITEMS.find(i => i.id === r.baseId); return it && it.cat === "fo"; }).map(r => r.name);
     const sp = getPlay(foIds);
     deliverables.push({
       title: "AI Platform and Foundry Deployment",
@@ -696,7 +703,7 @@ function getMilestoneDeliverables(rows, cust) {
     });
   }
 
-  const accelItems = rows.filter(r => { const it = ITEMS.find(i => i.id === r.id); return it && it.cat === "accel"; });
+  const accelItems = rows.filter(r => { const it = ITEMS.find(i => i.id === r.baseId); return it && it.cat === "accel"; });
   if (accelItems.length > 0) {
     const hasAks = ids.has("aks");
     const hasIntegration = ids.has("logicapps") || ids.has("servicebus") || ids.has("eventgrid") || ids.has("apim");
@@ -1286,7 +1293,7 @@ function App() {
           setExCat(prev => {
             const updated = { ...prev };
             Object.keys(data.sel).forEach(id => {
-              const itm = ITEMS.find(i => i.id === id);
+              const itm = ITEMS.find(i => i.id === baseId(id));
               if (itm) updated[itm.cat] = true;
             });
             return updated;
@@ -1450,7 +1457,7 @@ function App() {
 
   const upd = (id, field, val) => {
     setSel((prev) => {
-      const itm = ITEMS.find((x) => x.id === id);
+      const itm = getItem(id);
       if (!itm) return prev;
       const cur = prev[id] || { on: false, qty: itm.dq || 1, mo: 0, sku: itm.dsku || "", ri: false };
       const n = { ...cur, [field]: val };
@@ -1499,9 +1506,19 @@ function App() {
     let el = 0, ot = 0, xcr = 0, odaAcr = 0;
     let elFull = 0, otFull = 0; // Full (customer-pays) totals for display
     const rows = [];
-    ITEMS.forEach((itm) => {
-      const s = sel[itm.id];
-      if (!s || !s.on) return;
+    // Iterate over sel keys (not ITEMS) so we pick up additional instances like "fab-mig#2"
+    // Sort: base ids first in their ITEMS order, then instances #2, #3 ... right after their base.
+    const selKeys = Object.keys(sel).filter(k => sel[k] && sel[k].on);
+    selKeys.sort((a, b) => {
+      const ai = ITEMS.findIndex(it => it.id === baseId(a));
+      const bi = ITEMS.findIndex(it => it.id === baseId(b));
+      if (ai !== bi) return ai - bi;
+      return instanceNum(a) - instanceNum(b);
+    });
+    selKeys.forEach((rowId) => {
+      const itm = getItem(rowId);
+      if (!itm) return;
+      const s = sel[rowId];
       const cat = CATS.find((c) => c.key === itm.cat);
       // For phased Fabric items, use exact yearly sum (not mo*12 blended)
       const phased = itm.fab && s.phases && s.phases.length > 1 ? computeFabPhased(s.phases, s.qty || 1, s.ri) : null;
@@ -1516,16 +1533,18 @@ function App() {
       else if (itm.odaOnly) { odaAcr += incrYr; }
       else if (cat.elig) { el += incrYr; elFull += yr; }
       else { ot += incrYr; otFull += yr; }
-      rows.push({ id: itm.id, name: itm.name, tag: itm.tag, color: cat.color, elig: cat.elig, mo, yr, incrYr, baselineYr, baselineSku: s.baselineSku || null, sku: s.sku || "", xcr: !!itm.xcr, odaOnly: !!itm.odaOnly, phases: s.phases || null, monthly: phased ? phased.monthly : null });
+      // Display name: append instance number (e.g. "Fabric · Greenfield Analytics #2") only for instances
+      const displayName = isInstance(rowId) ? itm.name + " #" + instanceNum(rowId) : itm.name;
+      rows.push({ id: rowId, baseId: itm.id, name: displayName, tag: itm.tag, color: cat.color, elig: cat.elig, mo, yr, incrYr, baselineYr, baselineSku: s.baselineSku || null, sku: s.sku || "", xcr: !!itm.xcr, odaOnly: !!itm.odaOnly, phases: s.phases || null, monthly: phased ? phased.monthly : null });
     });
     const tot = el + ot; // Fundable INCREMENTAL ACR (used for AFO/MCI calculations)
     const totFull = elFull + otFull; // Customer-pays total (display only)
     const totAll = el + ot + odaAcr; // Total fundable ACR including ODA (for display/SOW)
     const pct = tot > 0 ? (el / tot) * 100 : 0, ok = pct >= 50;
-    const db = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "db"));
-    const fab = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "fab"));
-    const fo = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "fo"));
-    const accel = rows.some((r) => ITEMS.find((i) => i.id === r.id && i.cat === "accel"));
+    const db = rows.some((r) => ITEMS.find((i) => i.id === r.baseId && i.cat === "db"));
+    const fab = rows.some((r) => ITEMS.find((i) => i.id === r.baseId && i.cat === "fab"));
+    const fo = rows.some((r) => ITEMS.find((i) => i.id === r.baseId && i.cat === "fo"));
+    const accel = rows.some((r) => ITEMS.find((i) => i.id === r.baseId && i.cat === "accel"));
     let sc = "";
     if (fo && db && fab) sc = "AI Foundry + DB + Fabric";
     else if (fo && db) sc = "AI Foundry + DB";
@@ -1791,7 +1810,10 @@ button{display:none!important}
             <div>
               {CATS.map((cat) => {
                 const items = ITEMS.filter((i) => i.cat === cat.key);
-                const cnt = items.filter((i) => sel[i.id] && sel[i.id].on).length;
+                const cnt = Object.keys(sel).filter(k => {
+                  const it = getItem(k);
+                  return it && it.cat === cat.key && sel[k] && sel[k].on;
+                }).length;
                 const open = exCat[cat.key];
                 return (
                   <div key={cat.key} style={{ background: "white", borderRadius: 12, marginBottom: 8, border: "1px solid #e8e8ec", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
@@ -1808,140 +1830,188 @@ button{display:none!important}
                     {open && (
                       <div style={{ padding: "0 14px 10px", animation: "fadeSlide 0.2s ease" }}>
                         {items.map((itm) => {
-                          const s = sel[itm.id] || {};
-                          const on = !!s.on;
-                          const mo = s.mo || 0;
-                          const yr = mo * 12;
-                          const qt = s.qty != null ? s.qty : (itm.dq || 1);
-                          const sku = s.sku || itm.dsku || "";
-                          const ri = !!s.ri;
-                          const phases = s.phases || null;
-                          const hasRamp = phases && phases.length > 1;
-                          const baselineSku = s.baselineSku || "";
-                          const baselineMo = baselineSku ? skuMo(baselineSku, ri) * (qt || 1) : 0;
-                          const baselineYr = baselineMo * 12;
-                          const incrYr = Math.max(0, yr - baselineYr);
-                          // Helpers for phase editing
-                          const addRampPhase = () => {
-                            const curSku = sku;
-                            const idx = FSKU.findIndex(f => f.s === curSku);
-                            const nextSku = idx >= 0 && idx < FSKU.length - 1 ? FSKU[idx + 1].s : curSku;
-                            const newPhases = phases && phases.length > 0
-                              ? [...phases, { sku: nextSku, startMo: Math.min(12, (phases[phases.length - 1].startMo || 1) + 4) }]
-                              : [{ sku: curSku, startMo: 1 }, { sku: nextSku, startMo: 6 }];
-                            upd(itm.id, "phases", newPhases);
-                          };
-                          const updPhase = (i, field, val) => {
-                            const np = phases.map((p, j) => j === i ? { ...p, [field]: field === "startMo" ? Math.max(2, Math.min(12, +val)) : val } : p);
-                            upd(itm.id, "phases", np);
-                          };
-                          const rmPhase = (i) => {
-                            const np = phases.filter((_, j) => j !== i);
-                            upd(itm.id, "phases", np.length <= 1 ? null : np);
-                          };
-                          return (
-                            <div key={itm.id} style={{ padding: "5px 0", borderTop: "1px solid #f5f5f7" }}>
-                              <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
-                              <label style={{ display: "flex", alignItems: "center", gap: 4, minWidth: 145, flex: "1 1 145px", cursor: "pointer", fontSize: 12, color: on ? "#1a1a2e" : "#aaa", fontWeight: on ? 500 : 400 }}>
-                                <input type="checkbox" checked={on} onChange={(e) => upd(itm.id, "on", e.target.checked)} style={{ "--accent": cat.color }} />
-                                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{itm.name}</span>
-                              </label>
-                              {on && (
-                                <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
-                                  {itm.fab ? (
+                          // Find existing instance ids in sel for this item (e.g. "fab-mig#2", "fab-mig#3")
+                          const instanceIds = Object.keys(sel)
+                            .filter(k => baseId(k) === itm.id && isInstance(k))
+                            .sort((a, b) => instanceNum(a) - instanceNum(b));
+                          const baseOn = !!(sel[itm.id] && sel[itm.id].on);
+
+                          // Renders one row (either base or an instance). rowId determines the sel key.
+                          const renderRow = (rowId, isInst) => {
+                            const s = sel[rowId] || {};
+                            const on = !!s.on;
+                            const mo = s.mo || 0;
+                            const yr = mo * 12;
+                            const qt = s.qty != null ? s.qty : (itm.dq || 1);
+                            const sku = s.sku || itm.dsku || "";
+                            const ri = !!s.ri;
+                            const phases = s.phases || null;
+                            const hasRamp = phases && phases.length > 1;
+                            const baselineSku = s.baselineSku || "";
+                            const baselineMo = baselineSku ? skuMo(baselineSku, ri) * (qt || 1) : 0;
+                            const baselineYr = baselineMo * 12;
+                            const incrYr = Math.max(0, yr - baselineYr);
+                            const addRampPhase = () => {
+                              const curSku = sku;
+                              const idx = FSKU.findIndex(f => f.s === curSku);
+                              const nextSku = idx >= 0 && idx < FSKU.length - 1 ? FSKU[idx + 1].s : curSku;
+                              const newPhases = phases && phases.length > 0
+                                ? [...phases, { sku: nextSku, startMo: Math.min(12, (phases[phases.length - 1].startMo || 1) + 4) }]
+                                : [{ sku: curSku, startMo: 1 }, { sku: nextSku, startMo: 6 }];
+                              upd(rowId, "phases", newPhases);
+                            };
+                            const updPhase = (i, field, val) => {
+                              const np = phases.map((p, j) => j === i ? { ...p, [field]: field === "startMo" ? Math.max(2, Math.min(12, +val)) : val } : p);
+                              upd(rowId, "phases", np);
+                            };
+                            const rmPhase = (i) => {
+                              const np = phases.filter((_, j) => j !== i);
+                              upd(rowId, "phases", np.length <= 1 ? null : np);
+                            };
+                            // Add a new instance: find next free #N suffix and seed from this row's settings
+                            const addInstance = () => {
+                              setSel(prev => {
+                                let n = 2;
+                                while (prev[itm.id + "#" + n]) n++;
+                                const newId = itm.id + "#" + n;
+                                // Seed defaults so the row appears with sensible values
+                                const seed = {
+                                  on: true,
+                                  qty: itm.dq || 1,
+                                  sku: itm.dsku || "",
+                                  ri: false,
+                                  mo: skuMo(itm.dsku || "", false) * (itm.dq || 1),
+                                };
+                                return { ...prev, [newId]: seed };
+                              });
+                            };
+                            const removeInstance = () => {
+                              setSel(prev => { const cp = { ...prev }; delete cp[rowId]; return cp; });
+                            };
+                            const labelText = isInst ? itm.name + " #" + instanceNum(rowId) : itm.name;
+                            return (
+                              <div key={rowId} style={{ padding: "5px 0", borderTop: isInst ? "1px dashed #d1d5db" : "1px solid #f5f5f7", marginLeft: isInst ? 18 : 0, background: isInst ? "#fafbfc" : "transparent", borderRadius: isInst ? 6 : 0 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap" }}>
+                                <label style={{ display: "flex", alignItems: "center", gap: 4, minWidth: 145, flex: "1 1 145px", cursor: isInst ? "default" : "pointer", fontSize: 12, color: on ? "#1a1a2e" : "#aaa", fontWeight: on ? 500 : 400 }}>
+                                  {isInst ? (
+                                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, color: "#6b7280", fontSize: 11, fontWeight: 600, paddingLeft: 2 }}>
+                                      <span style={{ color: cat.color }}>↳</span>
+                                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{labelText}</span>
+                                    </span>
+                                  ) : (
                                     <>
-                                      <select value={sku} onChange={(e) => upd(itm.id, "sku", e.target.value)} style={{ padding: "2px 4px", border: "1px solid #107C1044", borderRadius: 4, fontSize: 13, background: ri ? "#eff6ff" : "#f0fdf4", fontWeight: 600, color: ri ? "#0078D4" : "#166534" }}>
-                                        {FSKU.map((f) => <option key={f.s} value={f.s}>{f.s} ({f.cu}CU) {fmt(ri ? f.ri : f.mo)}/mo</option>)}
-                                      </select>
-                                      <span style={{ fontSize: 11, color: "#999" }}>x</span>
-                                      <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 30, padding: "2px", border: "1px solid #ddd", borderRadius: 4, fontSize: 13, textAlign: "center" }} />
-                                      <select value={ri ? "1yr" : "payg"} onChange={(e) => upd(itm.id, "ri", e.target.value === "1yr")} style={{ padding: "2px 4px", border: "1px solid " + (ri ? "#0078D4" : "#ddd"), borderRadius: 4, fontSize: 12, fontWeight: 600, background: ri ? "#0078D4" : "#f5f5f5", color: ri ? "white" : "#888", cursor: "pointer" }}>
-                                        <option value="payg">PAYG</option>
-                                        <option value="1yr">1yr Reserved (-41%)</option>
-                                      </select>
-                                      <button onClick={addRampPhase} title="Add SKU upgrade phase" style={{ padding: "2px 6px", border: "1px solid " + (hasRamp ? "#107C10" : "#ccc"), borderRadius: 4, fontSize: 11, background: hasRamp ? "#dcfce7" : "white", color: hasRamp ? "#166534" : "#666", cursor: "pointer", fontWeight: 600 }}>{hasRamp ? "↗ ramp" : "+ ramp"}</button>
+                                      <input type="checkbox" checked={on} onChange={(e) => upd(itm.id, "on", e.target.checked)} style={{ "--accent": cat.color }} />
+                                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{labelText}</span>
                                     </>
-                                  ) : itm.riOpts ? (
-                                    <>
+                                  )}
+                                </label>
+                                {on && (
+                                  <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                                    {itm.fab ? (
+                                      <>
+                                        <select value={sku} onChange={(e) => upd(rowId, "sku", e.target.value)} style={{ padding: "2px 4px", border: "1px solid #107C1044", borderRadius: 4, fontSize: 13, background: ri ? "#eff6ff" : "#f0fdf4", fontWeight: 600, color: ri ? "#0078D4" : "#166534" }}>
+                                          {FSKU.map((f) => <option key={f.s} value={f.s}>{f.s} ({f.cu}CU) {fmt(ri ? f.ri : f.mo)}/mo</option>)}
+                                        </select>
+                                        <span style={{ fontSize: 11, color: "#999" }}>x</span>
+                                        <input type="number" value={qt} min={1} onChange={(e) => upd(rowId, "qty", +e.target.value)} style={{ width: 30, padding: "2px", border: "1px solid #ddd", borderRadius: 4, fontSize: 13, textAlign: "center" }} />
+                                        <select value={ri ? "1yr" : "payg"} onChange={(e) => upd(rowId, "ri", e.target.value === "1yr")} style={{ padding: "2px 4px", border: "1px solid " + (ri ? "#0078D4" : "#ddd"), borderRadius: 4, fontSize: 12, fontWeight: 600, background: ri ? "#0078D4" : "#f5f5f5", color: ri ? "white" : "#888", cursor: "pointer" }}>
+                                          <option value="payg">PAYG</option>
+                                          <option value="1yr">1yr Reserved (-41%)</option>
+                                        </select>
+                                        <button onClick={addRampPhase} title="Add SKU upgrade phase" style={{ padding: "2px 6px", border: "1px solid " + (hasRamp ? "#107C10" : "#ccc"), borderRadius: 4, fontSize: 11, background: hasRamp ? "#dcfce7" : "white", color: hasRamp ? "#166534" : "#666", cursor: "pointer", fontWeight: 600 }}>{hasRamp ? "↗ ramp" : "+ ramp"}</button>
+                                        {!isInst && <button onClick={addInstance} title="Add another Fabric capacity (independent SKU, ramp, baseline)" style={{ padding: "2px 6px", border: "1px solid #c7d2fe", borderRadius: 4, fontSize: 11, background: "#eef2ff", color: "#4338ca", cursor: "pointer", fontWeight: 600 }}>+ instans</button>}
+                                        {isInst && <button onClick={removeInstance} title="Remove this instance" style={{ padding: "2px 6px", border: "1px solid #fecaca", borderRadius: 4, fontSize: 11, background: "white", color: "#b91c1c", cursor: "pointer", fontWeight: 600 }}>✕</button>}
+                                      </>
+                                    ) : itm.riOpts ? (
+                                      <>
+                                        <div style={{ display: "flex", alignItems: "center", background: "#eff6ff", borderRadius: 4, padding: "1px 3px", gap: 2 }}>
+                                          <input type="number" value={qt} min={1} onChange={(e) => upd(rowId, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 4, fontSize: 13, textAlign: "right", background: "white" }} />
+                                          <span style={{ fontSize: 11, color: "#666" }}>{itm.unit}</span>
+                                        </div>
+                                        <select value={s.riTerm || "payg"} onChange={(e) => upd(rowId, "riTerm", e.target.value)} style={{ padding: "2px 4px", border: "1px solid " + (s.riTerm && s.riTerm !== "payg" ? "#0078D4" : "#ddd"), borderRadius: 4, fontSize: 12, fontWeight: 600, background: s.riTerm && s.riTerm !== "payg" ? "#0078D4" : "#f5f5f5", color: s.riTerm && s.riTerm !== "payg" ? "white" : "#888", cursor: "pointer" }}>
+                                          <option value="payg">PAYG</option>
+                                          {itm.riOpts.map(o => <option key={o.k} value={o.k}>{o.label}</option>)}
+                                        </select>
+                                      </>
+                                    ) : !itm.flat ? (
                                       <div style={{ display: "flex", alignItems: "center", background: "#eff6ff", borderRadius: 4, padding: "1px 3px", gap: 2 }}>
-                                        <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 4, fontSize: 13, textAlign: "right", background: "white" }} />
+                                        <input type="number" value={qt} min={1} onChange={(e) => upd(rowId, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 4, fontSize: 13, textAlign: "right", background: "white" }} />
                                         <span style={{ fontSize: 11, color: "#666" }}>{itm.unit}</span>
                                       </div>
-                                      <select value={s.riTerm || "payg"} onChange={(e) => upd(itm.id, "riTerm", e.target.value)} style={{ padding: "2px 4px", border: "1px solid " + (s.riTerm && s.riTerm !== "payg" ? "#0078D4" : "#ddd"), borderRadius: 4, fontSize: 12, fontWeight: 600, background: s.riTerm && s.riTerm !== "payg" ? "#0078D4" : "#f5f5f5", color: s.riTerm && s.riTerm !== "payg" ? "white" : "#888", cursor: "pointer" }}>
-                                        <option value="payg">PAYG</option>
-                                        {itm.riOpts.map(o => <option key={o.k} value={o.k}>{o.label}</option>)}
-                                      </select>
-                                    </>
-                                  ) : !itm.flat ? (
-                                    <div style={{ display: "flex", alignItems: "center", background: "#eff6ff", borderRadius: 4, padding: "1px 3px", gap: 2 }}>
-                                      <input type="number" value={qt} min={1} onChange={(e) => upd(itm.id, "qty", +e.target.value)} style={{ width: 42, padding: "2px", border: "1px solid #0078D433", borderRadius: 4, fontSize: 13, textAlign: "right", background: "white" }} />
-                                      <span style={{ fontSize: 11, color: "#666" }}>{itm.unit}</span>
+                                    ) : null}
+                                    <div style={{ display: "flex", alignItems: "center", background: "#f8f8f8", borderRadius: 4, padding: "1px 3px" }}>
+                                      <span style={{ fontSize: 11, color: "#999" }}>$</span>
+                                      <input type="number" value={Math.round(mo)} onChange={(e) => upd(rowId, "mo", +e.target.value)} style={{ width: 58, padding: "2px", border: "1px solid #e0e0e0", borderRadius: 4, fontSize: 13, textAlign: "right", background: "white" }} />
+                                      <span style={{ fontSize: 11, color: "#999" }}>/mo</span>
                                     </div>
-                                  ) : null}
-                                  <div style={{ display: "flex", alignItems: "center", background: "#f8f8f8", borderRadius: 4, padding: "1px 3px" }}>
-                                    <span style={{ fontSize: 11, color: "#999" }}>$</span>
-                                    <input type="number" value={Math.round(mo)} onChange={(e) => upd(itm.id, "mo", +e.target.value)} style={{ width: 58, padding: "2px", border: "1px solid #e0e0e0", borderRadius: 4, fontSize: 13, textAlign: "right", background: "white" }} />
-                                    <span style={{ fontSize: 11, color: "#999" }}>/mo</span>
+                                    <div style={{ fontSize: 13, fontWeight: 600, minWidth: 58, textAlign: "right" }}>{fmt(yr)}<span style={{ fontSize: 10, color: "#999" }}>/yr</span></div>
                                   </div>
-                                  <div style={{ fontSize: 13, fontWeight: 600, minWidth: 58, textAlign: "right" }}>{fmt(yr)}<span style={{ fontSize: 10, color: "#999" }}>/yr</span></div>
+                                )}
                                 </div>
-                              )}
+                                {on && itm.note && !isInst && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#999", fontStyle: "italic", background: "#f8f9fa", padding: "2px 6px", borderRadius: 4, display: "inline-block" }}>{itm.note}</div>}
+                                {on && itm.fab && ri && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 4, display: "inline-block" }}>1yr reserved: ~41% savings vs PAYG. Lower ACR = lower funding, but customer saves more.</div>}
+                                {on && itm.riOpts && s.riTerm && s.riTerm !== "payg" && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 4, display: "inline-block" }}>Reserved pricing: lower ACR = lower funding thresholds, but customer saves on monthly cost.</div>}
+                                {/* ── Phased SKU upgrade ramp ── */}
+                                {on && itm.fab && hasRamp && (
+                                  <div style={{ marginLeft: 22, marginTop: 4, padding: "6px 8px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 6 }}>
+                                    <div style={{ fontSize: 10, fontWeight: 700, color: "#166534", marginBottom: 4, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                      <span>SKU UPGRADE RAMP — {phases.length} phases</span>
+                                      <button onClick={addRampPhase} style={{ padding: "1px 6px", border: "1px solid #86efac", borderRadius: 3, fontSize: 10, background: "white", color: "#166534", cursor: "pointer", fontWeight: 600 }}>+ phase</button>
+                                    </div>
+                                    {phases.map((p, i) => {
+                                      const isFirst = i === 0;
+                                      const phaseMo = skuMo(p.sku, ri) * (qt || 1);
+                                      return (
+                                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "2px 0", fontSize: 11 }}>
+                                          <span style={{ width: 14, height: 14, borderRadius: 3, background: "#107C10", color: "white", fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                                          <span style={{ color: "#166534", fontWeight: 600 }}>From M</span>
+                                          {isFirst ? (
+                                            <span style={{ padding: "1px 5px", background: "#dcfce7", borderRadius: 3, fontSize: 11, fontWeight: 700, color: "#166534" }}>1</span>
+                                          ) : (
+                                            <input type="number" min={2} max={12} value={p.startMo || 2} onChange={(e) => updPhase(i, "startMo", e.target.value)} style={{ width: 36, padding: "1px 3px", border: "1px solid #86efac", borderRadius: 3, fontSize: 11, textAlign: "center", background: "white" }} />
+                                          )}
+                                          <span style={{ color: "#166534" }}>:</span>
+                                          {isFirst ? (
+                                            <span style={{ padding: "1px 5px", background: "#dcfce7", borderRadius: 3, fontSize: 11, fontWeight: 700, color: "#166534" }}>{sku} (matches main)</span>
+                                          ) : (
+                                            <select value={p.sku} onChange={(e) => updPhase(i, "sku", e.target.value)} style={{ padding: "1px 3px", border: "1px solid #86efac", borderRadius: 3, fontSize: 11, background: "white", color: "#166534", fontWeight: 600 }}>
+                                              {FSKU.map((f) => <option key={f.s} value={f.s}>{f.s}</option>)}
+                                            </select>
+                                          )}
+                                          <span style={{ color: "#999", fontSize: 10 }}>{fmt(phaseMo)}/mo</span>
+                                          {!isFirst && <button onClick={() => rmPhase(i)} style={{ padding: 0, marginLeft: "auto", border: "none", background: "transparent", color: "#999", cursor: "pointer", fontSize: 14, lineHeight: 1 }} title="Remove phase">×</button>}
+                                        </div>
+                                      );
+                                    })}
+                                    <div style={{ fontSize: 10, color: "#166534", marginTop: 4, fontStyle: "italic" }}>Y1 blended: {fmt(mo)}/mo avg ({fmt(yr)} total). Each phase activates from its start month onwards.</div>
+                                  </div>
+                                )}
+                                {/* ── Existing Baseline (excluded from fundable ACR) ── */}
+                                {on && itm.fab && (
+                                  <div style={{ marginLeft: 22, marginTop: 4, padding: "5px 8px", background: baselineSku ? "#fffbeb" : "#fafafa", border: "1px solid " + (baselineSku ? "#fbbf24" : "#e8e8ec"), borderRadius: 6, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                                    <span style={{ fontSize: 10, fontWeight: 700, color: baselineSku ? "#92400e" : "#999", textTransform: "uppercase", letterSpacing: 0.3 }}>📍 Existing baseline</span>
+                                    <select value={baselineSku} onChange={(e) => upd(rowId, "baselineSku", e.target.value)} style={{ padding: "2px 5px", border: "1px solid " + (baselineSku ? "#fbbf24" : "#ddd"), borderRadius: 4, fontSize: 11, background: "white", color: baselineSku ? "#92400e" : "#666", fontWeight: 600, cursor: "pointer" }}>
+                                      <option value="">None (all new)</option>
+                                      {FSKU.map((f) => <option key={f.s} value={f.s}>{f.s} ({fmt(skuMo(f.s, ri) * (qt || 1))}/mo)</option>)}
+                                    </select>
+                                    {baselineSku && (
+                                      <span style={{ fontSize: 10, color: "#92400e", lineHeight: 1.4 }}>
+                                        Customer already runs <strong>{baselineSku}</strong> · Baseline excluded: <strong>{fmt(baselineYr)}/yr</strong> · Fundable incremental: <strong style={{ color: "#059669" }}>{fmt(incrYr)}/yr</strong>
+                                      </span>
+                                    )}
+                                    {!baselineSku && <span style={{ fontSize: 10, color: "#999", fontStyle: "italic" }}>Set if customer already runs an F-SKU today (only the upgrade delta is fundable per AFO/MCI rules)</span>}
+                                  </div>
+                                )}
                               </div>
-                              {on && itm.note && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#999", fontStyle: "italic", background: "#f8f9fa", padding: "2px 6px", borderRadius: 4, display: "inline-block" }}>{itm.note}</div>}
-                              {on && itm.fab && ri && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 4, display: "inline-block" }}>1yr reserved: ~41% savings vs PAYG. Lower ACR = lower funding, but customer saves more.</div>}
-                              {on && itm.riOpts && s.riTerm && s.riTerm !== "payg" && <div style={{ marginLeft: 22, marginTop: 2, fontSize: 11, color: "#0078D4", background: "#eff6ff", padding: "2px 6px", borderRadius: 4, display: "inline-block" }}>Reserved pricing: lower ACR = lower funding thresholds, but customer saves on monthly cost.</div>}
-                              {/* ── Phased SKU upgrade ramp ── */}
-                              {on && itm.fab && hasRamp && (
-                                <div style={{ marginLeft: 22, marginTop: 4, padding: "6px 8px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 6 }}>
-                                  <div style={{ fontSize: 10, fontWeight: 700, color: "#166534", marginBottom: 4, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                    <span>SKU UPGRADE RAMP — {phases.length} phases</span>
-                                    <button onClick={addRampPhase} style={{ padding: "1px 6px", border: "1px solid #86efac", borderRadius: 3, fontSize: 10, background: "white", color: "#166534", cursor: "pointer", fontWeight: 600 }}>+ phase</button>
-                                  </div>
-                                  {phases.map((p, i) => {
-                                    const isFirst = i === 0;
-                                    const phaseMo = skuMo(p.sku, ri) * (qt || 1);
-                                    return (
-                                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "2px 0", fontSize: 11 }}>
-                                        <span style={{ width: 14, height: 14, borderRadius: 3, background: "#107C10", color: "white", fontSize: 9, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
-                                        <span style={{ color: "#166534", fontWeight: 600 }}>From M</span>
-                                        {isFirst ? (
-                                          <span style={{ padding: "1px 5px", background: "#dcfce7", borderRadius: 3, fontSize: 11, fontWeight: 700, color: "#166534" }}>1</span>
-                                        ) : (
-                                          <input type="number" min={2} max={12} value={p.startMo || 2} onChange={(e) => updPhase(i, "startMo", e.target.value)} style={{ width: 36, padding: "1px 3px", border: "1px solid #86efac", borderRadius: 3, fontSize: 11, textAlign: "center", background: "white" }} />
-                                        )}
-                                        <span style={{ color: "#166534" }}>:</span>
-                                        {isFirst ? (
-                                          <span style={{ padding: "1px 5px", background: "#dcfce7", borderRadius: 3, fontSize: 11, fontWeight: 700, color: "#166534" }}>{sku} (matches main)</span>
-                                        ) : (
-                                          <select value={p.sku} onChange={(e) => updPhase(i, "sku", e.target.value)} style={{ padding: "1px 3px", border: "1px solid #86efac", borderRadius: 3, fontSize: 11, background: "white", color: "#166534", fontWeight: 600 }}>
-                                            {FSKU.map((f) => <option key={f.s} value={f.s}>{f.s}</option>)}
-                                          </select>
-                                        )}
-                                        <span style={{ color: "#999", fontSize: 10 }}>{fmt(phaseMo)}/mo</span>
-                                        {!isFirst && <button onClick={() => rmPhase(i)} style={{ padding: 0, marginLeft: "auto", border: "none", background: "transparent", color: "#999", cursor: "pointer", fontSize: 14, lineHeight: 1 }} title="Remove phase">×</button>}
-                                      </div>
-                                    );
-                                  })}
-                                  <div style={{ fontSize: 10, color: "#166534", marginTop: 4, fontStyle: "italic" }}>Y1 blended: {fmt(mo)}/mo avg ({fmt(yr)} total). Each phase activates from its start month onwards.</div>
-                                </div>
-                              )}
-                              {/* ── Existing Baseline (excluded from fundable ACR) ── */}
-                              {on && itm.fab && (
-                                <div style={{ marginLeft: 22, marginTop: 4, padding: "5px 8px", background: baselineSku ? "#fffbeb" : "#fafafa", border: "1px solid " + (baselineSku ? "#fbbf24" : "#e8e8ec"), borderRadius: 6, display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                                  <span style={{ fontSize: 10, fontWeight: 700, color: baselineSku ? "#92400e" : "#999", textTransform: "uppercase", letterSpacing: 0.3 }}>📍 Existing baseline</span>
-                                  <select value={baselineSku} onChange={(e) => upd(itm.id, "baselineSku", e.target.value)} style={{ padding: "2px 5px", border: "1px solid " + (baselineSku ? "#fbbf24" : "#ddd"), borderRadius: 4, fontSize: 11, background: "white", color: baselineSku ? "#92400e" : "#666", fontWeight: 600, cursor: "pointer" }}>
-                                    <option value="">None (all new)</option>
-                                    {FSKU.map((f) => <option key={f.s} value={f.s}>{f.s} ({fmt(skuMo(f.s, ri) * (qt || 1))}/mo)</option>)}
-                                  </select>
-                                  {baselineSku && (
-                                    <span style={{ fontSize: 10, color: "#92400e", lineHeight: 1.4 }}>
-                                      Customer already runs <strong>{baselineSku}</strong> · Baseline excluded: <strong>{fmt(baselineYr)}/yr</strong> · Fundable incremental: <strong style={{ color: "#059669" }}>{fmt(incrYr)}/yr</strong>
-                                    </span>
-                                  )}
-                                  {!baselineSku && <span style={{ fontSize: 10, color: "#999", fontStyle: "italic" }}>Set if customer already runs an F-SKU today (only the upgrade delta is fundable per AFO/MCI rules)</span>}
-                                </div>
-                              )}
-                            </div>
+                            );
+                          };
+
+                          return (
+                            <React.Fragment key={itm.id}>
+                              {renderRow(itm.id, false)}
+                              {/* Render any additional Fabric instances right under their base row */}
+                              {itm.fab && baseOn && instanceIds.map(rid => renderRow(rid, true))}
+                            </React.Fragment>
                           );
                         })}
                       </div>
@@ -2652,7 +2722,7 @@ button{display:none!important}
                   
                   // Assign default start months based on workload type
                   const getDefaultStart = (id) => {
-                    const itm = ITEMS.find(i => i.id === id);
+                    const itm = getItem(id);
                     if (!itm) return 1;
                     // Phased Fabric rows already model their own ramp - start at M1
                     const row = C.rows.find(r => r.id === id);
@@ -2873,7 +2943,7 @@ button{display:none!important}
 
                         <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Soft Outcomes for Microsoft</div>
                         <div style={{ marginBottom: 12, paddingLeft: 8 }}>
-                          {hasDb ? "Migrating " + C.rows.filter(r => ITEMS.find(i => i.id === r.id && i.cat === "db")).length + " database workload(s) to Azure PaaS creates long-term platform lock-in and recurring consumption. " : ""}{hasFab ? "Fabric consolidation replaces fragmented BI tooling and creates a referenceable customer case for Microsoft Fabric. " : ""}{hasFo ? "AI Foundry adoption positions " + cn + " as an early AI adopter in the market - potential reference customer for Foundry go-to-market. " : ""}Successful delivery strengthens the partner relationship and creates a repeatable model for similar mid-market customers.
+                          {hasDb ? "Migrating " + C.rows.filter(r => ITEMS.find(i => i.id === r.baseId && i.cat === "db")).length + " database workload(s) to Azure PaaS creates long-term platform lock-in and recurring consumption. " : ""}{hasFab ? "Fabric consolidation replaces fragmented BI tooling and creates a referenceable customer case for Microsoft Fabric. " : ""}{hasFo ? "AI Foundry adoption positions " + cn + " as an early AI adopter in the market - potential reference customer for Foundry go-to-market. " : ""}Successful delivery strengthens the partner relationship and creates a repeatable model for similar mid-market customers.
                         </div>
 
                         <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Risk if Funding Not Approved</div>
@@ -3571,12 +3641,13 @@ h1{page-break-after:avoid}
             <div style={{ background: HDR, padding: "16px 24px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>What's New</div>
-                <div style={{ fontSize: 11, opacity: 0.5 }}>v2.3 - April 2026</div>
+                <div style={{ fontSize: 11, opacity: 0.5 }}>v2.4 - April 2026</div>
               </div>
               <button onClick={() => setShowChangelog(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", color: "white", borderRadius: 8, padding: "4px 10px", cursor: "pointer", fontSize: 12, fontFamily: "inherit" }}>Close</button>
             </div>
             <div style={{ padding: "16px 24px", overflowY: "auto", flex: 1 }}>
               {[
+                { icon: "🧬", title: "Multi-instance Fabric (NEW v2.4)", desc: "A single Fabric workload row can now hold multiple capacities. Click '+ instans' next to '+ ramp' on any Fabric row to add a parallel capacity with its own SKU, ramp and baseline. Use it when a customer runs e.g. an existing F16 → F64 + a new F32 + a sandbox F8 in parallel. Each instance contributes independently to AFO incremental ACR, Ramp Chart, and SOW deliverables. Remove an instance with '✕'." },
                 { icon: "🌐", title: "Azure AI Translator (NEW)", desc: "Dedicated workload row under AI Foundry. Document Translation preserves formatting (PDF, PPTX, DOCX), Text Translation for real-time. AFO-eligible under 'AI: Tools - Speech (Speech, Language, Translation)'. Auto-maps from Azure Pricing Calculator import." },
                 { icon: "📄", title: "Azure AI Document Intelligence (NEW)", desc: "Dedicated workload row under AI Foundry. Extracts text, tables, and key-value pairs from PDFs and images. Essential for RAG pipelines with structured documents. AFO-eligible under 'AI: Tools - Vision'. Auto-maps from Pricing Calculator import (also matches legacy 'Form Recognizer')." },
                 { icon: "📊", title: "Improved Excel Import (NEW)", desc: "Pricing Calculator import now auto-maps Translator and Document Intelligence to their dedicated workload rows instead of showing them as unmapped." },
