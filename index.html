@@ -300,6 +300,12 @@ const getItem = (rowId) => ITEMS.find((x) => x.id === baseId(rowId));
 const isInstance = (rowId) => typeof rowId === "string" && rowId.includes("#");
 const instanceNum = (rowId) => isInstance(rowId) ? +rowId.split("#")[1] : 1;
 
+// Realistic Y1 timing — Alt B default M1 (full year). Sales rep adjusts in Ramp Chart for mid-year go-lives.
+// When start month is M, the workload runs (13 - M) months in Y1.
+// Phased Fabric rows model their own ramp internally — they always start at M1 (default).
+const getDefaultStart = (rowId) => 1;
+const monthsInY1 = (start) => Math.max(1, Math.min(12, 13 - (start || 1)));
+
 // Phased Fabric SKU calculation. Given an array of upgrade phases, returns
 // the actual 12-month cost array, blended monthly average, and yearly total.
 // phases: [{sku, startMo}, ...] - phase 1 always starts at month 1
@@ -483,7 +489,10 @@ function getScope(db, fab, fo, accel, rows, tot, cust) {
   // Commercial impact
   s += "\nCommercial impact (Year 1):\n";
   rows.forEach((r) => { s += "- " + r.name + (r.sku ? " (" + r.sku + ")" : "") + ": ~" + fmt(r.mo) + "/mo\n"; });
-  if (rows.length) s += "- Total: ~" + fmt(tot / 12) + "/mo (" + fmt(tot) + "/yr)\n";
+  if (rows.length) {
+    const annualMo = rows.reduce((s, r) => s + (r.mo || 0), 0);
+    s += "- Total: ~" + fmt(annualMo) + "/mo at full run-rate (" + fmt(annualMo * 12) + "/yr annualized)\n";
+  }
 
   // Deliverables
   s += "\nDeliverables:\n";
@@ -1198,7 +1207,7 @@ function App() {
     const name = customName || prompt("Name this save:", defaultName);
     if (!name) return;
     const key = "afo:" + name.replace(/[^a-zA-Z0-9_-]/g, "_").substring(0, 80);
-    const payload = JSON.stringify({ sow, sel, ms: sow.milestones, ts: new Date().toISOString(), name });
+    const payload = JSON.stringify({ sow, sel, conStart, ms: sow.milestones, ts: new Date().toISOString(), name });
     try {
       await window.storage.set(key, payload);
       setSaveStatus("Saved: " + name);
@@ -1232,6 +1241,7 @@ function App() {
           setSow(prev => ({ ...prev, ...data.sow }));
         }
         if (data.sel) setSel(data.sel);
+        if (data.conStart) setConStart(data.conStart);
         setSaveStatus("Loaded: " + (data.name || key));
         setShowSaves(false);
         setTimeout(() => setSaveStatus(""), 3000);
@@ -1251,7 +1261,7 @@ function App() {
   // ── Export / Import JSON file ──
   const exportJSON = () => {
     const name = sow.cn === "[CUSTOMER NAME]" ? "untitled" : sow.cn.replace(/[^a-zA-Z0-9_-]/g, "_");
-    const payload = { sow, sel, ts: new Date().toISOString(), name: sow.cn, version: "2.0" };
+    const payload = { sow, sel, conStart, ts: new Date().toISOString(), name: sow.cn, version: "2.5" };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -1299,6 +1309,7 @@ function App() {
             return updated;
           });
         }
+        if (data.conStart) setConStart(data.conStart);
         setSaveStatus("Imported: " + (data.name || file.name));
         setTimeout(() => setSaveStatus(""), 3000);
       } catch (err) {
@@ -1504,7 +1515,8 @@ function App() {
 
   const C = useMemo(() => {
     let el = 0, ot = 0, xcr = 0, odaAcr = 0;
-    let elFull = 0, otFull = 0; // Full (customer-pays) totals for display
+    let elFull = 0, otFull = 0; // Full (customer-pays) totals for display - timing-adjusted Y1
+    let elAnnual = 0, otAnnual = 0; // Annualized full-year (mo*12) — customer-pays at full run-rate
     const rows = [];
     // Iterate over sel keys (not ITEMS) so we pick up additional instances like "fab-mig#2"
     // Sort: base ids first in their ITEMS order, then instances #2, #3 ... right after their base.
@@ -1523,22 +1535,35 @@ function App() {
       // For phased Fabric items, use exact yearly sum (not mo*12 blended)
       const phased = itm.fab && s.phases && s.phases.length > 1 ? computeFabPhased(s.phases, s.qty || 1, s.ri) : null;
       const mo = phased ? phased.mo : (s.mo || 0);
-      const yr = phased ? phased.yr : mo * 12;
+      // Realistic Y1 timing: if rep set a go-live month in Ramp Chart, only count months from then onwards.
+      // Phased Fabric rows already model their own ramp internally — apply start month as offset into the ramp.
+      const start = conStart[rowId] || getDefaultStart(rowId);
+      let yr;
+      if (phased) {
+        // Skip the first (start-1) months — workload not live yet
+        yr = phased.monthly.slice(0, monthsInY1(start)).reduce((a, b) => a + b, 0);
+      } else {
+        yr = mo * monthsInY1(start);
+      }
+      // Annualized full-year (for display only — "what kunden konsumerar at run-rate")
+      const yrAnnual = phased ? phased.yr : mo * 12;
       // Baseline: existing customer consumption that is NOT incremental.
       // Per AFO rules, only incremental Y1 ACR counts toward eligibility/funding.
       // Currently supported on Fabric rows where customer may already run a base SKU.
-      const baselineYr = itm.fab && s.baselineSku ? skuMo(s.baselineSku, s.ri) * (s.qty || 1) * 12 : 0;
+      // Baseline scales with same Y1 timing as the workload (same months active).
+      const baselineYr = itm.fab && s.baselineSku ? skuMo(s.baselineSku, s.ri) * (s.qty || 1) * monthsInY1(start) : 0;
       const incrYr = Math.max(0, yr - baselineYr);
       if (itm.xcr) { xcr += yr; }
       else if (itm.odaOnly) { odaAcr += incrYr; }
-      else if (cat.elig) { el += incrYr; elFull += yr; }
-      else { ot += incrYr; otFull += yr; }
+      else if (cat.elig) { el += incrYr; elFull += yr; elAnnual += yrAnnual; }
+      else { ot += incrYr; otFull += yr; otAnnual += yrAnnual; }
       // Display name: append instance number (e.g. "Fabric · Greenfield Analytics #2") only for instances
       const displayName = isInstance(rowId) ? itm.name + " #" + instanceNum(rowId) : itm.name;
-      rows.push({ id: rowId, baseId: itm.id, name: displayName, tag: itm.tag, color: cat.color, elig: cat.elig, mo, yr, incrYr, baselineYr, baselineSku: s.baselineSku || null, sku: s.sku || "", xcr: !!itm.xcr, odaOnly: !!itm.odaOnly, phases: s.phases || null, monthly: phased ? phased.monthly : null });
+      rows.push({ id: rowId, baseId: itm.id, name: displayName, tag: itm.tag, color: cat.color, elig: cat.elig, mo, yr, yrAnnual, startMo: start, incrYr, baselineYr, baselineSku: s.baselineSku || null, sku: s.sku || "", xcr: !!itm.xcr, odaOnly: !!itm.odaOnly, phases: s.phases || null, monthly: phased ? phased.monthly : null });
     });
     const tot = el + ot; // Fundable INCREMENTAL ACR (used for AFO/MCI calculations)
-    const totFull = elFull + otFull; // Customer-pays total (display only)
+    const totFull = elFull + otFull; // Customer-pays Y1 (timing-adjusted) — used for ECIF nomination
+    const totAnnual = elAnnual + otAnnual; // Annualized full-year run-rate (mo*12 sum) — what customer pays Azure when everything is fully live
     const totAll = el + ot + odaAcr; // Total fundable ACR including ODA (for display/SOW)
     const pct = tot > 0 ? (el / tot) * 100 : 0, ok = pct >= 50;
     const db = rows.some((r) => ITEMS.find((i) => i.id === r.baseId && i.cat === "db"));
@@ -1589,8 +1614,8 @@ function App() {
     // Customer-visible funding = single-path amount (not split)
     const custFunding = ok ? (ecif + mci.pre) : Math.max(stdEcif, mci.pre + mci.post);
     const custFundingLabel = ok ? "AFO ECIF" + (mci.pre > 0 ? " + Assessment" : "") : (mci.pre + mci.post) >= stdEcif ? "MCI Partner Program" : "Standard ECIF";
-    return { el, ot, xcr, odaAcr, tot, totFull, totAll, totBaseline: totFull - tot, pct, ok, rows, sc, ecif, stdEcif, db, fab, fo, accel, mci, recs, recCash, recCredits, recStrategy, custFunding, custFundingLabel, solutionPlays: getSolutionPlays(rows) };
-  }, [sel]);
+    return { el, ot, xcr, odaAcr, tot, totFull, totAnnual, totAll, totBaseline: totFull - tot, pct, ok, rows, sc, ecif, stdEcif, db, fab, fo, accel, mci, recs, recCash, recCredits, recStrategy, custFunding, custFundingLabel, solutionPlays: getSolutionPlays(rows) };
+  }, [sel, conStart]);
 
   const dyn = useMemo(() => getScope(C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn), [C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn]);
   const nextWL = useMemo(() => getNextWorkloads(C.rows), [C.rows]);
@@ -1651,7 +1676,7 @@ function App() {
 
   const custMail = useMemo(() => {
     const wl = C.rows.map((r) => "  - " + r.name + ": ~" + fmt(r.mo) + "/mo").join("\n");
-    return "Subject: Azure Data & AI Platform - " + sow.cn + "\n\nHi [Customer],\n\nPROPOSAL\n" + (C.db ? "- Modernize databases on Azure\n" : "") + (C.fab ? "- Unified analytics with Microsoft Fabric\n" : "") + (C.fo ? "- Enterprise AI with Azure AI Foundry\n" : "") + "\nINVESTMENT\n" + (wl || "  [TBD]") + "\n- Total: ~" + fmt(C.tot / 12) + "/mo (" + fmt(C.tot) + "/yr)\n\nMICROSOFT CO-INVESTMENT\n- Implementation services (ECIF): up to " + fmt(C.ecif) + "\n\nNEXT STEPS\n1. Confirm priorities\n2. Introduce delivery partner\n3. Kick off\n\nLimited funding. Happy to discuss.\n\n[Your name]";
+    return "Subject: Azure Data & AI Platform - " + sow.cn + "\n\nHi [Customer],\n\nPROPOSAL\n" + (C.db ? "- Modernize databases on Azure\n" : "") + (C.fab ? "- Unified analytics with Microsoft Fabric\n" : "") + (C.fo ? "- Enterprise AI with Azure AI Foundry\n" : "") + "\nINVESTMENT\n" + (wl || "  [TBD]") + "\n- Total: ~" + fmt(C.totAnnual / 12) + "/mo at full run-rate (" + fmt(C.totAnnual) + "/yr annualized)\n\nMICROSOFT CO-INVESTMENT\n- Implementation services (ECIF): up to " + fmt(C.ecif) + "\n\nNEXT STEPS\n1. Confirm priorities\n2. Introduce delivery partner\n3. Kick off\n\nLimited funding. Happy to discuss.\n\n[Your name]";
   }, [C, sow.cn]);
 
   const copy = (t, l) => { navigator.clipboard.writeText(t); setCp(l); setTimeout(() => setCp(""), 2000); };
@@ -1761,7 +1786,7 @@ button{display:none!important}
               <button onClick={exportJSON} disabled={C.tot === 0} style={{ padding: "5px 12px", background: C.tot > 0 ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.05)", color: C.tot > 0 ? "white" : "rgba(255,255,255,0.3)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: C.tot > 0 ? "pointer" : "default" }}>⬇ Export</button>
               <input ref={importFileRef} type="file" accept=".json" onChange={importJSON} style={{ display: "none" }} />
               <button onClick={() => importFileRef.current && importFileRef.current.click()} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⬆ Import</button>
-              {Object.keys(sel).length > 0 && <button onClick={() => setSel({})} style={{ padding: "5px 12px", background: "rgba(220,38,38,0.2)", color: "#fca5a5", border: "1px solid rgba(220,38,38,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>✕ Clear</button>}
+              {Object.keys(sel).length > 0 && <button onClick={() => { setSel({}); setConStart({}); }} style={{ padding: "5px 12px", background: "rgba(220,38,38,0.2)", color: "#fca5a5", border: "1px solid rgba(220,38,38,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>✕ Clear</button>}
               <div style={{ position: "relative" }}>
                 <button onClick={() => { setShowSaves(!showSaves); if (!showSaves) loadSavedList(); }} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>📂{savedList.length > 0 ? " " + savedList.length : ""}</button>
                 {showSaves && (
@@ -1887,6 +1912,7 @@ button{display:none!important}
                             };
                             const removeInstance = () => {
                               setSel(prev => { const cp = { ...prev }; delete cp[rowId]; return cp; });
+                              setConStart(prev => { const cp = { ...prev }; delete cp[rowId]; return cp; });
                             };
                             const labelText = isInst ? itm.name + " #" + instanceNum(rowId) : itm.name;
                             return (
@@ -1919,6 +1945,15 @@ button{display:none!important}
                                           <option value="1yr">1yr Reserved (-41%)</option>
                                         </select>
                                         <button onClick={addRampPhase} title="Add SKU upgrade phase" style={{ padding: "2px 6px", border: "1px solid " + (hasRamp ? "#107C10" : "#ccc"), borderRadius: 4, fontSize: 11, background: hasRamp ? "#dcfce7" : "white", color: hasRamp ? "#166534" : "#666", cursor: "pointer", fontWeight: 600 }}>{hasRamp ? "↗ ramp" : "+ ramp"}</button>
+                                        {(() => {
+                                          const goLive = conStart[rowId] || 1;
+                                          const isAdjusted = goLive > 1;
+                                          return (
+                                            <select value={goLive} onChange={(e) => setConStart(p => ({ ...p, [rowId]: +e.target.value }))} title="Go-live month — when the workload starts consuming. Default M1 = full year. Affects fundable Y1 ACR." style={{ padding: "2px 4px", border: "1px solid " + (isAdjusted ? "#3b82f6" : "#ddd"), borderRadius: 4, fontSize: 11, fontWeight: 600, background: isAdjusted ? "#dbeafe" : "white", color: isAdjusted ? "#1e40af" : "#888", cursor: "pointer" }}>
+                                              {Array.from({ length: 12 }, (_, i) => i + 1).map(m => <option key={m} value={m}>📅 M{m}</option>)}
+                                            </select>
+                                          );
+                                        })()}
                                         {!isInst && <button onClick={addInstance} title="Add another Fabric capacity (independent SKU, ramp, baseline)" style={{ padding: "2px 6px", border: "1px solid #c7d2fe", borderRadius: 4, fontSize: 11, background: "#eef2ff", color: "#4338ca", cursor: "pointer", fontWeight: 600 }}>+ instans</button>}
                                         {isInst && <button onClick={removeInstance} title="Remove this instance" style={{ padding: "2px 6px", border: "1px solid #fecaca", borderRadius: 4, fontSize: 11, background: "white", color: "#b91c1c", cursor: "pointer", fontWeight: 600 }}>✕</button>}
                                       </>
@@ -2081,8 +2116,27 @@ button{display:none!important}
 
               {/* ── YEAR 1 ACR ── */}
               <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 14, marginBottom: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#999", marginBottom: 4 }}>Year 1 ACR</div>
-                <div style={{ textAlign: "center", marginBottom: 8 }}><AnimNum value={C.tot} format={fmt} style={{ fontSize: 24, fontWeight: 700, color: "#0078D4" }} /><div style={{ fontSize: 12, color: "#999" }}>{fmt(C.tot / 12)}/mo{C.xcr > 0 ? " (+ " + fmt(C.xcr) + " XCR)" : ""}</div></div>
+                <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#999", marginBottom: 4 }}>Year 1 ACR <span style={{ fontSize: 9, color: "#bbb", fontWeight: 600 }}>· fundable</span></div>
+                <div style={{ textAlign: "center", marginBottom: 8 }}><AnimNum value={C.tot} format={fmt} style={{ fontSize: 24, fontWeight: 700, color: "#0078D4" }} /><div style={{ fontSize: 12, color: "#999" }}>{fmt(C.totAnnual / 12)}/mo at full run-rate{C.xcr > 0 ? " (+ " + fmt(C.xcr) + " XCR)" : ""}</div></div>
+                {/* Timing indicator: shows if any workload has go-live mid-year */}
+                {(() => {
+                  const adjusted = C.rows.filter(r => (r.startMo || 1) > 1);
+                  if (adjusted.length > 0) {
+                    return (
+                      <div style={{ fontSize: 10, color: "#0369a1", background: "#eff6ff", border: "1px solid #bfdbfe", padding: "4px 8px", borderRadius: 4, marginBottom: 8, textAlign: "center" }}>
+                        📅 {adjusted.length} workload{adjusted.length > 1 ? "s" : ""} with mid-year go-live · Y1 ACR reflects partial-year consumption
+                      </div>
+                    );
+                  }
+                  if (C.rows.length >= 2) {
+                    return (
+                      <div style={{ fontSize: 10, color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", padding: "4px 8px", borderRadius: 4, marginBottom: 8, textAlign: "center" }}>
+                        ⚠ All workloads set to M1 go-live (full year). If any go live later, adjust in Ramp Chart below for accurate ECIF.
+                      </div>
+                    );
+                  }
+                  return null;
+                })()}
                 <div style={{ display: "grid", gridTemplateColumns: C.xcr > 0 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 4 }} className="grid-acr">
                   <div style={{ background: "#eff6ff", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>AFO Eligible ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>{fmt(C.el)}</div></div>
                   <div style={{ background: "#fff7ed", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#D83B01" }}>{fmt(C.ot)}</div></div>
@@ -2090,7 +2144,7 @@ button{display:none!important}
                 </div>
                 {C.rows.length > 0 && <div style={{ marginTop: 8 }}>{C.rows.sort((a, b) => b.yr - a.yr).map((r, i) => (
                   <div key={i} style={{ marginBottom: 4 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}><span style={{ color: r.xcr ? "#d97706" : "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 155 }}>{r.name}{r.sku ? " (" + r.sku + ")" : ""}{r.xcr ? " ⚡" : ""}</span><span style={{ fontWeight: 600 }}>{fmt(r.yr)}</span></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}><span style={{ color: r.xcr ? "#d97706" : "#555", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 155 }}>{r.name}{r.sku ? " (" + r.sku + ")" : ""}{(r.startMo || 1) > 1 ? " · M" + r.startMo : ""}{r.xcr ? " ⚡" : ""}</span><span style={{ fontWeight: 600 }}>{fmt(r.yr)}</span></div>
                     <div style={{ height: 6, background: "#e8e8ec", borderRadius: 4 }}><div style={{ height: "100%", width: (r.yr / mx) * 100 + "%", background: r.xcr ? "#fbbf24" : r.color, borderRadius: 4, opacity: r.elig ? 1 : r.xcr ? 0.7 : 0.6 }} /></div>
                   </div>
                 ))}</div>}
@@ -2508,21 +2562,22 @@ button{display:none!important}
                 <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 2px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Workload Breakdown</h2>
                 <div style={{ fontSize: 11, color: "#999", marginBottom: 4, fontStyle: "italic" }}>Auto-populated from calculator - click values to edit, or add custom rows</div>
                 <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4, fontSize: 13 }}>
-                  <thead><tr style={{ background: "#f5f7fa" }}><th style={{ padding: "5px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Workload</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 90 }}>$/mo</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 100 }}>Y1 Revenue</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 50 }}>%</th><th style={{ width: 24, borderBottom: "2px solid #ddd" }} /></tr></thead>
+                  <thead><tr style={{ background: "#f5f7fa" }}><th style={{ padding: "5px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Workload</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 90 }}>$/mo</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 110 }}>Y1 Revenue<div style={{ fontSize: 9, color: "#999", fontWeight: 400 }}>annualized</div></th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 50 }}>%</th><th style={{ width: 24, borderBottom: "2px solid #ddd" }} /></tr></thead>
                   <tbody>
-                    {C.rows.filter(r => !r.xcr).sort((a, b) => b.yr - a.yr).map((r, i) => {
+                    {C.rows.filter(r => !r.xcr).sort((a, b) => b.yrAnnual - a.yrAnnual).map((r, i) => {
                       const isPhased = r.phases && r.phases.length > 1;
                       const hasBaseline = r.baselineSku && r.baselineYr > 0;
                       const phaseLabel = isPhased ? r.phases.map(p => p.sku).join(" → ") : r.sku;
                       const phaseSchedule = isPhased ? r.phases.map((p, j) => "M" + (p.startMo || 1) + ":" + p.sku).join(" · ") : "";
-                      const showExtraRow = isPhased || hasBaseline;
+                      const hasMidYearStart = (r.startMo || 1) > 1;
+                      const showExtraRow = isPhased || hasBaseline || hasMidYearStart;
                       return (
                       <Fragment key={i}>
                       <tr style={{ background: i % 2 ? "#fafafa" : "white" }}>
-                        <td style={{ padding: "4px 6px", borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, background: r.color, marginRight: 4 }} />{r.tag}{phaseLabel ? " (" + phaseLabel + ")" : ""}{isPhased && <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: "#dcfce7", color: "#166534" }}>📈 PHASED RAMP</span>}{hasBaseline && <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: "#fef3c7", color: "#92400e" }}>📍 BASELINE {r.baselineSku}</span>}{!r.elig && <span style={{ fontSize: 10, color: "#94a3b8" }}> (Accelerate)</span>}</td>
+                        <td style={{ padding: "4px 6px", borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, background: r.color, marginRight: 4 }} />{r.tag}{phaseLabel ? " (" + phaseLabel + ")" : ""}{isPhased && <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: "#dcfce7", color: "#166534" }}>📈 PHASED RAMP</span>}{hasBaseline && <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: "#fef3c7", color: "#92400e" }}>📍 BASELINE {r.baselineSku}</span>}{hasMidYearStart && <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: "#dbeafe", color: "#1e40af" }}>📅 GO-LIVE M{r.startMo}</span>}{!r.elig && <span style={{ fontSize: 10, color: "#94a3b8" }}> (Accelerate)</span>}</td>
                         <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}>{fmt(r.mo)}{isPhased && <div style={{ fontSize: 9, color: "#166534", fontWeight: 600 }}>blended avg</div>}</td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", fontWeight: 600, borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}>{fmt(r.yr)}{hasBaseline && <div style={{ fontSize: 9, color: "#059669", fontWeight: 700 }}>incr: {fmt(r.incrYr)}</div>}</td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}>{C.totFull > 0 ? ((r.yr / C.totFull) * 100).toFixed(0) + "%" : "-"}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", fontWeight: 600, borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}>{fmt(r.yrAnnual)}{hasMidYearStart && <div style={{ fontSize: 9, color: "#1e40af", fontWeight: 600 }}>Y1 actual: {fmt(r.yr)}</div>}{hasBaseline && !hasMidYearStart && <div style={{ fontSize: 9, color: "#059669", fontWeight: 700 }}>incr: {fmt(r.incrYr)}</div>}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}>{C.totAnnual > 0 ? ((r.yrAnnual / C.totAnnual) * 100).toFixed(0) + "%" : "-"}</td>
                         <td />
                       </tr>
                       {showExtraRow && (
@@ -2534,6 +2589,11 @@ button{display:none!important}
                                   const phaseMo = skuMo(p.sku, sel[r.id]?.ri) * (sel[r.id]?.qty || 1);
                                   return "M" + (p.startMo || 1) + " " + p.sku + " (" + fmt(phaseMo) + "/mo)";
                                 }).join(" → ")}
+                              </div>
+                            )}
+                            {hasMidYearStart && (
+                              <div style={{ color: "#1e40af" }}>
+                                Workload goes live M{r.startMo} of Y1 — only {13 - r.startMo} months consumed in Y1 ({fmt(r.yr)}). Annualized run-rate is {fmt(r.yrAnnual)} once fully live.
                               </div>
                             )}
                             {hasBaseline && (
@@ -2555,7 +2615,16 @@ button{display:none!important}
                         <td style={{ padding: "4px 6px", borderBottom: "1px solid #dbeafe", textAlign: "center" }}><button onClick={() => rmSowRow(i)} style={{ border: "none", background: "transparent", color: "#ccc", cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1 }}>×</button></td>
                       </tr>
                     ))}
-                    <tr style={{ fontWeight: 700 }}><td style={{ padding: "5px 6px", borderTop: "2px solid #333" }}>Total ACR (customer-pays)</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{fmt((C.totFull + sow.customRows.reduce((s, r) => s + (r.mo || 0) * 12, 0)) / 12)}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{fmt(C.totFull + sow.customRows.reduce((s, r) => s + (r.mo || 0) * 12, 0))}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>100%</td><td style={{ borderTop: "2px solid #333" }} /></tr>
+                    <tr style={{ fontWeight: 700 }}><td style={{ padding: "5px 6px", borderTop: "2px solid #333" }}>Total ACR (customer-pays, annualized)</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{fmt((C.totAnnual + sow.customRows.reduce((s, r) => s + (r.mo || 0) * 12, 0)) / 12)}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{fmt(C.totAnnual + sow.customRows.reduce((s, r) => s + (r.mo || 0) * 12, 0))}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>100%</td><td style={{ borderTop: "2px solid #333" }} /></tr>
+                    {C.totAnnual !== C.totFull && C.totFull > 0 && (
+                      <tr style={{ fontWeight: 600, background: "#eff6ff" }}>
+                        <td style={{ padding: "4px 6px", color: "#1e40af", fontSize: 11 }}>↳ Y1 actual (with mid-year go-lives)</td>
+                        <td />
+                        <td style={{ padding: "4px 6px", textAlign: "right", color: "#1e40af" }}>{fmt(C.totFull + sow.customRows.reduce((s, r) => s + (r.mo || 0) * 12, 0))}</td>
+                        <td style={{ padding: "4px 6px", textAlign: "right", color: "#1e40af", fontSize: 10 }}>used for ECIF</td>
+                        <td />
+                      </tr>
+                    )}
                     {C.totBaseline > 0 && (
                       <Fragment>
                         <tr style={{ fontWeight: 600, background: "#fffbeb" }}>
@@ -2719,23 +2788,9 @@ button{display:none!important}
                   // Calculate monthly ACR ramp over 12 months
                   const months = Array.from({length: 12}, (_, i) => i + 1);
                   const colors = ["#0078D4", "#059669", "#7c3aed", "#f59e0b", "#dc2626", "#0ea5e9", "#84cc16", "#e11d48", "#6366f1", "#14b8a6"];
-                  
-                  // Assign default start months based on workload type
-                  const getDefaultStart = (id) => {
-                    const itm = getItem(id);
-                    if (!itm) return 1;
-                    // Phased Fabric rows already model their own ramp - start at M1
-                    const row = C.rows.find(r => r.id === id);
-                    if (row && row.monthly) return 1;
-                    if (itm.cat === "db") return 3; // DBs start after assessment
-                    if (itm.cat === "fab") return 4; // Fabric after DB migration
-                    if (itm.cat === "fo") return 4; // AI after data is ready
-                    if (itm.cat === "accel") return 2; // Infra early
-                    return 2;
-                  };
 
                   const activeRows = C.rows.filter(r => r.mo > 50).slice(0, 8); // Top 8 by cost, skip tiny ones
-                  
+
                   // Build monthly data
                   const monthlyData = months.map(m => {
                     let total = 0;
@@ -2808,7 +2863,7 @@ button{display:none!important}
                         ))}
                       </div>
 
-                      <div style={{ fontSize: 10, color: "#999", marginTop: 8, fontStyle: "italic" }}>Adjust start months to show realistic ramp-up. Earlier consumption = stronger AFO case.</div>
+                      <div style={{ fontSize: 10, color: "#0078D4", marginTop: 8, fontStyle: "italic", background: "#eff6ff", padding: "5px 8px", borderRadius: 4, border: "1px solid #bfdbfe" }}>💡 Default: M1 (full Y1 consumption). Move start month forward if a workload goes live mid-year — Y1 ACR and ECIF auto-adjust to match the actual months consumed. Each month delay = ~8% lower ECIF on that workload.</div>
                     </div>
                   );
                 })()}
@@ -2938,7 +2993,7 @@ button{display:none!important}
 
                         <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Customer & Partner Financial Commitment</div>
                         <div style={{ marginBottom: 12, paddingLeft: 8 }}>
-                          {cn} commits to {fmt(C.tot)}/yr in Azure consumption ({fmt(C.tot / 12)}/mo). {mCalc.totalE > 0 ? "The partner (" + (sow.sup || "TBD").replace(/ \(External\)/,"").replace(/ \(Internal\)/,"") + ") invests " + fmt(mCalc.totalE) + " in implementation services. " : "Partner implementation scope to be confirmed. "}Microsoft's co-investment of {fmt(C.custFunding)} represents a {C.tot > 0 ? (C.custFunding / C.tot * 100).toFixed(1) : 0}% investment relative to Y1 ACR - well within the {C.ok ? "2:1 ROI" : "3:1-7:1 ROI"} framework. The customer bears 100% of Azure consumption cost.
+                          {cn} commits to {fmt(C.totAnnual)}/yr in Azure consumption at full run-rate ({fmt(C.totAnnual / 12)}/mo). {C.totFull !== C.totAnnual ? "Y1 actual is " + fmt(C.totFull) + " due to mid-year go-live timing. " : ""}{mCalc.totalE > 0 ? "The partner (" + (sow.sup || "TBD").replace(/ \(External\)/,"").replace(/ \(Internal\)/,"") + ") invests " + fmt(mCalc.totalE) + " in implementation services. " : "Partner implementation scope to be confirmed. "}Microsoft's co-investment of {fmt(C.custFunding)} represents a {C.tot > 0 ? (C.custFunding / C.tot * 100).toFixed(1) : 0}% investment relative to fundable Y1 ACR - well within the {C.ok ? "2:1 ROI" : "3:1-7:1 ROI"} framework. The customer bears 100% of Azure consumption cost.
                         </div>
 
                         <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Soft Outcomes for Microsoft</div>
@@ -3207,8 +3262,9 @@ h1{page-break-after:avoid}
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }} className="grid-2col">
                   <div style={{ background: "#f0f6ff", borderRadius: 10, padding: 20, textAlign: "center" }}>
                     <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>Annual Azure Investment</div>
-                    <div style={{ fontSize: 24, fontWeight: 700, color: "#0078D4" }}>{fmt(C.tot)}</div>
-                    <div style={{ fontSize: 13, color: "#93c5fd" }}>{fmt(C.tot / 12)} / month</div>
+                    <div style={{ fontSize: 24, fontWeight: 700, color: "#0078D4" }}>{fmt(C.totAnnual)}</div>
+                    <div style={{ fontSize: 13, color: "#93c5fd" }}>{fmt(C.totAnnual / 12)} / month at full run-rate</div>
+                    {C.totAnnual !== C.totFull && C.totFull > 0 && <div style={{ fontSize: 11, color: "#1e40af", marginTop: 4, fontStyle: "italic" }}>Y1 actual: {fmt(C.totFull)} (some workloads ramp up mid-year)</div>}
                   </div>
                   <div style={{ background: "#f0fdf4", borderRadius: 10, padding: 20, textAlign: "center" }}>
                     <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>Microsoft Co-Investment</div>
@@ -3219,14 +3275,14 @@ h1{page-break-after:avoid}
 
                 {/* Workload breakdown */}
                 <div style={{ fontSize: 12, fontWeight: 600, color: "#999", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Investment Breakdown</div>
-                {C.rows.filter(r => !r.xcr).sort((a, b) => b.yr - a.yr).map((r, i) => (
+                {C.rows.filter(r => !r.xcr).sort((a, b) => b.yrAnnual - a.yrAnnual).map((r, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0", borderBottom: "1px solid #f5f5f7" }}>
                     <div style={{ width: 8, height: 8, borderRadius: "50%", background: r.color, flexShrink: 0 }} />
-                    <div style={{ flex: 1, fontSize: 12, color: "#333" }}>{r.name}{r.sku ? " (" + r.sku + ")" : ""}</div>
+                    <div style={{ flex: 1, fontSize: 12, color: "#333" }}>{r.name}{r.sku ? " (" + r.sku + ")" : ""}{(r.startMo || 1) > 1 ? <span style={{ marginLeft: 6, fontSize: 10, color: "#1e40af" }}>· starts M{r.startMo}</span> : null}</div>
                     <div style={{ fontSize: 13, color: "#999" }}>{fmt(r.mo)}/mo</div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: "#333", minWidth: 80, textAlign: "right" }}>{fmt(r.yr)}/yr</div>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: "#333", minWidth: 80, textAlign: "right" }}>{fmt(r.yrAnnual)}/yr</div>
                     <div style={{ width: 120, height: 6, background: "#f0f0f0", borderRadius: 4, flexShrink: 0 }}>
-                      <div style={{ height: "100%", width: Math.min((r.yr / Math.max(...C.rows.map(x => x.yr), 1)) * 100, 100) + "%", background: r.color, borderRadius: 4 }} />
+                      <div style={{ height: "100%", width: Math.min((r.yrAnnual / Math.max(...C.rows.map(x => x.yrAnnual), 1)) * 100, 100) + "%", background: r.color, borderRadius: 4 }} />
                     </div>
                   </div>
                 ))}
@@ -3641,12 +3697,14 @@ h1{page-break-after:avoid}
             <div style={{ background: HDR, padding: "16px 24px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>What's New</div>
-                <div style={{ fontSize: 11, opacity: 0.5 }}>v2.4 - April 2026</div>
+                <div style={{ fontSize: 11, opacity: 0.5 }}>v2.6 - April 2026</div>
               </div>
               <button onClick={() => setShowChangelog(false)} style={{ background: "rgba(255,255,255,0.2)", border: "none", color: "white", borderRadius: 8, padding: "4px 10px", cursor: "pointer", fontSize: 12, fontFamily: "inherit" }}>Close</button>
             </div>
             <div style={{ padding: "16px 24px", overflowY: "auto", flex: 1 }}>
               {[
+                { icon: "⏱️", title: "Inline Go-live month on Fabric rows (NEW v2.6)", desc: "Each Fabric row (and instance) now has a 📅 M1 dropdown next to '+ ramp'/'+ instans'. No need to scroll to Ramp Chart — set go-live month directly on the workload. Two-way synced with Ramp Chart. Default M1 (full year), turns blue when adjusted. Especially useful for new Fabric instances that aren't live from day 1." },
+                { icon: "📅", title: "Realistic Y1 ACR with go-live timing (NEW v2.5)", desc: "Y1 ACR now reflects actual months of consumption per workload. Default is M1 (full year) — use the Ramp Chart 'Consumption start per workload' dropdowns to push start months later for mid-year go-lives. ECIF auto-adjusts to match. Each month delay = ~8% lower fundable ACR on that workload. Prevents over-claiming on AFO nominations when projects deliver mid-year (e.g. milestone 2 in M6 = workload only consumes 7 months Y1, not 12)." },
                 { icon: "🧬", title: "Multi-instance Fabric (NEW v2.4)", desc: "A single Fabric workload row can now hold multiple capacities. Click '+ instans' next to '+ ramp' on any Fabric row to add a parallel capacity with its own SKU, ramp and baseline. Use it when a customer runs e.g. an existing F16 → F64 + a new F32 + a sandbox F8 in parallel. Each instance contributes independently to AFO incremental ACR, Ramp Chart, and SOW deliverables. Remove an instance with '✕'." },
                 { icon: "🌐", title: "Azure AI Translator (NEW)", desc: "Dedicated workload row under AI Foundry. Document Translation preserves formatting (PDF, PPTX, DOCX), Text Translation for real-time. AFO-eligible under 'AI: Tools - Speech (Speech, Language, Translation)'. Auto-maps from Azure Pricing Calculator import." },
                 { icon: "📄", title: "Azure AI Document Intelligence (NEW)", desc: "Dedicated workload row under AI Foundry. Extracts text, tables, and key-value pairs from PDFs and images. Essential for RAG pipelines with structured documents. AFO-eligible under 'AI: Tools - Vision'. Auto-maps from Pricing Calculator import (also matches legacy 'Form Recognizer')." },
