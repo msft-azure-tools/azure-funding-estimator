@@ -40,9 +40,14 @@ button:active { opacity: 0.75; }
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 </head><body><div id="root"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.0/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script>window.ECIF_TEMPLATE_B64="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";</script>
+
 <script>
 if(!window.storage){const P="afe_";window.storage={async get(k){const v=localStorage.getItem(P+k);return v?{key:k,value:v}:null},async set(k,v){localStorage.setItem(P+k,v);return{key:k,value:v}},async delete(k){localStorage.removeItem(P+k);return{key:k,deleted:true}},async list(p){const keys=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k.startsWith(P+(p||"")))keys.push(k.replace(P,""))}return{keys}};};}
 </script>
@@ -817,14 +822,14 @@ function App() {
     cc: "[Name, email]", sup: "[Partner] (External)", sc: "[Name, email]",
     scope: "", sd: "", ed: "", rate: 200,
     milestones: [
-      { n: "", h: "", d: "", x: "" },
-      { n: "", h: "", d: "", x: "" },
-      { n: "", h: "", d: "", x: "" },
+      { n: "_pending", h: "", d: "", x: "", bucket: "afo" },
     ],
     customRows: [],
     // ECIF template export fields (only what's not already in SOW)
-    ecifRate: "", ecifRole: "Tech III - Sr. Consultant", localCurr: "Swedish Krona (SEK)",
+    ecifRate: "", ecifRole: "Tech III - Sr. Consultant", localCurr: "US Dollar (USD)",
     serviceLocation: "Sweden", supplierID: "", custEmail: "", supEmail: "",
+    // v2.7 wizard state
+    useCases: 2, splitMode: "auto", customMciPct: 18,
   });
   const [showEcifExport, setShowEcifExport] = useState(false);
   const us = (k, v) => setSow((p) => ({ ...p, [k]: v }));
@@ -843,7 +848,7 @@ function App() {
   const addMilestone = () => {
     const idx = sow.milestones.length;
     const label = "M" + (idx + 1) + " - [Phase Name]";
-    setSow((p) => ({ ...p, milestones: [...p.milestones, { n: label, h: "", d: "", x: "" }] }));
+    setSow((p) => ({ ...p, milestones: [...p.milestones, { n: label, h: "", d: "", x: "", bucket: "afo" }] }));
   };
   const removeMilestone = (idx) => {
     if (sow.milestones.length <= 1) return;
@@ -1229,13 +1234,14 @@ function App() {
       if (res && res.value) {
         const data = JSON.parse(res.value);
         if (data.sow) {
-          // Normalize milestone fields from JSON (name→n, desc→d, hours→h, date→x)
+          // Normalize milestone fields from JSON (legacy: name→n, hours→h, date→d, desc→x)
           if (data.sow.milestones) {
             data.sow.milestones = data.sow.milestones.map(ms => ({
               n: ms.n || ms.name || "",
               h: ms.h || ms.hours || "",
-              d: ms.d || ms.desc || "",
-              x: ms.x || ms.date || "",
+              d: ms.d || ms.date || "",
+              x: ms.x || ms.desc || "",
+              bucket: ms.bucket || "afo",
             }));
           }
           setSow(prev => ({ ...prev, ...data.sow }));
@@ -1261,7 +1267,7 @@ function App() {
   // ── Export / Import JSON file ──
   const exportJSON = () => {
     const name = sow.cn === "[CUSTOMER NAME]" ? "untitled" : sow.cn.replace(/[^a-zA-Z0-9_-]/g, "_");
-    const payload = { sow, sel, conStart, ts: new Date().toISOString(), name: sow.cn, version: "2.5" };
+    const payload = { sow, sel, conStart, ts: new Date().toISOString(), name: sow.cn, version: "2.7" };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -1270,6 +1276,280 @@ function App() {
     a.click();
     URL.revokeObjectURL(url);
     setSaveStatus("Exported");
+    setTimeout(() => setSaveStatus(""), 3000);
+  };
+
+  // ── NEW v2.7: Funding summary one-pager (HTML) ──
+  const exportFundingOnePager = () => {
+    if (!window.jspdf) { alert("jsPDF library not loaded. Refresh and try again."); return; }
+    const { jsPDF } = window.jspdf;
+    const r = parseFloat(sow.rate) || 0;
+    if (r <= 0) { alert("Set a rate per hour first."); return; }
+
+    // FX-aware funding caps
+    const ccyMatch = (sow.localCurr || "").match(/\(([A-Z]{3})\)/);
+    const ccyCode = ccyMatch ? ccyMatch[1] : "USD";
+    const defaultFx = { USD: 1, SEK: 10.5, EUR: 0.92, GBP: 0.79, NOK: 10.8, DKK: 6.85 };
+    const fxRate = parseFloat(sow.fxRate) || defaultFx[ccyCode] || 1;
+    const mciFundingUsd = C.ok ? C.mci.pre : (C.mci.pre + C.mci.post);
+    const afoFundingUsd = C.ok ? C.ecif : C.stdEcif;
+    const mciFundingLocal = mciFundingUsd * fxRate;
+    const afoFundingLocal = afoFundingUsd * fxRate;
+
+    // Bucket scopes from milestones
+    const mciMs = sow.milestones.filter(m => (m.bucket || "afo") === "mci" && m.n !== "_pending");
+    const afoMs = sow.milestones.filter(m => (m.bucket || "afo") === "afo" && m.n !== "_pending");
+    const selfMs = sow.milestones.filter(m => (m.bucket || "afo") === "self" && m.n !== "_pending");
+    const mciScopeH = mciMs.reduce((s, m) => s + (parseFloat(m.h) || 0), 0);
+    const afoScopeH = afoMs.reduce((s, m) => s + (parseFloat(m.h) || 0), 0);
+    const selfScopeH = selfMs.reduce((s, m) => s + (parseFloat(m.h) || 0), 0);
+    const mciScope = mciScopeH * r;
+    const afoScope = afoScopeH * r;
+    const selfScope = selfScopeH * r;
+    const totalH = mciScopeH + afoScopeH + selfScopeH;
+    const totalE = totalH * r;
+    if (totalH === 0) { alert("Add and generate milestones before exporting one-pager."); return; }
+
+    const mciCovers = Math.min(mciFundingLocal, mciScope);
+    const afoCovers = Math.min(afoFundingLocal, afoScope);
+    const mciHrs = r > 0 ? mciCovers / r : 0;
+    const afoHrs = r > 0 ? afoCovers / r : 0;
+    const totalCovered = mciCovers + afoCovers;
+    const totalCoveredH = Math.round(mciHrs + afoHrs);
+    const customerPays = totalE - totalCovered;
+    const customerHrs = totalH - totalCoveredH;
+    const coverPct = totalE > 0 ? (totalCovered / totalE * 100) : 0;
+
+    const fmtMoney = (v) => {
+      const rounded = Math.round(v);
+      if (ccyCode === "USD") return "$" + rounded.toLocaleString("en-US");
+      return rounded.toLocaleString("sv-SE") + " " + ccyCode;
+    };
+    const fmtMoneyClean = (v) => {
+      const rounded = Math.round(v / 100) * 100;
+      if (ccyCode === "USD") return "$" + rounded.toLocaleString("en-US");
+      return rounded.toLocaleString("sv-SE") + " " + ccyCode;
+    };
+    const fmtNum = (v) => {
+      // Just the number portion for hero block (no currency prefix)
+      const rounded = Math.round(v);
+      return ccyCode === "USD" ? rounded.toLocaleString("en-US") : rounded.toLocaleString("sv-SE");
+    };
+
+    const cn = sow.cn === "[CUSTOMER NAME]" ? "Customer" : sow.cn;
+    const partner = (sow.sup || "Partner").replace(/ \(External\)| \(Internal\)/g, "");
+    const reqName = (sow.req || "Microsoft").split(",")[0].trim() || "Microsoft";
+    const today = new Date().toLocaleDateString("en-GB", { month: "short", year: "numeric" });
+
+    // ── Build PDF (A4 portrait) ──
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const pageW = 210, pageH = 297;
+    const ml = 16, mr = 16; // left/right margin
+    const contentW = pageW - ml - mr;
+    let y = 14;
+
+    // Brand colors
+    const accentRed = [200, 16, 46]; // #c8102e
+    const greenC = [22, 163, 74];
+    const grayDark = [26, 26, 26];
+    const grayMid = [107, 107, 107];
+    const grayLight = [235, 235, 235];
+
+    // Header
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...grayMid);
+    doc.text("MICROSOFT FUNDING OVERVIEW · CONFIDENTIAL", ml, y);
+    doc.text("Prepared for partner · " + today, pageW - mr, y, { align: "right" });
+    y += 5;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(...grayDark);
+    doc.text(cn + " · " + partner, ml, y);
+    y += 1;
+    doc.setDrawColor(...grayDark);
+    doc.setLineWidth(0.4);
+    doc.line(ml, y + 2, pageW - mr, y + 2);
+    y += 9;
+
+    // Hero block: two columns
+    const heroBoxH = 22;
+    const halfW = contentW / 2;
+    // Left: total project cost
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...grayMid);
+    doc.text("TOTAL PROJECT COST", ml, y);
+    doc.setFontSize(26);
+    doc.setTextColor(...grayDark);
+    doc.text(fmtNum(totalE), ml, y + 11);
+    const totalNumW = doc.getTextWidth(fmtNum(totalE));
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...grayMid);
+    doc.text(ccyCode, ml + totalNumW + 2, y + 11);
+    doc.setFontSize(8.5);
+    doc.text(totalH + " hours × " + fmtMoney(r) + "/h", ml, y + 17);
+    // Right: funding covers
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(...grayMid);
+    doc.text("FUNDING COVERS", ml + halfW + 8, y);
+    doc.setFontSize(26);
+    doc.setTextColor(...accentRed);
+    doc.text(Math.round(coverPct) + "%", ml + halfW + 8, y + 11);
+    doc.setFontSize(8.5);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(...grayMid);
+    doc.text(totalCoveredH + "h covered (" + fmtMoney(totalCovered) + ")", ml + halfW + 8, y + 17);
+    doc.text("Remainder paid by customer via own SoW", ml + halfW + 8, y + 21);
+    y += heroBoxH + 6;
+
+    // Section: Scope split by funding bucket
+    doc.setDrawColor(...grayLight);
+    doc.line(ml, y, pageW - mr, y);
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(...grayDark);
+    doc.text("SCOPE SPLIT BY FUNDING BUCKET", ml, y);
+    y += 2;
+
+    // Build table rows for scope split
+    const scopeRows = [];
+    if (mciScopeH > 0) scopeRows.push(["MCI Pre-sales", "Partner-led", Math.round(mciScopeH), fmtMoney(mciScope)]);
+    if (afoScopeH > 0) scopeRows.push(["AFO ECIF", "Microsoft-led", Math.round(afoScopeH), fmtMoney(afoScope)]);
+    if (selfScopeH > 0) scopeRows.push(["Self", "Customer SoW", Math.round(selfScopeH), fmtMoney(selfScope)]);
+    doc.autoTable({
+      startY: y + 2,
+      head: [["Bucket", "Funding source", "Hours", "Cost"]],
+      body: scopeRows,
+      foot: [["Total", "", totalH, fmtMoney(totalE)]],
+      theme: "plain",
+      styles: { font: "helvetica", fontSize: 9, cellPadding: 1.8, lineColor: [235, 235, 235], lineWidth: 0.1 },
+      headStyles: { fontStyle: "bold", fontSize: 7.5, textColor: grayMid, lineWidth: { bottom: 0.4 }, lineColor: grayDark, fillColor: false },
+      footStyles: { fontStyle: "bold", textColor: grayDark, lineWidth: { top: 0.4 }, lineColor: grayDark, fillColor: false },
+      columnStyles: { 0: { cellWidth: 45, fontStyle: "bold" }, 1: { cellWidth: 45 }, 2: { halign: "right", cellWidth: 30 }, 3: { halign: "right", cellWidth: contentW - 120 } },
+      margin: { left: ml, right: mr },
+    });
+    y = doc.lastAutoTable.finalY + 8;
+
+    // Two-column section: MCI / AFO blocks
+    if (mciScopeH > 0 || afoScopeH > 0) {
+      const colW = (contentW - 8) / 2;
+      const colY = y;
+      // MCI
+      if (mciScopeH > 0) {
+        doc.setFillColor(...greenC);
+        doc.circle(ml + 1.2, y - 0.5, 1.2, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(...grayDark);
+        doc.text("MCI PRE-SALES · PARTNER-LED", ml + 4, y);
+        doc.autoTable({
+          startY: y + 2,
+          body: [
+            ["MCI funding cap", fmtMoney(mciFundingLocal)],
+            ["Pre-sales scope", fmtMoney(mciScope)],
+            ["MCI covers", Math.round(mciHrs) + "h of " + Math.round(mciScopeH) + "h (" + (mciScope > 0 ? Math.round(mciCovers/mciScope*100) : 0) + "%)"],
+            ["Customer pays (own SoW)", Math.round(mciScopeH - mciHrs) + "h, " + fmtMoney(mciScope - mciCovers)],
+          ],
+          theme: "plain",
+          styles: { font: "helvetica", fontSize: 8.5, cellPadding: 1.5, lineColor: [235, 235, 235], lineWidth: 0.1 },
+          columnStyles: { 0: { cellWidth: colW * 0.55 }, 1: { halign: "right", cellWidth: colW * 0.45 } },
+          margin: { left: ml, right: pageW - ml - colW },
+          didParseCell: (data) => {
+            if (data.row.index === 2) {
+              data.cell.styles.fontStyle = "bold";
+              data.cell.styles.fillColor = [251, 246, 240];
+            }
+          },
+        });
+        const mciEndY = doc.lastAutoTable.finalY + 1;
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(7);
+        doc.setTextColor(...grayMid);
+        const mciNote = "Submitted by partner via Partner Center. MCI generates its own SOW — these milestones are NOT part of the AFO ECIF submission.";
+        doc.text(doc.splitTextToSize(mciNote, colW - 2), ml, mciEndY + 2);
+      }
+      // AFO
+      if (afoScopeH > 0) {
+        const afoX = ml + colW + 8;
+        doc.setFillColor(...accentRed);
+        doc.circle(afoX + 1.2, colY - 0.5, 1.2, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(...grayDark);
+        doc.text("AFO ECIF · MICROSOFT-LED", afoX + 4, colY);
+        doc.autoTable({
+          startY: colY + 2,
+          body: [
+            ["AFO funding cap", fmtMoney(afoFundingLocal)],
+            ["Post-sales scope", fmtMoney(afoScope)],
+            ["AFO covers", Math.round(afoHrs) + "h of " + Math.round(afoScopeH) + "h (" + (afoScope > 0 ? Math.round(afoCovers/afoScope*100) : 0) + "%)"],
+            ["Customer pays (own SoW)", Math.round(afoScopeH - afoHrs) + "h, " + fmtMoney(afoScope - afoCovers)],
+          ],
+          theme: "plain",
+          styles: { font: "helvetica", fontSize: 8.5, cellPadding: 1.5, lineColor: [235, 235, 235], lineWidth: 0.1 },
+          columnStyles: { 0: { cellWidth: colW * 0.55 }, 1: { halign: "right", cellWidth: colW * 0.45 } },
+          margin: { left: afoX, right: mr },
+          didParseCell: (data) => {
+            if (data.row.index === 2) {
+              data.cell.styles.fontStyle = "bold";
+              data.cell.styles.fillColor = [251, 246, 240];
+            }
+          },
+        });
+        const afoEndY = doc.lastAutoTable.finalY + 1;
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(7);
+        doc.setTextColor(...grayMid);
+        const afoNote = "Submitted by Microsoft via ECIF Central. The AFO SOW covers ONLY the post-sales milestones tagged as AFO. Requires Y1 ACR " + fmtMoney(afoFundingLocal * 2) + " (50% ROI rule).";
+        doc.text(doc.splitTextToSize(afoNote, colW - 2), afoX, afoEndY + 2);
+      }
+      y = doc.lastAutoTable.finalY + 14;
+    }
+
+    // Final calculation (waterfall)
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(...grayDark);
+    doc.text("FINAL CALCULATION", ml, y);
+    y += 2;
+    const wfRows = [];
+    wfRows.push(["Total project cost", totalH + "h", fmtMoney(totalE)]);
+    if (mciCovers > 0) wfRows.push(["less MCI Pre-sales", "-" + Math.round(mciHrs) + "h", "-" + fmtMoney(mciCovers)]);
+    if (afoCovers > 0) wfRows.push(["less AFO ECIF", "-" + Math.round(afoHrs) + "h", "-" + fmtMoney(afoCovers)]);
+    doc.autoTable({
+      startY: y + 2,
+      body: wfRows,
+      foot: [["= Customer net cost (own SoW)", Math.round(customerHrs) + "h", fmtMoney(customerPays)]],
+      theme: "plain",
+      styles: { font: "helvetica", fontSize: 9.5, cellPadding: 2, lineColor: [235, 235, 235], lineWidth: 0.1 },
+      footStyles: { fontStyle: "bold", fontSize: 11, textColor: accentRed, lineWidth: { top: 0.5 }, lineColor: grayDark, fillColor: false },
+      columnStyles: { 0: { cellWidth: contentW - 80 }, 1: { halign: "right", cellWidth: 28, textColor: grayMid }, 2: { halign: "right", cellWidth: 52, fontStyle: "bold" } },
+      margin: { left: ml, right: mr },
+      didParseCell: (data) => {
+        if (data.section === "body" && data.row.index > 0) {
+          data.cell.styles.textColor = [45, 106, 79];
+        }
+      },
+    });
+
+    // Footer
+    const footY = pageH - 10;
+    doc.setDrawColor(...grayLight);
+    doc.line(ml, footY - 4, pageW - mr, footY - 4);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(154, 154, 154);
+    doc.text("Source: AFE projection · Rate " + fmtMoney(r) + "/h" + (ccyCode !== "USD" ? " · FX 1 USD = " + fxRate + " " + ccyCode : ""), ml, footY);
+    doc.text("Generated by Azure Funding Estimator", pageW - mr, footY, { align: "right" });
+
+    // Save
+    const safeName = cn.replace(/[^a-zA-Z0-9_-]/g, "_");
+    doc.save("Funding_Onepager_" + safeName + ".pdf");
+    setSaveStatus("Onepager PDF exported");
     setTimeout(() => setSaveStatus(""), 3000);
   };
 
@@ -1285,13 +1565,14 @@ function App() {
           // Merge with defaults to prevent missing fields
           setSow(prev => {
             const merged = { ...prev, ...data.sow };
-            // Ensure milestones have correct shape
+            // Ensure milestones have correct shape (preserve bucket field — v2.7)
             if (data.sow.milestones) {
               merged.milestones = data.sow.milestones.map(m => ({
                 n: m.n || m.name || "",
                 h: m.h || m.hours || "",
                 d: m.d || m.date || "",
-                x: m.x || m.desc || ""
+                x: m.x || m.desc || "",
+                bucket: m.bucket || "afo"  // Default legacy milestones to AFO
               }));
             }
             if (!merged.customRows) merged.customRows = [];
@@ -1323,147 +1604,180 @@ function App() {
 
   useEffect(() => { loadSavedList(); }, []);
 
-  // ── Export ECIF Template (Universal v2.1 .xlsx for ECIF Central import) ──
-  const exportEcifTemplate = () => {
-    const XLSX = window.XLSX;
-    if (!XLSX) { alert("Excel library not loaded. Refresh and try again."); return; }
-    const cn = sow.cn === "[CUSTOMER NAME]" ? "" : sow.cn;
-    const partner = (sow.sup || "").replace(/ \(External\)| \(Internal\)/g, "");
-    const reqName = (sow.req || "").split(",")[0].trim();
-    const custContact = (sow.cc || "").split(",")[0].trim();
-    const supContact = (sow.sc || "").split(",")[0].trim();
-    const rate = parseFloat(sow.ecifRate) || parseFloat(sow.rate) || 0;
-    const msValid = sow.milestones.filter(m => m.n && m.n.trim());
-    if (msValid.length === 0) { alert("Add at least one milestone with a name before exporting."); return; }
-    const wb = XLSX.utils.book_new();
-    // Work type auto-detect
-    const getWT = (i, name) => {
-      const n = (name || "").toLowerCase();
-      if (i === 0 || /assess|architect|design|plan|discover|poc|pilot/i.test(n)) return "Architecture Design or Assessment (Pre-Sales)";
-      return "Migration and Deployment Services (Post-Sales)";
-    };
-    // ── Guidance ──
-    const g = XLSX.utils.aoa_to_sheet([[], [], ["", "Guidance"], [], [], [],
-      ["", "", " Generated by Azure Funding Estimator. Ensure 'Enable Editing' is enabled."],
-      [], ["", "", "Mandatory Fields"], ["", "", "- Please ensure all mandatory fields highlighted in red are filled in."]]);
-    g["!cols"] = [{ wch: 2 }, { wch: 10 }, { wch: 80 }];
-    XLSX.utils.book_append_sheet(wb, g, "Guidance");
-    // ── Account and Contact Info ──
-    const a = XLSX.utils.aoa_to_sheet([]);
-    const aSet = (ref, val) => { a[ref] = { v: val, t: "s" }; };
-    aSet("G1", "Account and Contact Info ");
-    aSet("G20", "Customer Details"); aSet("H20", "Supplier input"); aSet("I20", "Guidance for the Supplier Input");
-    aSet("G21", "Customer Name *"); aSet("H21", cn);
-    aSet("G22", "Customer Contact Name *"); aSet("H22", custContact);
-    aSet("G23", "Customer Contact Email *"); aSet("H23", sow.custEmail || "");
-    aSet("G24", "Service Location *"); aSet("H24", sow.serviceLocation || "Sweden");
-    aSet("G31", "Microsoft Contact Details"); aSet("H31", "Supplier input");
-    aSet("G32", "Microsoft Project Requestor Name *"); aSet("H32", reqName);
-    aSet("G39", "Supplier Details"); aSet("H39", "Supplier input");
-    aSet("G40", "ECIF Supplier Name *"); aSet("H40", partner);
-    aSet("G41", "Supplier ID *"); aSet("H41", sow.supplierID || "");
-    aSet("G42", "Primary Supplier Contact Name *"); aSet("H42", supContact);
-    aSet("G43", "Primary Supplier Contact Email *"); aSet("H43", sow.supEmail || "");
-    a["!ref"] = "A1:I50"; a["!cols"] = [{ wch: 2 },{ wch: 2 },{ wch: 2 },{ wch: 2 },{ wch: 2 },{ wch: 2 },{ wch: 35 },{ wch: 40 },{ wch: 50 }];
-    XLSX.utils.book_append_sheet(wb, a, "Account and Contact Info");
-    // ── Project Scope ──
-    const p = XLSX.utils.aoa_to_sheet([]);
-    const pSet = (ref, val, type) => { p[ref] = type === "d" ? { v: val, t: "d" } : type === "n" ? { v: val, t: "n" } : { v: val, t: "s" }; };
-    pSet("G1", "Project Scope");
-    pSet("G11", "Project Summary"); pSet("I11", "Guidance for the Supplier Input");
-    pSet("G12", "Services to be Provided (5000 characters only) *"); pSet("H12", (sow.scope || "").substring(0, 5000));
-    pSet("G13", "Project Start Date *");
-    if (sow.sd) p["H13"] = { v: new Date(sow.sd), t: "d" };
-    const lastD = msValid.reduce((l, m) => { if (m.d) { const d = new Date(m.d); if (d > l) return d; } return l; }, sow.sd ? new Date(sow.sd) : new Date());
-    pSet("G14", "Project End Date *"); p["H14"] = { v: lastD, t: "d" };
-    pSet("G16", "Currency Name *"); pSet("H16", sow.localCurr || "Swedish Krona (SEK)");
-    pSet("G17", "Travel Expenses *"); p["H17"] = { v: 0, t: "n" };
-    pSet("B26", "Sort");
-    pSet("G26", "Project Milestone Name *"); pSet("H26", "Milestone Description * (5000 characters only per milestone)");
-    pSet("I26", "Project Milestone Work Type *"); pSet("J26", "Milestone Due Date *"); pSet("K26", "Milestone Amount");
-    msValid.forEach((m, i) => {
-      const row = 27 + i;
-      const h = parseFloat(m.h) || 0;
-      const amt = h * rate;
-      pSet("B" + row, i + 1, "n");
-      pSet("G" + row, m.n);
-      pSet("H" + row, (m.x || m.n || "").substring(0, 5000));
-      pSet("I" + row, getWT(i, m.n));
-      if (m.d) p["J" + row] = { v: new Date(m.d), t: "d" };
-      p["K" + row] = { v: Math.round(amt), t: "n" };
-    });
-    p["!ref"] = "A1:K" + (27 + msValid.length);
-    p["!cols"] = [{ wch: 2 },{ wch: 5 },{ wch: 2 },{ wch: 2 },{ wch: 2 },{ wch: 2 },{ wch: 35 },{ wch: 60 },{ wch: 45 },{ wch: 14 },{ wch: 16 }];
-    XLSX.utils.book_append_sheet(wb, p, "Project Scope");
-    // ── Milestone Details ──
-    const md = XLSX.utils.aoa_to_sheet([]);
-    const mdSet = (ref, val, type) => { md[ref] = type === "n" ? { v: val, t: "n" } : { v: val, t: "s" }; };
-    mdSet("G1", "Milestone Details ");
-    mdSet("G14", "Milestone Totals");
-    mdSet("G15", " Milestone Name *"); mdSet("H15", "Supplier Role & Level *"); mdSet("I15", "Number of resources *");
-    mdSet("J15", "Hours required per resource *"); mdSet("K15", "Number of Weeks *"); mdSet("L15", "Total Hours Required");
-    msValid.forEach((m, i) => {
-      const row = 16 + i;
-      const h = parseFloat(m.h) || 0;
-      mdSet("G" + row, m.n);
-      mdSet("H" + row, sow.ecifRole || "Tech III - Sr. Consultant");
-      md["I" + row] = { v: 1, t: "n" };
-      md["J" + row] = { v: h, t: "n" };
-      md["K" + row] = { v: Math.ceil(h / 40) || 1, t: "n" };
-      md["L" + row] = { v: h, t: "n" };
-    });
-    md["!ref"] = "A1:L" + (16 + msValid.length);
-    md["!cols"] = [{ wch: 2 },{ wch: 2 },{ wch: 2 },{ wch: 2 },{ wch: 2 },{ wch: 2 },{ wch: 35 },{ wch: 30 },{ wch: 16 },{ wch: 22 },{ wch: 16 },{ wch: 18 }];
-    XLSX.utils.book_append_sheet(wb, md, "Milestone Details");
-    // ── Milestone Table Final ──
-    const mt = XLSX.utils.aoa_to_sheet([[], ["Project Milestone #", "Milestone Description", "Project Milestone Work Type", "Supplier role", "Number of Resources", "Hours Required Per Resource", "Number of Months", "Effort in Hours per month", "Total Hours Required", "Milestone Due Date", "Milestone Amount (USD)", "Milestone Amount (Local currency)"]]);
-    msValid.forEach((m, i) => {
-      const h = parseFloat(m.h) || 0;
-      const months = Math.ceil(Math.ceil(h / 40) / 4.33) || 1;
-      const amtLocal = h * rate;
-      mt["A" + (i + 3)] = { v: i + 1, t: "n" };
-      mt["B" + (i + 3)] = { v: m.x || m.n || "", t: "s" };
-      mt["C" + (i + 3)] = { v: getWT(i, m.n), t: "s" };
-      mt["D" + (i + 3)] = { v: sow.ecifRole || "Tech III - Sr. Consultant", t: "s" };
-      mt["E" + (i + 3)] = { v: 1, t: "n" };
-      mt["F" + (i + 3)] = { v: h, t: "n" };
-      mt["G" + (i + 3)] = { v: months, t: "n" };
-      mt["H" + (i + 3)] = { v: months > 0 ? Math.round(h / months) : h, t: "n" };
-      mt["I" + (i + 3)] = { v: h, t: "n" };
-      if (m.d) mt["J" + (i + 3)] = { v: new Date(m.d), t: "d" };
-      mt["K" + (i + 3)] = { v: "", t: "s" }; // USD computed by import tool
-      mt["L" + (i + 3)] = { v: Math.round(amtLocal), t: "n" };
-    });
-    mt["!ref"] = "A1:L" + (3 + msValid.length + 3);
-    XLSX.utils.book_append_sheet(wb, mt, "Milestone Table Final");
-    // ── Role & Descriptions ──
-    const rd = XLSX.utils.aoa_to_sheet([[], ["", "ECIF Profile Descriptions"], [], ["", "Role", "Years of Experience", "Profile Description"],
-      ["", "Tech I - Associate", "1-3 years", "Completes tasks with limited supervision"],
-      ["", "Tech II - Consultant", "3-5 years", "Completes tasks and sets priorities without supervision"],
-      ["", "Tech III - Sr. Consultant", "5-8 years", "Can scope out semi-complex projects; lead technology decisions"],
-      ["", "Tech IV - Principal", "8-12 years", "Can scope out complex projects; architect end-to-end solutions"],
-      ["", "Tech V - Architect", "12+ years", "Strategic roadmap; functional and industry expert"],
-      ["", "Technical Project Manager II", "5-8 years", "Drive program/project from initiation through delivery"],
-      ["", "Technical Project Manager III", "8+ years", "Drive multiple programs/projects; interface with clients"]]);
-    rd["!cols"] = [{ wch: 2 },{ wch: 30 },{ wch: 25 },{ wch: 60 }];
-    XLSX.utils.book_append_sheet(wb, rd, "Role & Descriptions");
-    // ── MetaData (v2.1 Universal) ──
-    const meta = XLSX.utils.aoa_to_sheet([
-      ["", "Worktype", "Service Location", "CurrencyName", "Role types", "Cost (Local currency)", "", "Cost  (USD)", "Template Version", "TemplateType", "ImportType", "", "", "", "Template Version", "TemplateType", "ImportType"],
-      ["", "App and Tool Development (Pre-Sales)", sow.serviceLocation || "Sweden", sow.localCurr || "Swedish Krona (SEK)", "Tech V - Architect", "", "", "", "v2.0", "nonexempt", "Universal", "", "", "", "v2.1", "nonexempt", "Universal"],
-      ["", "Architecture Design or Assessment (Pre-Sales)", "", "", "Technical Project Manager III"],
-      ["", "Migration and Deployment Services (Post-Sales)", "", "", "Tech I - Associate"],
-      ["", "Product Quality Remediation (Post-Sales)", "", "", "Tech IV - Principal"],
-      ["", "Proof of Concept (POC) / Pilot / Assessments & Related Training (Pre-Sales)", "", "", "Tech III - Sr. Consultant"],
-      ["", "Proof of Concept (Post-Sales)", "", "", "Tech II - Consultant"],
-      ["", "Temporary 3rd Party Licenses (Pre-Sales)", "", "", "Technical Project Manager II"],
-      ["", "Training (Post-Sales)"]]);
-    meta["!cols"] = [{ wch: 2 },{ wch: 50 },{ wch: 20 },{ wch: 25 },{ wch: 25 },{ wch: 18 },{ wch: 2 },{ wch: 14 },{ wch: 16 },{ wch: 14 },{ wch: 12 },{ wch: 2 },{ wch: 2 },{ wch: 2 },{ wch: 16 },{ wch: 14 },{ wch: 12 }];
-    XLSX.utils.book_append_sheet(wb, meta, "MetaData");
-    // Write
-    const fn = "ECIF_Workscope_" + (cn || "Customer").replace(/[^a-zA-Z0-9]/g, "_") + ".xlsx";
-    XLSX.writeFile(wb, fn);
-    setSaveStatus("ECIF Template exported"); setTimeout(() => setSaveStatus(""), 3000);
+  // ── Export ECIF Template (Microsoft Supplier Scope template — fills exact cell positions) ──
+  // Replaces the old Universal v2.1 export. Only AFO-bucketed milestones are included,
+  // with hours and amounts pro-rated to AFO ECIF cap.
+  // ── Export ECIF Template (modifies embedded Microsoft template via JSZip — preserves formulas, formatting, macros) ──
+  // ── Export ECIF Template (modifies embedded Microsoft Milestones template via JSZip — preserves formulas & formatting) ──
+  // New simplified template: single sheet "Milestones" with Project Summary at top, milestones in rows 16-21.
+  const exportEcifTemplate = async () => {
+    if (typeof JSZip === "undefined") { alert("JSZip library not loaded. Refresh and try again."); return; }
+    if (!window.ECIF_TEMPLATE_B64) { alert("ECIF template not embedded. Contact tool maintainer."); return; }
+    const r = parseFloat(sow.rate) || 0;
+    if (r <= 0) { alert("Set a rate per hour first."); return; }
+    const afoMs = sow.milestones.filter(m => (m.bucket || "afo") === "afo" && m.n && m.n.trim() && m.n !== "_pending");
+    if (afoMs.length === 0) { alert("No AFO-bucketed milestones found. Tag at least one milestone as AFO before exporting to ECIF Central."); return; }
+    if (afoMs.length > 6) { alert("ECIF template supports max 6 milestones. You have " + afoMs.length + " AFO milestones — please consolidate."); return; }
+
+    // FX-aware funding cap (Calculator gives USD, milestones are in local currency)
+    const ccyMatch = (sow.localCurr || "").match(/\(([A-Z]{3})\)/);
+    const ccyCode = ccyMatch ? ccyMatch[1] : "USD";
+    const defaultFx = { USD: 1, SEK: 10.5, EUR: 0.92, GBP: 0.79, NOK: 10.8, DKK: 6.85 };
+    const fxRate = parseFloat(sow.fxRate) || defaultFx[ccyCode] || 1;
+    const afoFundingUsd = C.ok ? C.ecif : C.stdEcif;
+    const afoFundingLocal = afoFundingUsd * fxRate;
+    if (afoFundingUsd <= 0) { alert("AFO ECIF cap is $0 — verify ACR settings and Y1 ACR before exporting."); return; }
+
+    const afoTotalScope = afoMs.reduce((s, m) => s + (parseFloat(m.h) || 0), 0);
+    if (afoTotalScope === 0) { alert("AFO milestones have 0 total hours."); return; }
+    const afoTotalCoverLocal = Math.min(afoFundingLocal, afoTotalScope * r);
+    const afoTotalHours = afoTotalCoverLocal / r;
+
+    // Compute project end date (latest milestone date — template's B4 has no formula in new version)
+    const milestoneDates = afoMs.map(m => m.d).filter(d => d).sort();
+    const projectEndDate = milestoneDates.length > 0 ? milestoneDates[milestoneDates.length - 1] : "";
+
+    try {
+      // Decode template
+      const binStr = atob(window.ECIF_TEMPLATE_B64);
+      const bytes = new Uint8Array(binStr.length);
+      for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+      const zip = await JSZip.loadAsync(bytes);
+
+      // Helper: set cell value, preserving original style index (or forcing one)
+      // CRITICAL: attribute-match must be NON-GREEDY [^>]*? to prevent matching across cells
+      const setCellInXml = (xml, cellRef, value, type, forceStyle) => {
+        const existingPattern = new RegExp('<c r="' + cellRef + '"([^>]*?)(?:/>|>(?:[^<]|<(?!/c>))*?</c>)', 's');
+        const existingMatch = xml.match(existingPattern);
+        let styleAttr = '';
+        if (forceStyle !== undefined && forceStyle !== null) {
+          styleAttr = ' s="' + forceStyle + '"';
+        } else if (existingMatch) {
+          const sMatch = existingMatch[1].match(/\bs="(\d+)"/);
+          if (sMatch) styleAttr = ' s="' + sMatch[1] + '"';
+        }
+        xml = xml.replace(existingPattern, '');
+        let newCell;
+        if (type === "n") {
+          newCell = '<c r="' + cellRef + '"' + styleAttr + ' t="n"><v>' + value + '</v></c>';
+        } else if (type === "d") {
+          const d = value instanceof Date ? value : new Date(value);
+          if (isNaN(d.getTime())) return xml;
+          const serial = Math.floor((d.getTime() - new Date(Date.UTC(1899, 11, 30)).getTime()) / 86400000);
+          newCell = '<c r="' + cellRef + '"' + styleAttr + ' t="n"><v>' + serial + '</v></c>';
+        } else {
+          if (value === "" || value === null || value === undefined) {
+            newCell = '<c r="' + cellRef + '"' + styleAttr + '/>';
+          } else {
+            const escaped = String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+            newCell = '<c r="' + cellRef + '"' + styleAttr + ' t="inlineStr"><is><t xml:space="preserve">' + escaped + '</t></is></c>';
+          }
+        }
+        const rowMatchRef = cellRef.match(/^([A-Z]+)(\d+)$/);
+        if (!rowMatchRef) return xml;
+        const newCol = rowMatchRef[1];
+        const rowNum = rowMatchRef[2];
+        const rowPattern = new RegExp('(<row[^>]*\\br="' + rowNum + '"[^>]*>)((?:[^<]|<(?!/row>))*)(</row>)', '');
+        const rowMatch2 = xml.match(rowPattern);
+        if (rowMatch2) {
+          const rowOpen = rowMatch2[1];
+          const rowContent = rowMatch2[2];
+          const rowClose = rowMatch2[3];
+          const colNum = (col) => col.split('').reduce((acc, c) => acc * 26 + c.charCodeAt(0) - 64, 0);
+          const newColN = colNum(newCol);
+          // CRITICAL: also non-greedy here
+          const cellRegex = /<c r="([A-Z]+)\d+"[^>]*?(?:\/>|>(?:[^<]|<(?!\/c>))*?<\/c>)/g;
+          let insertPos = rowContent.length;
+          let m;
+          while ((m = cellRegex.exec(rowContent)) !== null) {
+            if (colNum(m[1]) > newColN) { insertPos = m.index; break; }
+          }
+          const newRowContent = rowContent.slice(0, insertPos) + newCell + rowContent.slice(insertPos);
+          return xml.replace(rowPattern, rowOpen + newRowContent + rowClose);
+        }
+        const newRow = '<row r="' + rowNum + '">' + newCell + '</row>';
+        const sheetDataMatch = xml.match(/<sheetData>([\s\S]*?)<\/sheetData>/);
+        if (sheetDataMatch) {
+          const sheetData = sheetDataMatch[1];
+          const rowsRegex = /<row[^>]*\br="(\d+)"/g;
+          let insertOffset = sheetData.length;
+          let rm;
+          while ((rm = rowsRegex.exec(sheetData)) !== null) {
+            if (parseInt(rm[1]) > parseInt(rowNum)) { insertOffset = rm.index; break; }
+          }
+          const newSheetData = sheetData.slice(0, insertOffset) + newRow + sheetData.slice(insertOffset);
+          return xml.replace(/<sheetData>[\s\S]*?<\/sheetData>/, '<sheetData>' + newSheetData + '</sheetData>');
+        }
+        return xml.replace('</sheetData>', newRow + '</sheetData>');
+      };
+
+      // Single sheet template — sheet1.xml is the Milestones sheet
+      const sheetPath = 'xl/worksheets/sheet1.xml';
+      let xml = await zip.file(sheetPath).async('string');
+
+      // Project Summary (column B)
+      xml = setCellInXml(xml, "B2", (sow.scope || "").substring(0, 5000));
+      if (sow.sd) xml = setCellInXml(xml, "B3", sow.sd, "d", 12);
+      if (projectEndDate) xml = setCellInXml(xml, "B4", projectEndDate, "d", 25);
+      xml = setCellInXml(xml, "B6", sow.localCurr || "US Dollar (USD)");
+      xml = setCellInXml(xml, "B7", 0, "n");
+
+      // Clear all milestone slots first (rows 16-21)
+      for (let row = 16; row <= 21; row++) {
+        xml = setCellInXml(xml, "A" + row, "");
+        xml = setCellInXml(xml, "B" + row, "");
+        xml = setCellInXml(xml, "C" + row, "");
+      }
+
+      // Insert AFO milestones (pro-rated to AFO cap, capped at scope)
+      let runningH = 0, runningAmt = 0;
+      afoMs.forEach((m, i) => {
+        const row = 16 + i;
+        const fullH = parseFloat(m.h) || 0;
+        const share = fullH / afoTotalScope;
+        let allocH = Math.round(afoTotalHours * share);
+        let allocAmt = Math.round(afoTotalCoverLocal * share / 100) * 100;
+        if (i === afoMs.length - 1) {
+          allocH = Math.round(afoTotalHours) - runningH;
+          allocAmt = Math.round(afoTotalCoverLocal) - runningAmt;
+        }
+        runningH += allocH;
+        runningAmt += allocAmt;
+        xml = setCellInXml(xml, "A" + row, m.n);
+        xml = setCellInXml(xml, "B" + row, (m.x || m.n || "").substring(0, 5000));
+        xml = setCellInXml(xml, "C" + row, "Proof of Concept (Post-Sales)");
+        if (m.d) xml = setCellInXml(xml, "D" + row, m.d, "d", 12);
+        xml = setCellInXml(xml, "E" + row, allocH, "n");
+        xml = setCellInXml(xml, "F" + row, allocAmt, "n");
+      });
+
+      zip.file(sheetPath, xml);
+
+      // Remove calcChain.xml so Excel recalculates SUM formulas (E22, F22) on open
+      if (zip.file('xl/calcChain.xml')) {
+        zip.remove('xl/calcChain.xml');
+        const ctTypesXml = await zip.file('[Content_Types].xml').async('string');
+        const newCtTypes = ctTypesXml.replace(/<Override[^>]*PartName="\/xl\/calcChain\.xml"[^>]*\/>/g, '');
+        zip.file('[Content_Types].xml', newCtTypes);
+        const relsXml = await zip.file('xl/_rels/workbook.xml.rels').async('string');
+        const newRels = relsXml.replace(/<Relationship[^>]*Target="calcChain\.xml"[^>]*\/>/g, '');
+        zip.file('xl/_rels/workbook.xml.rels', newRels);
+      }
+
+      // Generate the modified .xlsx
+      const cn = sow.cn === "[CUSTOMER NAME]" ? "" : sow.cn;
+      const blob = await zip.generateAsync({ type: "blob", mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ECIF_Milestones_" + (cn || "Customer").replace(/[^a-zA-Z0-9]/g, "_") + ".xlsx";
+      a.click();
+      URL.revokeObjectURL(url);
+      setSaveStatus("ECIF Template exported (AFO-only)"); setTimeout(() => setSaveStatus(""), 3000);
+    } catch (err) {
+      console.error("ECIF export error:", err);
+      alert("ECIF export failed: " + err.message);
+    }
   };
 
   const upd = (id, field, val) => {
@@ -1627,12 +1941,21 @@ function App() {
   // Milestone ECIF auto-calc
   const mCalc = useMemo(() => {
     const r = parseFloat(sow.rate) || 0;
-    const perMs = sow.milestones.map(m => { const h = parseFloat(m.h) || 0; return { h, e: h * r }; });
+    const perMs = sow.milestones.map(m => {
+      const h = parseFloat(m.h) || 0;
+      const bucket = m.bucket || "afo";
+      return { h, e: h * r, bucket };
+    });
     const totalH = perMs.reduce((s, m) => s + m.h, 0);
     const totalE = perMs.reduce((s, m) => s + m.e, 0);
-    const budget = C.custFunding || (C.ok ? C.ecif : Math.max(C.stdEcif, C.mci.pre + C.mci.post));
+    // Per-bucket totals
+    const buckets = { mci: { h: 0, e: 0 }, afo: { h: 0, e: 0 }, self: { h: 0, e: 0 } };
+    perMs.forEach(m => { if (buckets[m.bucket]) { buckets[m.bucket].h += m.h; buckets[m.bucket].e += m.e; } });
+    // Budget = max stackable funding. When AFO works: ECIF + MCI Pre-sales (post can't stack).
+    // When AFO doesn't work: best of standard ECIF OR (MCI pre+post) - they don't stack with each other either.
+    const budget = C.custFunding || (C.ok ? (C.ecif + C.mci.pre) : Math.max(C.stdEcif, C.mci.pre + C.mci.post));
     const suggestedH = r > 0 ? Math.floor(budget / r) : 0;
-    return { perMs, totalH, totalE, budget, suggestedH, overBudget: totalE > budget && budget > 0 };
+    return { perMs, totalH, totalE, buckets, budget, suggestedH, overBudget: totalE > budget && budget > 0 };
   }, [sow.rate, sow.milestones, C.ecif, C.stdEcif, C.ok, C.custFunding, C.mci]);
 
   // ROI calculation
@@ -2416,741 +2739,520 @@ button{display:none!important}
 
         {pg === "sow" && (
           <div ref={ref}>
-            {/* Subtabs */}
-            <div style={{ display: "flex", gap: 0, marginBottom: 8, borderBottom: "2px solid #e8e8ec" }}>
-              <button style={{ padding: "8px 16px", border: "none", background: "transparent", fontSize: 13, fontWeight: 600, color: "#5C2D91", borderBottom: "2px solid #5C2D91", marginBottom: -2, cursor: "pointer" }}>SOW Document</button>
+            {/* Tabs (kept for navigation to Email Templates) */}
+            <div style={{ display: "flex", gap: 0, marginBottom: 16, borderBottom: "2px solid #e8e8ec" }}>
+              <button style={{ padding: "8px 16px", border: "none", background: "transparent", fontSize: 13, fontWeight: 600, color: "#5C2D91", borderBottom: "2px solid #5C2D91", marginBottom: -2, cursor: "pointer" }}>SOW Wizard</button>
               <button onClick={() => setPg("email")} style={{ padding: "8px 16px", border: "none", background: "transparent", fontSize: 13, fontWeight: 400, color: "#999", borderBottom: "2px solid transparent", marginBottom: -2, cursor: "pointer" }}>Email Templates</button>
-              <div style={{ marginLeft: "auto", display: "flex", gap: 4, alignItems: "center" }}>
-                <button onClick={print} style={{ padding: "5px 12px", background: HDR, color: "white", border: "none", borderRadius: 6, fontSize: 12, cursor: "pointer" }}>Print / PDF</button>
-                <button onClick={() => {
-                  const el = document.getElementById("sowdoc");
-                  if (!el) return;
-                  const clone = el.cloneNode(true);
-                  clone.querySelectorAll("input, textarea").forEach(inp => {
-                    const span = document.createElement("span");
-                    span.textContent = inp.value;
-                    inp.parentNode.replaceChild(span, inp);
-                  });
-                  clone.querySelectorAll("button, select").forEach(b => b.remove());
-                  // Nuke ALL style attributes - Word gets clean HTML + CSS only
-                  clone.querySelectorAll("*").forEach(node => {
-                    const s = node.getAttribute("style");
-                    if (s) {
-                      // Extract only color and font-weight, kill everything else
-                      const color = s.match(/(?:^|;)\s*color:\s*([^;]+)/);
-                      const fw = s.match(/font-weight:\s*([^;]+)/);
-                      const ta = s.match(/text-align:\s*([^;]+)/);
-                      let keep = "";
-                      if (color && !color[1].includes("white")) keep += "color:" + color[1] + ";";
-                      if (fw) keep += "font-weight:" + fw[1] + ";";
-                      if (ta) keep += "text-align:" + ta[1] + ";";
-                      node.setAttribute("style", keep);
-                    }
-                  });
-                  const css = "@page{size:A4;margin:2cm}*{margin:0;padding:0;box-sizing:border-box}body{font-family:Segoe UI,Calibri,sans-serif;padding:30px 40px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white}div{background:white !important}table{width:100%;border-collapse:collapse;border:1px solid #d0d0d0;margin:8px 0 16px}th{padding:8px 10px;text-align:left;border:1px solid #d0d0d0;background:#e8f0fe;color:#0078D4;font-weight:700;font-size:11px}td{padding:6px 10px;text-align:left;border:1px solid #e8e8ec}tr:nth-child(even) td{background:#fafbfc}h1{color:#0078D4;font-size:18px;margin-bottom:4px}h2{color:#0078D4;font-size:14px;border-bottom:2px solid #0078D4;padding-bottom:4px;margin:20px 0 8px}strong{color:#333}p{margin:4px 0}";
-                  const html = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word'><head><meta charset='utf-8'><style>" + css + "</style></head><body>" + clone.innerHTML + "</body></html>";
-                  const blob = new Blob(["\ufeff" + html], { type: "application/msword;charset=utf-8" });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url; a.download = "SOW-" + sow.cn.replace(/[^a-zA-Z0-9]/g, "_") + ".doc"; a.click();
-                  URL.revokeObjectURL(url);
-                }} style={{ padding: "5px 12px", background: "#5C2D91", color: "white", border: "none", borderRadius: 6, fontSize: 12, cursor: "pointer" }}>Export Word</button>
-                <button onClick={() => setShowEcifExport(!showEcifExport)} style={{ padding: "5px 12px", background: showEcifExport ? "#0078D4" : "white", color: showEcifExport ? "white" : "#0078D4", border: "1px solid #0078D4", borderRadius: 6, fontSize: 12, cursor: "pointer", fontWeight: 600 }}>{showEcifExport ? "▾ ECIF Export" : "▸ ECIF Export"}</button>
-              </div>
             </div>
 
-            {/* ── ECIF Template Export Panel (collapsible) ── */}
-            {showEcifExport && (
-              <div style={{ background: "#f0f6ff", borderRadius: 8, border: "1px solid #93c5fd", padding: "10px 14px", marginBottom: 8, animation: "fadeSlide 0.15s ease" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#0078D4" }}>ECIF Central Import Template</div>
-                  <button onClick={exportEcifTemplate} style={{ padding: "5px 14px", background: "#0078D4", color: "white", border: "none", borderRadius: 6, fontSize: 12, cursor: "pointer", fontWeight: 600 }}>⬇ Export .xlsx</button>
-                </div>
-                <div style={{ fontSize: 10, color: "#64748b", marginBottom: 8, lineHeight: 1.5 }}>
-                  Generates Universal v2.1 template ready for ECIF Workscope app import. Customer, partner, milestones, and scope from SOW above are auto-mapped. Fill in the fields below for the template-specific data.
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 6 }} className="grid-2col">
+            {/* Inherited Calculator data summary banner */}
+            {(() => {
+              const ccyMatchB = (sow.localCurr || "").match(/\(([A-Z]{3})\)/);
+              const ccyCodeB = ccyMatchB ? ccyMatchB[1] : "USD";
+              const defaultFxB = { USD: 1, SEK: 10.5, EUR: 0.92, GBP: 0.79, NOK: 10.8, DKK: 6.85 };
+              const fxRateB = parseFloat(sow.fxRate) || defaultFxB[ccyCodeB] || 1;
+              // Match Calculator's "Cash to partner" logic exactly:
+              // - When AFO OK: AFO = C.ecif, MCI = only Pre-sales (post can't stack)
+              // - When AFO not OK: standard ECIF path or MCI path (separate, not stackable)
+              const afoUsd = C.ok ? C.ecif : 0;
+              const stdEcifUsd = !C.ok ? C.stdEcif : 0;
+              const mciUsd = C.ok ? C.mci.pre : (C.mci.pre + C.mci.post);
+              const totalUsd = afoUsd + stdEcifUsd + (C.ok ? mciUsd : 0);
+              const fmtLocal = (usd) => {
+                const local = usd * fxRateB;
+                return ccyCodeB === "USD" ? "" : " ≈ " + Math.round(local).toLocaleString("sv-SE") + " " + ccyCodeB;
+              };
+              return (
+                <div style={{ padding: "12px 16px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, marginBottom: 20, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
                   <div>
-                    <label style={{ fontSize: 10, color: "#475569", fontWeight: 600, display: "block", marginBottom: 1 }}>Hourly Rate (Local)</label>
-                    <input type="number" value={sow.ecifRate} onChange={(e) => us("ecifRate", e.target.value)} placeholder="e.g. 1231" style={{ width: "100%", padding: "4px 6px", border: "1px solid #cbd5e1", borderRadius: 4, fontSize: 12, fontFamily: "inherit" }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 10, color: "#475569", fontWeight: 600, display: "block", marginBottom: 1 }}>Currency</label>
-                    <select value={sow.localCurr} onChange={(e) => us("localCurr", e.target.value)} style={{ width: "100%", padding: "4px 6px", border: "1px solid #cbd5e1", borderRadius: 4, fontSize: 12, fontFamily: "inherit", background: "white" }}>
-                      <option>Swedish Krona (SEK)</option><option>EURO (EUR)</option><option>Danish Krone (DKK)</option><option>UK Pound (GBP)</option><option>US Dollar (USD)</option><option>Norwegian Krone (NOK)</option><option>Swiss Franc (CHF)</option><option>Polish Zloty (PLN)</option><option>Czech Koruna (CZK)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 10, color: "#475569", fontWeight: 600, display: "block", marginBottom: 1 }}>Role</label>
-                    <select value={sow.ecifRole} onChange={(e) => us("ecifRole", e.target.value)} style={{ width: "100%", padding: "4px 6px", border: "1px solid #cbd5e1", borderRadius: 4, fontSize: 12, fontFamily: "inherit", background: "white" }}>
-                      <option>Tech I - Associate</option><option>Tech II - Consultant</option><option>Tech III - Sr. Consultant</option><option>Tech IV - Principal</option><option>Tech V - Architect</option><option>Technical Project Manager II</option><option>Technical Project Manager III</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 10, color: "#475569", fontWeight: 600, display: "block", marginBottom: 1 }}>Service Location</label>
-                    <input value={sow.serviceLocation} onChange={(e) => us("serviceLocation", e.target.value)} style={{ width: "100%", padding: "4px 6px", border: "1px solid #cbd5e1", borderRadius: 4, fontSize: 12, fontFamily: "inherit" }} />
-                  </div>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 6, marginTop: 6 }} className="grid-2col">
-                  <div>
-                    <label style={{ fontSize: 10, color: "#475569", fontWeight: 600, display: "block", marginBottom: 1 }}>Supplier ID</label>
-                    <input value={sow.supplierID} onChange={(e) => us("supplierID", e.target.value)} placeholder="e.g. 2328459" style={{ width: "100%", padding: "4px 6px", border: "1px solid #cbd5e1", borderRadius: 4, fontSize: 12, fontFamily: "inherit" }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 10, color: "#475569", fontWeight: 600, display: "block", marginBottom: 1 }}>Customer Email</label>
-                    <input type="email" value={sow.custEmail} onChange={(e) => us("custEmail", e.target.value)} placeholder="customer@company.com" style={{ width: "100%", padding: "4px 6px", border: "1px solid #cbd5e1", borderRadius: 4, fontSize: 12, fontFamily: "inherit" }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 10, color: "#475569", fontWeight: 600, display: "block", marginBottom: 1 }}>Supplier Email</label>
-                    <input type="email" value={sow.supEmail} onChange={(e) => us("supEmail", e.target.value)} placeholder="contact@partner.com" style={{ width: "100%", padding: "4px 6px", border: "1px solid #cbd5e1", borderRadius: 4, fontSize: 12, fontFamily: "inherit" }} />
-                  </div>
-                  <div style={{ display: "flex", alignItems: "flex-end" }}>
-                    {(() => {
-                      const r = parseFloat(sow.ecifRate) || 0;
-                      const totalH = sow.milestones.reduce((s, m) => s + (parseFloat(m.h) || 0), 0);
-                      const totalAmt = totalH * r;
-                      const curr = (sow.localCurr || "SEK").match(/\((\w+)\)/)?.[1] || "SEK";
-                      return totalH > 0 && r > 0 ? (
-                        <div style={{ fontSize: 11, color: "#059669", fontWeight: 600, padding: "4px 0" }}>✓ {totalH}h × {r.toLocaleString()} = {Math.round(totalAmt).toLocaleString()} {curr}</div>
-                      ) : (
-                        <div style={{ fontSize: 11, color: "#94a3b8", padding: "4px 0" }}>Set rate + milestone hours</div>
-                      );
-                    })()}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div style={{ display: "flex", gap: 8, marginBottom: 8 }} className="metrics-bar">
-              {(() => {
-                const metrics = [{ l: "Y1 ACR", v: fmt(C.tot), c: "#0078D4" }];
-                if (C.ok) {
-                  metrics.push({ l: "AFO Eligible", v: C.pct.toFixed(0) + "% ✓", c: "#059669" });
-                  metrics.push({ l: "ECIF (Field-Led)", v: fmt(C.ecif), c: "#3b82f6" });
-                  if (C.mci.pre > 0) metrics.push({ l: "MCI Pre-sales", v: fmt(C.mci.pre), c: "#22c55e" });
-                } else {
-                  const mciTotal = C.mci.pre + C.mci.post;
-                  const isMci = mciTotal >= C.stdEcif;
-                  metrics.push({ l: "Recommended", v: C.custFundingLabel, c: isMci ? "#22c55e" : "#f97316" });
-                  metrics.push({ l: "Co-Investment", v: fmt(C.custFunding), c: "#059669" });
-                  if (isMci && C.mci.ts) metrics.push({ l: "MCI Tier", v: C.mci.ts + " · " + C.mci.days + "d", c: "#2563eb" });
-                }
-                return metrics.map((b, i) => (
-                  <div key={i} style={{ flex: 1, background: "white", padding: "7px 4px", borderRadius: 8, textAlign: "center", border: "1px solid #e8e8ec" }}>
-                    <div style={{ fontSize: 10, color: "#999" }}>{b.l}</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: b.c || "#333" }}>{b.v}</div>
-                  </div>
-                ));
-              })()}
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: nextWL.length > 0 ? "1fr 260px" : "1fr", gap: 12, alignItems: "start" }} className="sow-grid">
-            <div id="sowdoc" style={{ background: "white", borderRadius: 12, border: "1px solid #e0e0e0", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-              <div className="hd" style={{ background: HDR, padding: "20px 26px", color: "white" }}>
-                <div style={{ fontSize: 11, opacity: 0.5, textTransform: "uppercase", letterSpacing: 1 }}>Azure Funding - Workscope Details</div>
-                <h1 style={{ margin: "2px 0 0", fontSize: 16, fontWeight: 600 }}><DInp v={sow.cn} fn={(v) => us("cn", v)} st={{ color: "white", borderBottomColor: "rgba(255,255,255,0.5)", width: 240 }} /> - {C.ok ? "AFO" : "Azure Accelerate"}</h1>
-              </div>
-              <div style={{ padding: "20px 26px", fontSize: 12, lineHeight: 1.6, color: "#333" }}>
-                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Project Details</h2>
-                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 18, fontSize: 13 }}><tbody>
-                  {[["Opportunity Name", "on"], ["MS Requestor", "req"], ["Customer Contact", "cc"], ["Supplier", "sup"], ["Supplier Contact", "sc"]].map(([k, f]) => (
-                    <tr key={k}><td style={{ padding: "3px 6px", fontWeight: 600, color: "#666", width: 180, borderBottom: "1px solid #f0f0f0" }}>{k}</td><td style={{ padding: "3px 6px", borderBottom: "1px solid #f0f0f0" }}><DInp v={sow[f]} fn={(v) => us(f, v)} st={{ color: "#0078D4", width: "100%" }} /></td></tr>
-                  ))}
-                </tbody></table>
-                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 2px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Project Scope</h2>
-                <div style={{ fontSize: 11, color: "#999", marginBottom: 4, fontStyle: "italic" }}>Auto-generated based on selected workloads - click to edit</div>
-                <DTxt v={sow.scope} fn={(v) => us("scope", v)} st={{ marginBottom: 18, minHeight: 220 }} />
-                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 2px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Workload Breakdown</h2>
-                <div style={{ fontSize: 11, color: "#999", marginBottom: 4, fontStyle: "italic" }}>Auto-populated from calculator - click values to edit, or add custom rows</div>
-                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4, fontSize: 13 }}>
-                  <thead><tr style={{ background: "#f5f7fa" }}><th style={{ padding: "5px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Workload</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 90 }}>$/mo</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 110 }}>Y1 Revenue<div style={{ fontSize: 9, color: "#999", fontWeight: 400 }}>annualized</div></th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 50 }}>%</th><th style={{ width: 24, borderBottom: "2px solid #ddd" }} /></tr></thead>
-                  <tbody>
-                    {C.rows.filter(r => !r.xcr).sort((a, b) => b.yrAnnual - a.yrAnnual).map((r, i) => {
-                      const isPhased = r.phases && r.phases.length > 1;
-                      const hasBaseline = r.baselineSku && r.baselineYr > 0;
-                      const phaseLabel = isPhased ? r.phases.map(p => p.sku).join(" → ") : r.sku;
-                      const phaseSchedule = isPhased ? r.phases.map((p, j) => "M" + (p.startMo || 1) + ":" + p.sku).join(" · ") : "";
-                      const hasMidYearStart = (r.startMo || 1) > 1;
-                      const showExtraRow = isPhased || hasBaseline || hasMidYearStart;
-                      return (
-                      <Fragment key={i}>
-                      <tr style={{ background: i % 2 ? "#fafafa" : "white" }}>
-                        <td style={{ padding: "4px 6px", borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, background: r.color, marginRight: 4 }} />{r.tag}{phaseLabel ? " (" + phaseLabel + ")" : ""}{isPhased && <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: "#dcfce7", color: "#166534" }}>📈 PHASED RAMP</span>}{hasBaseline && <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: "#fef3c7", color: "#92400e" }}>📍 BASELINE {r.baselineSku}</span>}{hasMidYearStart && <span style={{ marginLeft: 6, fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 3, background: "#dbeafe", color: "#1e40af" }}>📅 GO-LIVE M{r.startMo}</span>}{!r.elig && <span style={{ fontSize: 10, color: "#94a3b8" }}> (Accelerate)</span>}</td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}>{fmt(r.mo)}{isPhased && <div style={{ fontSize: 9, color: "#166534", fontWeight: 600 }}>blended avg</div>}</td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", fontWeight: 600, borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}>{fmt(r.yrAnnual)}{hasMidYearStart && <div style={{ fontSize: 9, color: "#1e40af", fontWeight: 600 }}>Y1 actual: {fmt(r.yr)}</div>}{hasBaseline && !hasMidYearStart && <div style={{ fontSize: 9, color: "#059669", fontWeight: 700 }}>incr: {fmt(r.incrYr)}</div>}</td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: showExtraRow ? "none" : "1px solid #f0f0f0" }}>{C.totAnnual > 0 ? ((r.yrAnnual / C.totAnnual) * 100).toFixed(0) + "%" : "-"}</td>
-                        <td />
-                      </tr>
-                      {showExtraRow && (
-                        <tr style={{ background: i % 2 ? "#fafafa" : "white" }}>
-                          <td colSpan={5} style={{ padding: "0 6px 4px 22px", borderBottom: "1px solid #f0f0f0", fontSize: 10, fontStyle: "italic" }}>
-                            {isPhased && (
-                              <div style={{ color: "#166534" }}>
-                                Schedule: {r.phases.map((p, j) => {
-                                  const phaseMo = skuMo(p.sku, sel[r.id]?.ri) * (sel[r.id]?.qty || 1);
-                                  return "M" + (p.startMo || 1) + " " + p.sku + " (" + fmt(phaseMo) + "/mo)";
-                                }).join(" → ")}
-                              </div>
-                            )}
-                            {hasMidYearStart && (
-                              <div style={{ color: "#1e40af" }}>
-                                Workload goes live M{r.startMo} of Y1 — only {13 - r.startMo} months consumed in Y1 ({fmt(r.yr)}). Annualized run-rate is {fmt(r.yrAnnual)} once fully live.
-                              </div>
-                            )}
-                            {hasBaseline && (
-                              <div style={{ color: "#92400e" }}>
-                                Customer already runs <strong>{r.baselineSku}</strong> ({fmt(r.baselineYr)}/yr baseline). Per AFO/MCI rules, only incremental ACR ({fmt(r.incrYr)}) is fundable — baseline is excluded.
-                              </div>
-                            )}
-                          </td>
-                        </tr>
-                      )}
-                      </Fragment>
-                    )})}
-                    {sow.customRows.map((cr, i) => (
-                      <tr key={"cr" + i} style={{ background: "#f0f6ff" }}>
-                        <td style={{ padding: "4px 6px", borderBottom: "1px solid #dbeafe" }}><input value={cr.name} onChange={(e) => uSowRow(i, "name", e.target.value)} style={{ border: "none", borderBottom: "1px solid #93c5fd", background: "transparent", fontSize: 13, color: "#0078D4", fontFamily: "inherit", width: "100%", outline: "none" }} /></td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "1px solid #dbeafe" }}><input type="number" value={cr.mo} onChange={(e) => uSowRow(i, "mo", +e.target.value)} style={{ border: "1px solid #93c5fd", borderRadius: 4, padding: "2px 4px", fontSize: 12, width: 70, textAlign: "right", background: "white" }} /></td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", fontWeight: 600, borderBottom: "1px solid #dbeafe", color: "#0078D4" }}>{fmt(cr.mo * 12)}</td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "1px solid #dbeafe", fontSize: 11, color: "#999" }}>custom</td>
-                        <td style={{ padding: "4px 6px", borderBottom: "1px solid #dbeafe", textAlign: "center" }}><button onClick={() => rmSowRow(i)} style={{ border: "none", background: "transparent", color: "#ccc", cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1 }}>×</button></td>
-                      </tr>
-                    ))}
-                    <tr style={{ fontWeight: 700 }}><td style={{ padding: "5px 6px", borderTop: "2px solid #333" }}>Total ACR (customer-pays, annualized)</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{fmt((C.totAnnual + sow.customRows.reduce((s, r) => s + (r.mo || 0) * 12, 0)) / 12)}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{fmt(C.totAnnual + sow.customRows.reduce((s, r) => s + (r.mo || 0) * 12, 0))}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>100%</td><td style={{ borderTop: "2px solid #333" }} /></tr>
-                    {C.totAnnual !== C.totFull && C.totFull > 0 && (
-                      <tr style={{ fontWeight: 600, background: "#eff6ff" }}>
-                        <td style={{ padding: "4px 6px", color: "#1e40af", fontSize: 11 }}>↳ Y1 actual (with mid-year go-lives)</td>
-                        <td />
-                        <td style={{ padding: "4px 6px", textAlign: "right", color: "#1e40af" }}>{fmt(C.totFull + sow.customRows.reduce((s, r) => s + (r.mo || 0) * 12, 0))}</td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", color: "#1e40af", fontSize: 10 }}>used for ECIF</td>
-                        <td />
-                      </tr>
-                    )}
-                    {C.totBaseline > 0 && (
-                      <Fragment>
-                        <tr style={{ fontWeight: 600, background: "#fffbeb" }}>
-                          <td style={{ padding: "4px 6px", color: "#92400e", fontSize: 11 }}>− Existing baseline (excluded)</td>
-                          <td />
-                          <td style={{ padding: "4px 6px", textAlign: "right", color: "#92400e" }}>−{fmt(C.totBaseline)}</td>
-                          <td />
-                          <td />
-                        </tr>
-                        <tr style={{ fontWeight: 700, background: "#ecfdf5" }}>
-                          <td style={{ padding: "5px 6px", color: "#059669", borderTop: "1px solid #6ee7b7" }}>= Fundable Incremental ACR</td>
-                          <td />
-                          <td style={{ padding: "5px 6px", textAlign: "right", color: "#059669", borderTop: "1px solid #6ee7b7" }}>{fmt(C.tot + sow.customRows.reduce((s, r) => s + (r.mo || 0) * 12, 0))}</td>
-                          <td style={{ padding: "5px 6px", textAlign: "right", color: "#059669", borderTop: "1px solid #6ee7b7", fontSize: 10 }}>used for AFO/MCI</td>
-                          <td style={{ borderTop: "1px solid #6ee7b7" }} />
-                        </tr>
-                      </Fragment>
-                    )}
-                    {C.xcr > 0 && C.rows.filter(r => r.xcr).map((r, i) => (
-                      <tr key={"x" + i} style={{ background: "#fffbeb" }}>
-                        <td style={{ padding: "4px 6px", borderBottom: "1px solid #fef3c7" }}><span style={{ display: "inline-block", width: 6, height: 6, borderRadius: 2, background: "#fbbf24", marginRight: 4 }} />{r.tag} <span style={{ fontSize: 10, color: "#d97706" }}>(XCR, not ACR)</span></td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "1px solid #fef3c7", color: "#d97706" }}>{fmt(r.mo)}</td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", fontWeight: 600, borderBottom: "1px solid #fef3c7", color: "#d97706" }}>{fmt(r.yr)}</td>
-                        <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "1px solid #fef3c7", fontSize: 10, color: "#d97706" }}>XCR</td>
-                        <td />
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <button onClick={addSowRow} style={{ padding: "4px 12px", background: "#f0f6ff", border: "1px dashed #93c5fd", borderRadius: 4, fontSize: 11, color: "#0078D4", cursor: "pointer", marginBottom: 8, fontWeight: 600 }}>+ Add Custom Workload</button>
-                <div style={{ fontSize: 12, color: "#999", marginBottom: 16 }}>AFO Eligible: {C.pct.toFixed(0)}% · Scenario: {C.sc}{C.xcr > 0 ? " · XCR (not part of ACR): " + fmt(C.xcr) : ""}</div>
-                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Timeline & Milestones</h2>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                  <p style={{ fontSize: 13, margin: 0 }}>Start: <input type="date" value={sow.sd} onChange={(e) => us("sd", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 6px", fontSize: 13, color: "#0078D4", fontFamily: "inherit" }} /> · End: <input type="date" value={sow.ed} onChange={(e) => us("ed", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 6px", fontSize: 13, color: "#0078D4", fontFamily: "inherit" }} /></p>
-                  <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 4, background: "#f8f9fa", padding: "3px 8px", borderRadius: 4 }}>
-                    <span style={{ fontSize: 11, color: "#999" }}>Partner rate:</span>
-                    <span style={{ fontSize: 11, color: "#999" }}>$</span>
-                    <input type="number" value={sow.rate} onChange={(e) => us("rate", e.target.value)} style={{ width: 45, padding: "2px", border: "1px solid #ddd", borderRadius: 4, fontSize: 13, textAlign: "right", background: "white" }} />
-                    <span style={{ fontSize: 11, color: "#999" }}>/hr</span>
-                  </div>
-                </div>
-                {/* Visual Gantt Timeline */}
-                {sow.sd && sow.ed && sow.milestones.some(m => m.d) && (() => {
-                  const start = new Date(sow.sd);
-                  const end = new Date(sow.ed);
-                  const totalDays = Math.max(1, (end - start) / (1000 * 60 * 60 * 24));
-                  const colors = ["#3b82f6", "#059669", "#f59e0b", "#8b5cf6", "#ef4444", "#06b6d4"];
-                  const bars = sow.milestones.map((m, i) => {
-                    if (!m.d) return null;
-                    const mDate = new Date(m.d);
-                    const prevDate = i === 0 ? start : (sow.milestones[i - 1].d ? new Date(sow.milestones[i - 1].d) : start);
-                    const barStart = Math.max(0, (prevDate - start) / (1000 * 60 * 60 * 24));
-                    const barEnd = Math.max(barStart + 1, (mDate - start) / (1000 * 60 * 60 * 24));
-                    return { name: m.n || ("M" + (i + 1)), start: barStart, end: barEnd, color: colors[i % colors.length], date: m.d, hours: m.h };
-                  }).filter(Boolean);
-                  if (bars.length === 0) return null;
-                  const months = [];
-                  const mStart = new Date(start.getFullYear(), start.getMonth(), 1);
-                  while (mStart <= end) {
-                    const mEnd = new Date(mStart.getFullYear(), mStart.getMonth() + 1, 0);
-                    const dayStart = Math.max(0, (mStart - start) / (1000 * 60 * 60 * 24));
-                    const dayEnd = Math.min(totalDays, (mEnd - start) / (1000 * 60 * 60 * 24));
-                    months.push({ label: mStart.toLocaleDateString("en", { month: "short", year: "2-digit" }), left: (dayStart / totalDays) * 100, width: ((dayEnd - dayStart) / totalDays) * 100 });
-                    mStart.setMonth(mStart.getMonth() + 1);
-                  }
-                  return (
-                    <div style={{ background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0", padding: "10px 12px", marginBottom: 8 }}>
-                      <div style={{ fontSize: 10, fontWeight: 700, color: "#64748b", textTransform: "uppercase", marginBottom: 8 }}>Project Timeline</div>
-                      {/* Month headers */}
-                      <div style={{ position: "relative", height: 16, marginBottom: 2 }}>
-                        {months.map((m, i) => (
-                          <div key={i} style={{ position: "absolute", left: m.left + "%", width: m.width + "%", fontSize: 10, color: "#94a3b8", textAlign: "center", borderLeft: i > 0 ? "1px solid #e2e8f0" : "none", paddingLeft: 2 }}>{m.label}</div>
-                        ))}
-                      </div>
-                      {/* Bars */}
-                      {bars.map((b, i) => (
-                        <div key={i} style={{ position: "relative", height: 24, marginBottom: 4 }}>
-                          <div style={{ position: "absolute", left: (b.start / totalDays * 100) + "%", width: Math.max(2, ((b.end - b.start) / totalDays * 100)) + "%", height: "100%", background: b.color, borderRadius: 4, display: "flex", alignItems: "center", paddingLeft: 6, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
-                            <span style={{ fontSize: 10, color: "white", fontWeight: 600, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{b.name}{b.hours ? " · " + b.hours + "h" : ""}</span>
-                          </div>
-                          {/* Diamond marker at end */}
-                          <div style={{ position: "absolute", left: "calc(" + (b.end / totalDays * 100) + "% - 5px)", top: 7, width: 10, height: 10, background: b.color, transform: "rotate(45deg)", border: "2px solid white", boxShadow: "0 1px 3px rgba(0,0,0,0.15)", zIndex: 2 }} />
-                        </div>
-                      ))}
-                      {/* Today marker */}
-                      {(() => {
-                        const today = new Date();
-                        if (today >= start && today <= end) {
-                          const pos = ((today - start) / (1000 * 60 * 60 * 24)) / totalDays * 100;
-                          return <div style={{ position: "absolute", left: pos + "%", top: 0, bottom: 0, width: 1.5, background: "#ef4444", zIndex: 3 }}><div style={{ position: "absolute", top: -8, left: -8, fontSize: 10, color: "#ef4444", fontWeight: 700 }}>Today</div></div>;
-                        }
-                        return null;
-                      })()}
+                    <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: "#64748b", marginBottom: 4 }}>Inherited from Calculator</div>
+                    <div style={{ fontSize: 13, color: "#1a1a1a" }}>
+                      Y1 ACR <strong>{C.tot > 0 ? fmt(C.tot) : "—"}</strong>
+                      {afoUsd > 0 && <>{" · "}AFO ECIF <strong style={{ color: "#dc2626" }}>{fmt(afoUsd) + fmtLocal(afoUsd)}</strong></>}
+                      {stdEcifUsd > 0 && <>{" · "}Standard ECIF <strong style={{ color: "#dc2626" }}>{fmt(stdEcifUsd) + fmtLocal(stdEcifUsd)}</strong></>}
+                      {mciUsd > 0 && <>{" · "}MCI Pre-sales <strong style={{ color: "#16a34a" }}>{fmt(mciUsd) + fmtLocal(mciUsd)}</strong></>}
+                      {totalUsd > 0 && <>{" · "}<span style={{ color: "#64748b" }}>Total</span> <strong>{fmt(totalUsd) + fmtLocal(totalUsd)}</strong></>}
                     </div>
-                  );
-                })()}
-                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 4, fontSize: 13 }}>
-                  <thead><tr style={{ background: "#f5f7fa" }}><th style={{ padding: "5px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Milestone</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 60 }}>Hours</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 90 }}>Cost</th><th style={{ padding: "5px 6px", textAlign: "right", borderBottom: "2px solid #ddd", width: 120 }}>Date</th><th style={{ width: 24, borderBottom: "2px solid #ddd" }} /></tr></thead>
-                  <tbody>
-                    {sow.milestones.map((m, i) => {
-                      const cost = mCalc.perMs[i] ? mCalc.perMs[i].e : 0;
-                      return (
-                        <Fragment key={i}>
-                          <tr>
-                            <td style={{ padding: "4px 6px", fontWeight: 600, borderBottom: "none" }}><DInp v={m.n} fn={(v) => uMs(i, "n", v)} ph="Milestone name" st={{ width: "100%", fontWeight: 600 }} /></td>
-                            <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none" }}><input type="number" placeholder="hrs" value={m.h} onChange={(e) => uMs(i, "h", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 6px", fontSize: 12, color: "#0078D4", fontFamily: "inherit", width: 65, textAlign: "right" }} /></td>
-                            <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none", color: cost > 0 ? "#555" : "#ccc", fontWeight: 500 }}>{cost > 0 ? fmt(cost) : "-"}</td>
-                            <td style={{ padding: "4px 6px", textAlign: "right", borderBottom: "none" }}><input type="date" value={m.d} onChange={(e) => uMs(i, "d", e.target.value)} style={{ border: "1px solid #ddd", borderRadius: 4, padding: "2px 4px", fontSize: 12, color: "#0078D4", fontFamily: "inherit" }} /></td>
-                            <td style={{ padding: "4px 6px", borderBottom: "none", textAlign: "center" }}>{sow.milestones.length > 1 && <button onClick={() => removeMilestone(i)} style={{ border: "none", background: "transparent", color: "#ccc", cursor: "pointer", fontSize: 13, padding: 0, lineHeight: 1 }} title="Remove milestone">×</button>}</td>
-                          </tr>
-                          <tr><td colSpan={5} style={{ padding: "1px 6px 7px", borderBottom: "1px solid #f0f0f0" }}><DTxt v={m.x} fn={(v) => uMs(i, "x", v)} st={{ minHeight: 28, fontSize: 12, color: "#666", fontStyle: "italic", background: "transparent", border: "1px dashed transparent" }} /></td></tr>
-                        </Fragment>
-                      );
-                    })}
-                    <tr style={{ fontWeight: 700 }}><td style={{ padding: "5px 6px", borderTop: "2px solid #333" }}>Total</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333", color: "#0078D4" }}>{mCalc.totalH > 0 ? mCalc.totalH + "h" : "-"}</td><td style={{ padding: "5px 6px", textAlign: "right", borderTop: "2px solid #333" }}>{mCalc.totalE > 0 ? fmt(mCalc.totalE) : "-"}</td><td style={{ borderTop: "2px solid #333" }} /><td style={{ borderTop: "2px solid #333" }} /></tr>
-                  </tbody>
-                </table>
+                  </div>
+                  {(C.tot === 0 || (afoUsd === 0 && stdEcifUsd === 0 && mciUsd === 0)) && (
+                    <button onClick={() => setPg("calc")} style={{ background: "#5C2D91", color: "white", border: "none", padding: "8px 14px", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>← Back to Calculator</button>
+                  )}
+                </div>
+              );
+            })()}
 
-                {mCalc.totalE > 0 && mCalc.budget > 0 && (() => {
-                  const funded = Math.min(mCalc.totalE, mCalc.budget);
-                  const custPays = Math.max(0, mCalc.totalE - mCalc.budget);
-                  const pct = Math.min(100, (mCalc.budget / mCalc.totalE * 100));
-                  return (
-                    <div style={{ marginBottom: 8, padding: "10px 12px", background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                        <span style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>Project Funding Split</span>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: pct >= 100 ? "#059669" : "#b45309" }}>{pct.toFixed(0)}% funded</span>
+            {/* ── WIZARD STEPS ── */}
+            {(() => {
+              const r = parseFloat(sow.rate) || 0;
+              const totalH = sow.milestones.reduce((s, m) => s + (parseFloat(m.h) || 0), 0);
+              const totalE = totalH * r;
+              const splitMode = sow.splitMode || "auto";
+              const customMciPct = parseInt(sow.customMciPct) || 18;
+              const mciFunding = C.ok ? C.mci.pre : (C.mci.pre + C.mci.post);
+              const afoFunding = C.ok ? C.ecif : C.stdEcif;
+
+              // Generate baseline 4 milestones — partner can add/remove/edit afterwards
+              const generateMilestones = () => {
+                if (totalH === 0) return;
+                let mciPct;
+                if (splitMode === "all-afo") mciPct = 0;
+                else if (splitMode === "custom") mciPct = customMciPct / 100;
+                else mciPct = 0.18; // auto: 18% to Discovery (MCI)
+
+                const discoveryHours = Math.round(totalH * mciPct);
+                const remainingHours = totalH - discoveryHours;
+                const startDate = sow.sd ? new Date(sow.sd) : new Date();
+                const milestones = [];
+                let msIdx = 1;
+
+                // Phase 1: Discovery (MCI bucket if MCI funding selected)
+                if (mciPct > 0) {
+                  milestones.push({
+                    n: `M${msIdx++} – Discovery & Solution Design`,
+                    h: discoveryHours,
+                    d: new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
+                    x: "Define scope, success criteria, data sources, and Azure architecture.",
+                    bucket: "mci",
+                  });
+                }
+                // Phase 2-4: Implementation phases (AFO bucket) — fixed 3 phases
+                const phases = [
+                  { label: "Data Preparation & Ingestion", share: 0.25, monthOffset: 1.5, desc: "Implement data ingestion and preparation pipelines on Azure." },
+                  { label: "Solution Build & Validation", share: 0.55, monthOffset: 3, desc: "Build and validate the solution with defined success metrics." },
+                  { label: "Deployment & Handover", share: 0.20, monthOffset: 5, desc: "Deploy solution in Azure, provide documentation, and define next steps for production rollout." },
+                ];
+                phases.forEach(({ label, share, monthOffset, desc }) => {
+                  const phaseHours = Math.round(remainingHours * share);
+                  const phaseDate = new Date(startDate.getTime() + monthOffset * 30 * 24 * 60 * 60 * 1000);
+                  milestones.push({
+                    n: `M${msIdx++} – ${label}`,
+                    h: phaseHours,
+                    d: phaseDate.toISOString().split("T")[0],
+                    x: desc,
+                    bucket: "afo",
+                  });
+                });
+                setSow(prev => ({ ...prev, milestones }));
+              };
+
+              // Add a new milestone (defaults to AFO, blank values)
+              const addMilestoneInline = () => {
+                const nextNum = sow.milestones.length + 1;
+                setSow(prev => ({
+                  ...prev,
+                  milestones: [...prev.milestones, { n: `M${nextNum} – New milestone`, h: "", d: "", x: "", bucket: "afo" }],
+                }));
+              };
+              const removeMilestoneInline = (idx) => {
+                setSow(prev => ({ ...prev, milestones: prev.milestones.filter((_, i) => i !== idx) }));
+              };
+
+              // Currency formatting
+              const ccyMatch = (sow.localCurr || "").match(/\(([A-Z]{3})\)/);
+              const ccyCode = ccyMatch ? ccyMatch[1] : "USD";
+              // FX rate: how many local currency units per 1 USD (default approximations, partner can override)
+              const defaultFx = { USD: 1, SEK: 10.5, EUR: 0.92, GBP: 0.79, NOK: 10.8, DKK: 6.85 };
+              const fxRate = parseFloat(sow.fxRate) || defaultFx[ccyCode] || 1;
+              // AFE Calculator funding caps are in USD. Convert to local currency for milestone comparison.
+              const mciFundingLocal = mciFunding * fxRate;
+              const afoFundingLocal = afoFunding * fxRate;
+
+              // Funding split calculation (everything in local currency)
+              const mciScope = sow.milestones.filter(m => (m.bucket || "afo") === "mci").reduce((s, m) => s + (parseFloat(m.h) || 0), 0) * r;
+              const afoScope = sow.milestones.filter(m => (m.bucket || "afo") === "afo").reduce((s, m) => s + (parseFloat(m.h) || 0), 0) * r;
+              const selfScope = sow.milestones.filter(m => (m.bucket || "afo") === "self").reduce((s, m) => s + (parseFloat(m.h) || 0), 0) * r;
+              const mciCovers = Math.min(mciFundingLocal, mciScope);
+              const afoCovers = Math.min(afoFundingLocal, afoScope);
+              const totalCovered = mciCovers + afoCovers;
+              const customerPays = totalE - totalCovered;
+              const coverPct = totalE > 0 ? (totalCovered / totalE * 100) : 0;
+              const fmtMoney = (v) => {
+                const rounded = Math.round(v);
+                if (ccyCode === "USD") return "$" + rounded.toLocaleString("en-US");
+                return rounded.toLocaleString("sv-SE") + " " + ccyCode;
+              };
+              // Round to nearest 100 for funded amounts (clean numbers)
+              const fmtMoneyClean = (v) => {
+                const rounded = Math.round(v / 100) * 100;
+                if (ccyCode === "USD") return "$" + rounded.toLocaleString("en-US");
+                return rounded.toLocaleString("sv-SE") + " " + ccyCode;
+              };
+              // For showing USD source values
+              const fmtUSD = (v) => "$" + Math.round(v).toLocaleString("en-US");
+
+              const cardStyle = { padding: "20px 24px", background: "white", border: "1px solid #e5e7eb", borderRadius: 12, marginBottom: 16 };
+              const labelStyle = { fontSize: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: "#64748b", marginBottom: 6, display: "block" };
+              const inputStyle = { width: "100%", padding: "10px 14px", fontSize: 14, border: "1px solid #d1d5db", borderRadius: 8, fontFamily: "inherit", outline: "none", background: "white" };
+
+              return (
+                <Fragment>
+                  {/* STEP 1 — PROJECT SETUP */}
+                  <div style={cardStyle}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+                      <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#5C2D91", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700 }}>1</div>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: "#1a1a1a" }}>Project setup</div>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                      <div>
+                        <label style={labelStyle}>Customer name</label>
+                        <input value={sow.cn === "[CUSTOMER NAME]" ? "" : sow.cn} placeholder="Customer name" onChange={(e) => setSow(p => ({ ...p, cn: e.target.value || "[CUSTOMER NAME]" }))} style={inputStyle} />
                       </div>
-                      <div style={{ height: 16, background: "#e5e7eb", borderRadius: 8, overflow: "hidden", display: "flex", marginBottom: 8 }}>
-                        <div style={{ width: pct + "%", background: "linear-gradient(90deg, #059669, #34d399)", display: "flex", alignItems: "center", justifyContent: "center", transition: "width 0.3s" }}>
-                          {pct >= 20 && <span style={{ fontSize: 10, color: "white", fontWeight: 700 }}>Microsoft {fmt(funded)}</span>}
+                      <div>
+                        <label style={labelStyle}>Partner</label>
+                        <input value={sow.sup} placeholder="Partner name (External)" onChange={(e) => setSow(p => ({ ...p, sup: e.target.value }))} style={inputStyle} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Total project hours</label>
+                        <input type="number" placeholder="e.g. 1136" value={totalH > 0 ? totalH : ""} onChange={(e) => {
+                          const newTotal = parseFloat(e.target.value) || 0;
+                          if (newTotal === 0) return;
+                          // Just store as a single placeholder milestone — user proceeds to Step 3 (Generate)
+                          setSow(p => ({ ...p, milestones: [{ n: "_pending", h: newTotal, d: "", x: "", bucket: "afo" }] }));
+                        }} style={inputStyle} />
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Hourly rate</label>
+                        <div style={{ display: "flex", gap: 8 }}>
+                          <input type="number" placeholder="e.g. 1300" value={sow.rate || ""} onChange={(e) => setSow(p => ({ ...p, rate: e.target.value }))} style={{ ...inputStyle, flex: 1 }} />
+                          <select value={sow.localCurr || "US Dollar (USD)"} onChange={(e) => setSow(p => ({ ...p, localCurr: e.target.value }))} style={{ ...inputStyle, width: 140, padding: "10px 8px" }}>
+                            <option value="US Dollar (USD)">USD</option>
+                            <option value="Swedish Krona (SEK)">SEK</option>
+                            <option value="EURO (EUR)">EUR</option>
+                            <option value="UK Pound (GBP)">GBP</option>
+                            <option value="Norwegian Krone (NOK)">NOK</option>
+                            <option value="Danish Krone (DKK)">DKK</option>
+                          </select>
                         </div>
-                        {custPays > 0 && (
-                          <div style={{ flex: 1, background: "linear-gradient(90deg, #fbbf24, #f59e0b)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            {(100 - pct) >= 20 && <span style={{ fontSize: 10, color: "white", fontWeight: 700 }}>Customer {fmt(custPays)}</span>}
+                      </div>
+                      <div>
+                        <label style={labelStyle}>Project start date</label>
+                        <input type="date" value={sow.sd || ""} onChange={(e) => setSow(p => ({ ...p, sd: e.target.value }))} style={inputStyle} />
+                      </div>
+                    </div>
+                    {totalE > 0 && (
+                      <div style={{ marginTop: 14, padding: "10px 14px", background: "#f0f9ff", borderRadius: 6, fontSize: 12, color: "#0369a1", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10 }}>
+                        <div>Project value: <strong>{fmtMoney(totalE)}</strong> ({totalH}h × {fmtMoney(r)}/h)</div>
+                        {ccyCode !== "USD" && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
+                            <span style={{ color: "#475569" }}>FX rate:</span>
+                            <span style={{ color: "#475569" }}>1 USD =</span>
+                            <input type="number" step="0.01" value={fxRate} onChange={(e) => setSow(p => ({ ...p, fxRate: e.target.value }))} style={{ width: 60, padding: "4px 6px", border: "1px solid #cbd5e1", borderRadius: 4, fontSize: 11, fontFamily: "inherit", textAlign: "right" }} />
+                            <span style={{ color: "#475569", fontWeight: 600 }}>{ccyCode}</span>
+                            <span style={{ color: "#94a3b8", fontSize: 10, marginLeft: 6 }}>(used to convert AFO/MCI USD caps)</span>
                           </div>
                         )}
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, textAlign: "center" }}>
-                        <div style={{ padding: "6px", background: "#ecfdf5", borderRadius: 6 }}>
-                          <div style={{ fontSize: 10, color: "#059669" }}>Microsoft ECIF</div>
-                          <div style={{ fontSize: 16, fontWeight: 700, color: "#059669" }}>{fmt(funded)}</div>
-                        </div>
-                        <div style={{ padding: "6px", background: custPays > 0 ? "#fffbeb" : "#ecfdf5", borderRadius: 6 }}>
-                          <div style={{ fontSize: 10, color: custPays > 0 ? "#b45309" : "#059669" }}>Customer Pays</div>
-                          <div style={{ fontSize: 16, fontWeight: 700, color: custPays > 0 ? "#b45309" : "#059669" }}>{custPays > 0 ? fmt(custPays) : "✓ $0"}</div>
-                        </div>
-                        <div style={{ padding: "6px", background: "#f0f4ff", borderRadius: 6 }}>
-                          <div style={{ fontSize: 10, color: "#3b82f6" }}>Total Project</div>
-                          <div style={{ fontSize: 16, fontWeight: 700, color: "#3b82f6" }}>{fmt(mCalc.totalE)}</div>
-                        </div>
+                    )}
+
+                    {/* Services to be Provided — auto-fillable from calculator */}
+                    <div style={{ marginTop: 18 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 6 }}>
+                        <label style={{ ...labelStyle, marginBottom: 0 }}>Services to be Provided <span style={{ fontWeight: 400, color: "#94a3b8", textTransform: "none", letterSpacing: 0 }}>(max 5000 chars · for ECIF SOW)</span></label>
+                        <button onClick={() => setSow(p => ({ ...p, scope: dyn.scope }))} disabled={!dyn.scope} title={dyn.scope ? "Auto-generate from Calculator workloads" : "Add workloads in Calculator first"} style={{ background: dyn.scope ? "#5C2D91" : "#cbd5e1", color: "white", border: "none", padding: "5px 10px", fontSize: 10, fontWeight: 600, borderRadius: 4, cursor: dyn.scope ? "pointer" : "not-allowed", fontFamily: "inherit", letterSpacing: 0.3 }}>↺ Auto-fill from Calculator</button>
                       </div>
-                      {custPays > 0 && <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 6, textAlign: "center" }}>Partner decides how to allocate ECIF across milestones - maximum flexibility</div>}
-                      {pct >= 100 && <div style={{ fontSize: 10, color: "#059669", marginTop: 6, textAlign: "center", fontWeight: 600 }}>✓ Entire project covered by Microsoft co-investment</div>}
-                    </div>
-                  );
-                })()}
-
-                {/* ── Consumption Ramp Timeline ── */}
-                {C.rows.length > 0 && (() => {
-                  // Calculate monthly ACR ramp over 12 months
-                  const months = Array.from({length: 12}, (_, i) => i + 1);
-                  const colors = ["#0078D4", "#059669", "#7c3aed", "#f59e0b", "#dc2626", "#0ea5e9", "#84cc16", "#e11d48", "#6366f1", "#14b8a6"];
-
-                  const activeRows = C.rows.filter(r => r.mo > 50).slice(0, 8); // Top 8 by cost, skip tiny ones
-
-                  // Build monthly data
-                  const monthlyData = months.map(m => {
-                    let total = 0;
-                    const breakdown = [];
-                    activeRows.forEach((r, idx) => {
-                      const start = conStart[r.id] || getDefaultStart(r.id);
-                      if (m >= start) {
-                        // Use phased monthly cost if available, otherwise flat mo
-                        // For phased rows, the per-month cost from M1 of the phase calc is offset by the start month
-                        const monthIdx = m - start; // 0-based index into phase array starting from row's start month
-                        const cost = r.monthly && r.monthly.length > 0
-                          ? (monthIdx >= 0 && monthIdx < r.monthly.length ? r.monthly[monthIdx] : r.monthly[r.monthly.length - 1])
-                          : r.mo;
-                        total += cost;
-                        breakdown.push({ name: r.name, mo: cost, color: colors[idx % colors.length] });
-                      }
-                    });
-                    return { month: m, total, breakdown };
-                  });
-
-                  const maxMo = Math.max(...monthlyData.map(d => d.total), 1);
-                  const y1Total = monthlyData.reduce((s, d) => s + d.total, 0);
-
-                  return (
-                    <div style={{ marginBottom: 12 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>Consumption Ramp (Monthly ACR)</div>
-                        <div style={{ fontSize: 11, color: "#666" }}>Y1 realized: <strong>{fmt(y1Total)}</strong></div>
-                      </div>
-
-                      {/* Stacked bar chart */}
-                      <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 120, marginBottom: 4, padding: "0 0 20px", position: "relative" }}>
-                        {/* Y-axis labels */}
-                        <div style={{ position: "absolute", left: 0, top: 0, bottom: 20, width: 45, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                          <span style={{ fontSize: 10, color: "#999" }}>{fmt(maxMo)}</span>
-                          <span style={{ fontSize: 10, color: "#999" }}>{fmt(maxMo / 2)}</span>
-                          <span style={{ fontSize: 10, color: "#999" }}>$0</span>
-                        </div>
-                        {/* Bars */}
-                        <div style={{ display: "flex", alignItems: "flex-end", gap: 2, flex: 1, height: "100%", marginLeft: 48 }}>
-                          {monthlyData.map((d, i) => (
-                            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "flex-end", height: "100%" }}>
-                              <div style={{ height: (d.total / maxMo * 100) + "%", display: "flex", flexDirection: "column-reverse", borderRadius: "4px 4px 0 0", overflow: "hidden", transition: "height 0.3s", minHeight: d.total > 0 ? 2 : 0 }}>
-                                {d.breakdown.map((b, j) => (
-                                  <div key={j} style={{ height: (d.total > 0 ? (b.mo / d.total * 100) : 0) + "%", background: b.color, minHeight: 1 }} title={b.name + ": " + fmt(b.mo) + "/mo"} />
-                                ))}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      {/* X-axis labels */}
-                      <div style={{ display: "flex", gap: 2, marginLeft: 48 }}>
-                        {months.map(m => (
-                          <div key={m} style={{ flex: 1, textAlign: "center", fontSize: 10, color: "#999" }}>M{m}</div>
-                        ))}
-                      </div>
-
-                      {/* Start month controls */}
-                      <div style={{ marginTop: 8, fontSize: 11, fontWeight: 600, color: "#666", marginBottom: 4 }}>Consumption start per workload:</div>
-                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4 }} className="grid-2col">
-                        {activeRows.map((r, idx) => (
-                          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11 }}>
-                            <div style={{ width: 8, height: 8, borderRadius: 2, background: colors[idx % colors.length], flexShrink: 0 }} />
-                            <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: "#666" }}>{r.name}</span>
-                            <select value={conStart[r.id] || getDefaultStart(r.id)} onChange={(e) => setConStart(p => ({ ...p, [r.id]: +e.target.value }))} style={{ padding: "1px 4px", border: "1px solid #ddd", borderRadius: 4, fontSize: 11, background: "white", cursor: "pointer" }}>
-                              {months.map(m => <option key={m} value={m}>M{m}</option>)}
-                            </select>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div style={{ fontSize: 10, color: "#0078D4", marginTop: 8, fontStyle: "italic", background: "#eff6ff", padding: "5px 8px", borderRadius: 4, border: "1px solid #bfdbfe" }}>💡 Default: M1 (full Y1 consumption). Move start month forward if a workload goes live mid-year — Y1 ACR and ECIF auto-adjust to match the actual months consumed. Each month delay = ~8% lower ECIF on that workload.</div>
-                    </div>
-                  );
-                })()}
-                <button onClick={addMilestone} style={{ padding: "4px 12px", background: "#f0f4fa", border: "1px dashed #93c5fd", borderRadius: 4, fontSize: 12, color: "#0078D4", cursor: "pointer", marginBottom: 8, fontWeight: 600 }}>+ Add Milestone</button>
-                {mCalc.overBudget && <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 4, padding: "4px 8px", fontSize: 11, color: "#dc2626", marginBottom: 8 }}>⚠ Total ECIF ({fmt(mCalc.totalE)}) exceeds estimated budget ({fmt(mCalc.budget)}). Reduce hours or adjust rate. Budget allows ~{mCalc.suggestedH} hours at ${sow.rate}/hr.</div>}
-                {!mCalc.overBudget && mCalc.totalE > 0 && <div style={{ background: "#ecfdf5", border: "1px solid #6ee7b7", borderRadius: 4, padding: "4px 8px", fontSize: 11, color: "#059669", marginBottom: 8 }}>✓ Within budget. {fmt(mCalc.totalE)} of {fmt(mCalc.budget)} ({(mCalc.totalE / mCalc.budget * 100).toFixed(0)}% utilization)</div>}
-                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Funding Summary</h2>
-
-                {/* Funding options with clear labels */}
-                <div style={{ fontSize: 12, color: "#666", marginBottom: 8 }}>{C.ok ? <span>AFO recommended. MCI pre-sales <strong>can be stacked</strong> as separate assessment scope.</span> : <span>Choose <strong>one</strong> path per project - ECIF and MCI cannot be combined on the same customer + project.</span>}</div>
-                <div style={{ display: "flex", gap: 8, marginBottom: 8 }} className="flex-funding">
-                  {/* AFO ECIF */}
-                  {(() => {
-                    const isRec = C.recStrategy === "AFO + MCI Pre-sales" || C.recStrategy === "AFO";
-                    const available = C.ok;
-                    return (
-                      <div style={{ flex: 1, padding: 10, borderRadius: 6, textAlign: "center", border: isRec ? "2px solid #3b82f6" : "1px solid " + (available ? "#dbeafe" : "#e5e7eb"), background: isRec ? "#eff6ff" : available ? "#fafbff" : "#f9fafb", opacity: available ? 1 : 0.45 }}>
-                        {isRec && <div style={{ background: "#3b82f6", color: "white", fontSize: 10, fontWeight: 700, padding: "2px 10px", borderRadius: 8, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4, display: "inline-block" }}>★ Recommended</div>}
-                        <div style={{ fontSize: 10, fontWeight: 700, color: "#999", marginBottom: 2 }}>{available ? "Option 1 · Field-Led" : "Not available"}</div>
-                        <div style={{ fontSize: 10, color: "#3b82f6", fontWeight: 700 }}>AFO ECIF</div>
-                        <div style={{ fontSize: 18, fontWeight: 700, color: available ? "#3b82f6" : "#ccc" }}>{available ? fmt(C.ecif) : "-"}</div>
-                        <div style={{ fontSize: 10, color: available ? "#059669" : "#94a3b8" }}>{available ? "✓ Eligible (2:1 ROI)" : "Requires ≥50% Data/AI (" + C.pct.toFixed(0) + "%)"}</div>
-                        {available && C.mci.pre > 0 && <div style={{ fontSize: 10, color: "#0078D4", marginTop: 4 }}>+ MCI Pre-sales {fmt(C.mci.pre)} (stackable)</div>}
-                      </div>
-                    );
-                  })()}
-
-                  {/* Standard ECIF */}
-                  {!C.ok && (() => {
-                    const isRec = C.recStrategy === "Standard ECIF";
-                    return (
-                      <div style={{ flex: 1, padding: 10, borderRadius: 6, textAlign: "center", border: isRec ? "2px solid #D83B01" : "1px solid #fed7aa", background: isRec ? "#fff7ed" : "#fffbf5" }}>
-                        {isRec && <div style={{ background: "#D83B01", color: "white", fontSize: 10, fontWeight: 700, padding: "2px 10px", borderRadius: 8, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4, display: "inline-block" }}>★ Recommended</div>}
-                        <div style={{ fontSize: 10, fontWeight: 700, color: "#999", marginBottom: 2 }}>Option 1 · Field-Led</div>
-                        <div style={{ fontSize: 10, color: "#D83B01", fontWeight: 700 }}>Standard ECIF</div>
-                        <div style={{ fontSize: 18, fontWeight: 700, color: "#D83B01" }}>{fmtRange(C.tot)}</div>
-                        <div style={{ fontSize: 10, color: "#059669" }}>✓ ~5:1 ROI · Azure Offer Navigator</div>
-                      </div>
-                    );
-                  })()}
-
-                  {/* MCI Partner-Led */}
-                  {(() => {
-                    const isRec = C.recStrategy === "MCI";
-                    const mciTotal = C.ok ? C.mci.pre : C.mci.pre + C.mci.post;
-                    return (
-                      <div style={{ flex: 1, padding: 10, borderRadius: 6, textAlign: "center", border: isRec ? "2px solid #107C10" : "1px solid #bbf7d0", background: isRec ? "#ecfdf5" : "#f7fdf9" }}>
-                        {isRec && <div style={{ background: "#107C10", color: "white", fontSize: 10, fontWeight: 700, padding: "2px 10px", borderRadius: 8, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4, display: "inline-block" }}>★ Recommended</div>}
-                        <div style={{ fontSize: 10, fontWeight: 700, color: "#999", marginBottom: 2 }}>{C.ok ? "Option 2 · Partner-Led" : "Option 2 · Partner-Led"}</div>
-                        <div style={{ fontSize: 10, color: "#107C10", fontWeight: 700 }}>MCI Partner Nominated</div>
-                        <div style={{ fontSize: 18, fontWeight: 700, color: "#107C10" }}>{fmt(mciTotal)}</div>
-                        <div style={{ fontSize: 10, color: mciTotal > 0 ? "#059669" : "#999" }}>{C.ok ? "Pre-sales only (post conflicts w/ ECIF)" : mciTotal > 0 ? "✓ " + C.mci.ts + " tier · Partner Center" : "ACR < $5K"}</div>
-                        {!C.ok && C.mci.pre > 0 && C.mci.post > 0 && <div style={{ fontSize: 10, color: "#999", marginTop: 2 }}>Pre: {fmt(C.mci.pre)} + Post: {fmt(C.mci.post)}</div>}
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                {/* Recommended total */}
-                <div style={{ background: "#fffbeb", border: "1.5px solid #fbbf24", borderRadius: 6, padding: 10, marginBottom: 8 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#92400e", textTransform: "uppercase", marginBottom: 4 }}>Recommended: {C.custFundingLabel}</div>
-                  <div style={{ fontSize: 12, color: "#666", lineHeight: 1.6 }}>
-                    <div>Cash to partner: <strong>{fmt(C.custFunding)}</strong></div>
-                  </div>
-                  <div style={{ fontSize: 10, color: "#999", marginTop: 4 }}>All nominations via Azure Offer Navigator (field-led) and/or Partner Center (partner-led).</div>
-                </div>
-
-                {/* ODA separate funding note */}
-                {C.odaAcr > 0 && (
-                  <div style={{ background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 6, padding: 10, marginBottom: 8 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#991b1b", marginBottom: 4 }}>⚠ Oracle Database@Azure — Separate Funding Path</div>
-                    <div style={{ fontSize: 11, color: "#7f1d1d", lineHeight: 1.6 }}>
-                      ODA ACR ({fmt(C.odaAcr)}/yr) is <strong>excluded</strong> from AFO and MCI calculations above. ODA has its own Azure Accelerate offer: &gt;$100K ACR, up to $500K ECIF via PSS nomination. Only drag-along workloads (Oracle→SQL, Oracle→PG) generate standard AFO ECIF.
+                      <textarea value={sow.scope} onChange={(e) => setSow(p => ({ ...p, scope: e.target.value }))} placeholder="Describe what is being delivered, why, and how Azure consumption will be generated. Click 'Auto-fill from Calculator' to seed from your workload selection." style={{ ...inputStyle, minHeight: 110, resize: "vertical", fontFamily: "inherit", fontSize: 12, lineHeight: 1.5 }} />
+                      {sow.scope && <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 4, textAlign: "right" }}>{sow.scope.length} / 5000 chars</div>}
                     </div>
                   </div>
-                )}
-                {/* ── ROI / BUSINESS CASE ── */}
-                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Business Case Summary</h2>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }} className="grid-2col">
-                  <div style={{ background: "#eff6ff", padding: 10, borderRadius: 6, textAlign: "center" }}>
-                    <div style={{ fontSize: 10, color: "#64748b" }}>Customer Y1 Azure Spend</div>
-                    <div style={{ fontSize: 20, fontWeight: 700, color: "#0078D4" }}>{fmt(roi.custInvest)}</div>
-                    <div style={{ fontSize: 10, color: "#93c5fd" }}>{fmt(roi.custInvest / 12)}/mo</div>
-                  </div>
-                  <div style={{ background: "#f5f3ff", padding: 10, borderRadius: 6, textAlign: "center" }}>
-                    <div style={{ fontSize: 10, color: "#64748b" }}>Partner Implementation</div>
-                    <div style={{ fontSize: 20, fontWeight: 700, color: "#7c3aed" }}>{mCalc.totalE > 0 ? fmt(roi.partnerCost) : "TBD"}</div>
-                    <div style={{ fontSize: 10, color: "#a78bfa" }}>{mCalc.totalH > 0 ? mCalc.totalH + "h × $" + sow.rate + "/hr" : "Set rate + hours above"}</div>
-                  </div>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8, marginBottom: 12 }}>
-                  <div style={{ background: "#ecfdf5", padding: 10, borderRadius: 6, textAlign: "center", border: "1px solid #6ee7b7" }}>
-                    <div style={{ fontSize: 10, color: "#64748b" }}>{C.custFundingLabel} - Cash to Partner</div>
-                    <div style={{ fontSize: 20, fontWeight: 700, color: "#059669" }}>{fmt(roi.fundCash)}</div>
-                    <div style={{ fontSize: 10, color: "#059669" }}>Offsets implementation cost</div>
-                  </div>
 
-                </div>
-                {mCalc.totalE > 0 && (
-                  <div style={{ background: "#fffbeb", border: "1px solid #fbbf24", borderRadius: 6, padding: 10, marginBottom: 16, fontSize: 12, lineHeight: 1.6, color: "#666" }}>
-                    <strong style={{ color: "#92400e" }}>Customer Investment Overview:</strong><br/>
-                    Azure consumption: {fmt(roi.custInvest)}/yr<br/>
-                    Implementation: {fmt(roi.partnerCost)}{roi.fundCash > 0 ? " minus " + fmt(roi.fundCash) + " ECIF cash = " + fmt(Math.max(0, roi.partnerCost - roi.fundCash)) + " net implementation cost" : ""}<br/>
-                    <strong>Estimated net customer cost Y1: {fmt(Math.max(0, roi.custTotalCost))}</strong> (after all funding applied)
-                  </div>
-                )}
-
-
-                {/* ── FUNDING JUSTIFICATION ── */}
-                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 8px", paddingBottom: 4, borderBottom: "2px solid #0078D4" }}>Funding Justification</h2>
-                <div style={{ marginBottom: 16, fontSize: 12, lineHeight: 1.8, color: "#666" }}>
-                  {(() => {
-                    const cn = sow.cn === "[CUSTOMER NAME]" ? "the customer" : sow.cn;
-                    const hasDb = C.db;
-                    const hasFab = C.fab;
-                    const hasFo = C.fo;
-                    const hasAccel = C.accel;
-                    const workloadTypes = [hasDb && "database modernization", hasFab && "analytics/Fabric", hasFo && "AI Foundry", hasAccel && "cloud-native infrastructure"].filter(Boolean);
-                    const wlStr = workloadTypes.length > 1 ? workloadTypes.slice(0, -1).join(", ") + " and " + workloadTypes[workloadTypes.length - 1] : workloadTypes[0] || "Azure modernization";
-
-                    return (
-                      <div>
-                        <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Strategic Alignment</div>
-                        <div style={{ marginBottom: 12, paddingLeft: 8 }}>
-                          This project directly supports Microsoft's {C.ok ? "Azure Frontier Offer (AFO)" : "Azure Accelerate"} objectives by driving {wlStr} consumption in the mid-market segment. {hasDb ? "Database migration from on-premises to Azure PaaS reduces competitive exposure to AWS RDS/Aurora and Google Cloud SQL. " : ""}{hasFab ? "Fabric adoption displaces competing analytics platforms (Snowflake, Databricks standalone, Google BigQuery) and consolidates the customer on Microsoft's unified data platform. " : ""}{hasFo ? "AI Foundry workloads establish Azure as the customer's AI platform, pre-empting AWS Bedrock and Google Vertex AI. " : ""}Estimated Y1 ACR: {fmt(C.tot)}{C.ok ? " with " + C.pct.toFixed(0) + "% AFO eligible workloads." : "."}
-                        </div>
-
-                        <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Customer & Partner Financial Commitment</div>
-                        <div style={{ marginBottom: 12, paddingLeft: 8 }}>
-                          {cn} commits to {fmt(C.totAnnual)}/yr in Azure consumption at full run-rate ({fmt(C.totAnnual / 12)}/mo). {C.totFull !== C.totAnnual ? "Y1 actual is " + fmt(C.totFull) + " due to mid-year go-live timing. " : ""}{mCalc.totalE > 0 ? "The partner (" + (sow.sup || "TBD").replace(/ \(External\)/,"").replace(/ \(Internal\)/,"") + ") invests " + fmt(mCalc.totalE) + " in implementation services. " : "Partner implementation scope to be confirmed. "}Microsoft's co-investment of {fmt(C.custFunding)} represents a {C.tot > 0 ? (C.custFunding / C.tot * 100).toFixed(1) : 0}% investment relative to fundable Y1 ACR - well within the {C.ok ? "2:1 ROI" : "3:1-7:1 ROI"} framework. The customer bears 100% of Azure consumption cost.
-                        </div>
-
-                        <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Soft Outcomes for Microsoft</div>
-                        <div style={{ marginBottom: 12, paddingLeft: 8 }}>
-                          {hasDb ? "Migrating " + C.rows.filter(r => ITEMS.find(i => i.id === r.baseId && i.cat === "db")).length + " database workload(s) to Azure PaaS creates long-term platform lock-in and recurring consumption. " : ""}{hasFab ? "Fabric consolidation replaces fragmented BI tooling and creates a referenceable customer case for Microsoft Fabric. " : ""}{hasFo ? "AI Foundry adoption positions " + cn + " as an early AI adopter in the market - potential reference customer for Foundry go-to-market. " : ""}Successful delivery strengthens the partner relationship and creates a repeatable model for similar mid-market customers.
-                        </div>
-
-                        <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Risk if Funding Not Approved</div>
-                        <div style={{ marginBottom: 12, paddingLeft: 8 }}>
-                          Without co-investment, the project timeline extends 6-12 months as {cn} will need to self-fund the entire implementation. This increases the risk of competitive displacement - {hasDb ? "AWS and GCP are actively targeting database migration opportunities" : "competitors are actively prospecting"} in this segment. The partner has capacity allocated now; delay risks losing partner commitment to other projects. {C.ok ? "AFO funding is first-come-first-served and may not be available in H2." : ""}
-                        </div>
-
-                        <div style={{ fontWeight: 600, color: "#334155", marginBottom: 4 }}>Why This Program</div>
-                        <div style={{ paddingLeft: 8 }}>
-                          {C.ok ? "AFO/ECIF is the optimal program because " + C.pct.toFixed(0) + "% of projected ACR falls within eligible workload categories (DB/Fabric/AI Foundry), exceeding the 50% threshold. Standard ECIF would yield only " + fmtRange(C.tot) + " (3:1-7:1 ROI) vs AFO's " + fmt(C.ecif) + " (2:1 ROI). MCI Partner-Led (" + fmt(C.mci.pre + C.mci.post) + ") is available but cannot be stacked with ECIF on the same project scope." : "MCI Partner-Led is recommended as the primary path since AFO eligible workloads represent only " + C.pct.toFixed(0) + "% of ACR (below 50% threshold). Standard ECIF (" + fmtRange(C.tot) + ") is the alternative but offers lower funding. MCI provides " + fmt(C.mci.pre + C.mci.post) + " without field nomination dependency."}
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-
-                {/* ── SOLUTION PLAYS ── */}
-                {C.solutionPlays.length > 0 && (
-                  <div style={{ marginBottom: 16 }}>
-                    <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 8px", paddingBottom: 4, borderBottom: "2px solid #0078D4" }}>Solution Plays</h2>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 4 }}>
-                      {C.solutionPlays.map((sp, i) => (
-                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", background: sp.color + "10", border: "1px solid " + sp.color + "30", borderRadius: 6 }}>
-                          <div style={{ width: 8, height: 8, borderRadius: "50%", background: sp.color, flexShrink: 0 }} />
-                          <div>
-                            <div style={{ fontSize: 11, fontWeight: 600, color: "#333" }}>{sp.play}</div>
-                            {sp.scenarios && sp.scenarios.length > 0 && (
-                              <div style={{ fontSize: 9, color: "#888", marginTop: 1 }}>Accelerate: {sp.scenarios.join(", ")}{sp.uplift ? " · " + sp.uplift : ""}</div>
-                            )}
-                          </div>
-                        </div>
+                  {/* STEP 2 — FUNDING SPLIT */}
+                  <div style={cardStyle}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+                      <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#5C2D91", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700 }}>2</div>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: "#1a1a1a" }}>How should the project be split between MCI and AFO?</div>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+                      {[
+                        { id: "auto", title: "Auto split", desc: "~18% Discovery → MCI Pre-sales. Remaining 82% Implementation → AFO ECIF.", recommended: true },
+                        { id: "all-afo", title: "All AFO", desc: "Entire scope as post-sales AFO. No MCI nomination.", recommended: false },
+                        { id: "custom", title: "Custom %", desc: "Set your own pre-sales / post-sales split.", recommended: false },
+                      ].map(opt => (
+                        <button key={opt.id} onClick={() => setSow(p => ({ ...p, splitMode: opt.id }))} style={{
+                          padding: "16px",
+                          background: splitMode === opt.id ? "#f5f3ff" : "white",
+                          border: "2px solid " + (splitMode === opt.id ? "#5C2D91" : "#e5e7eb"),
+                          borderRadius: 10,
+                          cursor: "pointer",
+                          textAlign: "left",
+                          fontFamily: "inherit",
+                          position: "relative",
+                        }}>
+                          {opt.recommended && <div style={{ position: "absolute", top: 10, right: 10, fontSize: 9, fontWeight: 700, color: "#5C2D91", letterSpacing: 0.5 }}>RECOMMENDED</div>}
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a", marginBottom: 6 }}>{opt.title}</div>
+                          <div style={{ fontSize: 11, color: "#64748b", lineHeight: 1.5 }}>{opt.desc}</div>
+                        </button>
                       ))}
                     </div>
-                    <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 4 }}>Solution Plays auto-mapped from selected workloads. Use for MSX Investment Request and AFO/MCI nomination.</div>
+                    {splitMode === "custom" && (
+                      <div style={{ marginTop: 16, padding: "14px 16px", background: "#fafafa", borderRadius: 8 }}>
+                        <label style={{ ...labelStyle, marginBottom: 10 }}>Pre-sales (MCI) percentage: {customMciPct}%</label>
+                        <input type="range" min="0" max="40" value={customMciPct} onChange={(e) => setSow(p => ({ ...p, customMciPct: e.target.value }))} style={{ width: "100%" }} />
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#64748b", marginTop: 4 }}>
+                          <span>0% (no MCI)</span><span>20%</span><span>40%</span>
+                        </div>
+                      </div>
+                    )}
+                    <button onClick={generateMilestones} disabled={totalH === 0 || r === 0} style={{
+                      marginTop: 16,
+                      padding: "12px 20px",
+                      background: (totalH > 0 && r > 0) ? "#5C2D91" : "#cbd5e1",
+                      color: "white",
+                      border: "none",
+                      borderRadius: 8,
+                      fontSize: 13,
+                      fontWeight: 700,
+                      cursor: (totalH > 0 && r > 0) ? "pointer" : "not-allowed",
+                      fontFamily: "inherit",
+                      letterSpacing: 0.3,
+                    }}>Generate milestone plan →</button>
                   </div>
-                )}
 
-                {/* ── ECIF MILESTONE DELIVERABLES ── */}
-                {msDeliverables.length > 0 && (
-                  <>
-                    <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 8px", paddingBottom: 4, borderBottom: "2px solid #0078D4" }}>ECIF Milestone Deliverables</h2>
-                    {msDeliverables.map((del, i) => {
-                      const msName = sow.milestones[i] && sow.milestones[i].n ? sow.milestones[i].n : "";
-                      const displayTitle = msName || del.title;
-                      return (
-                      <div key={i} style={{ marginBottom: 16, padding: 12, background: "#f8f9fa", borderRadius: 8, border: "1px solid #e8e8ec", pageBreakInside: "avoid" }}>
-                        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 8, marginBottom: 8 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: "#333" }}>{i + 1}. {displayTitle}</div>
-                          {del.solutionPlay && (
-                            <div style={{ display: "flex", gap: 4, flexShrink: 0, flexWrap: "wrap", justifyContent: "flex-end" }}>
-                              <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 6px", borderRadius: 4, background: del.solutionPlayColor + "18", color: del.solutionPlayColor, whiteSpace: "nowrap", border: "1px solid " + del.solutionPlayColor + "30" }}>{del.solutionPlay}</span>
-                              {del.solutionPlayScenario && del.solutionPlayScenario !== del.solutionPlay && (
-                                <span style={{ fontSize: 9, fontWeight: 600, padding: "2px 6px", borderRadius: 4, background: "#f0f4fa", color: "#5b6b80", whiteSpace: "nowrap", border: "1px solid #e0e7ef" }}>{del.solutionPlayScenario}</span>
-                              )}
+                  {/* STEP 3 — REVIEW (only if milestones generated, i.e. real names not "_pending") */}
+                  {sow.milestones.length > 0 && sow.milestones[0].n !== "_pending" && (
+                    <div style={cardStyle}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+                        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#5C2D91", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700 }}>3</div>
+                        <div style={{ fontSize: 16, fontWeight: 700, color: "#1a1a1a" }}>Review &amp; export</div>
+                      </div>
+
+                      {/* Pre-compute per-milestone funded amount: pro-rata within each bucket up to the cap */}
+                      {(() => null)()}
+                      {/* Milestone table — editable */}
+                      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, marginBottom: 12 }}>
+                        <thead>
+                          <tr style={{ background: "#f9fafb" }}>
+                            <th style={{ padding: "8px 10px", textAlign: "left", borderBottom: "1px solid #e5e7eb", fontSize: 10, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: "#64748b" }}>Milestone</th>
+                            <th style={{ padding: "8px 10px", textAlign: "center", borderBottom: "1px solid #e5e7eb", fontSize: 10, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: "#64748b", width: 110 }}>Funding</th>
+                            <th style={{ padding: "8px 10px", textAlign: "right", borderBottom: "1px solid #e5e7eb", fontSize: 10, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: "#64748b", width: 65 }}>Hours</th>
+                            <th style={{ padding: "8px 10px", textAlign: "right", borderBottom: "1px solid #e5e7eb", fontSize: 10, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: "#64748b", width: 110 }}>Cost</th>
+                            <th style={{ padding: "8px 10px", textAlign: "right", borderBottom: "1px solid #e5e7eb", fontSize: 10, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: "#16a34a", width: 70, background: "#f0fdf4" }} title="Hours covered by funding">Funded h</th>
+                            <th style={{ padding: "8px 10px", textAlign: "right", borderBottom: "1px solid #e5e7eb", fontSize: 10, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: "#16a34a", width: 110, background: "#f0fdf4" }} title="Funded amount, rounded to nearest 100">Funded $</th>
+                            <th style={{ padding: "8px 10px", textAlign: "right", borderBottom: "1px solid #e5e7eb", fontSize: 10, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: "#64748b", width: 120 }}>Date</th>
+                            <th style={{ width: 32, borderBottom: "1px solid #e5e7eb" }} />
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {(() => {
+                            // Pre-compute pro-rata funded amount per milestone within bucket cap (in LOCAL currency)
+                            const mciMs = sow.milestones.filter(m => (m.bucket || "afo") === "mci");
+                            const afoMs = sow.milestones.filter(m => (m.bucket || "afo") === "afo");
+                            const mciScopeH = mciMs.reduce((s, m) => s + (parseFloat(m.h) || 0), 0);
+                            const afoScopeH = afoMs.reduce((s, m) => s + (parseFloat(m.h) || 0), 0);
+                            const mciCoverHTotal = r > 0 ? Math.min(mciFundingLocal, mciScopeH * r) / r : 0;
+                            const afoCoverHTotal = r > 0 ? Math.min(afoFundingLocal, afoScopeH * r) / r : 0;
+                            const mciCoverAmtTotal = Math.min(mciFundingLocal, mciScopeH * r);
+                            const afoCoverAmtTotal = Math.min(afoFundingLocal, afoScopeH * r);
+                            const fundedPer = sow.milestones.map(m => {
+                              const bucket = m.bucket || "afo";
+                              const h = parseFloat(m.h) || 0;
+                              if (bucket === "self" || h === 0) return { fh: 0, fa: 0 };
+                              const scopeH = bucket === "mci" ? mciScopeH : afoScopeH;
+                              if (scopeH === 0) return { fh: 0, fa: 0 };
+                              const share = h / scopeH;
+                              const totalCoverH = bucket === "mci" ? mciCoverHTotal : afoCoverHTotal;
+                              const totalCoverAmt = bucket === "mci" ? mciCoverAmtTotal : afoCoverAmtTotal;
+                              const fh = Math.round(totalCoverH * share);
+                              const fa = Math.round(totalCoverAmt * share / 100) * 100; // round to nearest 100
+                              return { fh, fa };
+                            });
+                            return (() => {
+                              // Compute ECIF SOW number per bucket (MCI gets its own M#, AFO gets its own M#)
+                              let mciNum = 0, afoNum = 0;
+                              const ecifNums = sow.milestones.map(m => {
+                                const b = m.bucket || "afo";
+                                if (b === "mci") return ++mciNum;
+                                if (b === "afo") return ++afoNum;
+                                return null;
+                              });
+                              // Render in original order, but inject section separators when bucket changes
+                              const rows = [];
+                              let lastBucket = null;
+                              sow.milestones.forEach((m, i) => {
+                                const bucket = m.bucket || "afo";
+                                // Section separator
+                                if (bucket !== lastBucket && i > 0) {
+                                  rows.push(
+                                    <tr key={"sep-" + i} style={{ background: "white" }}>
+                                      <td colSpan={8} style={{ padding: "8px 0", borderBottom: "1px dashed #e2e8f0" }} />
+                                    </tr>
+                                  );
+                                }
+                                // Section header (only at start of new bucket)
+                                if (bucket !== lastBucket) {
+                                  const headerLabel = bucket === "mci"
+                                    ? "🟢 MCI Pre-sales — separate Partner Center submission"
+                                    : bucket === "afo"
+                                    ? "🔴 AFO ECIF — included in ECIF Central submission template"
+                                    : "⚪ Self — customer SoW only";
+                                  const headerColor = bucket === "mci" ? "#15803d" : bucket === "afo" ? "#b91c1c" : "#64748b";
+                                  rows.push(
+                                    <tr key={"hdr-" + i} style={{ background: "white" }}>
+                                      <td colSpan={8} style={{ padding: "10px 0 6px 0", fontSize: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: headerColor }}>{headerLabel}</td>
+                                    </tr>
+                                  );
+                                }
+                                lastBucket = bucket;
+                                const bucketColor = bucket === "mci" ? "#16a34a" : bucket === "afo" ? "#dc2626" : "#94a3b8";
+                                const bucketBg = bucket === "mci" ? "#f0fdf4" : bucket === "afo" ? "#fef2f2" : "#f8fafc";
+                                const cost = (parseFloat(m.h) || 0) * r;
+                                const { fh, fa } = fundedPer[i];
+                                const ecifNum = ecifNums[i];
+                                rows.push(
+                                  <Fragment key={i}>
+                                    <tr style={{ background: bucketBg }}>
+                                      <td style={{ padding: "6px 10px", borderLeft: "3px solid " + bucketColor, borderBottom: "none" }}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                          {ecifNum !== null && (
+                                            <span style={{ fontSize: 9, fontWeight: 700, color: "white", background: bucketColor, padding: "2px 5px", borderRadius: 3, letterSpacing: 0.3, minWidth: 24, textAlign: "center", flexShrink: 0 }} title={bucket === "mci" ? "MCI submission #" + ecifNum : "ECIF submission M" + ecifNum}>{bucket === "mci" ? "M" : "M"}{ecifNum}</span>
+                                          )}
+                                          <DInp v={m.n} fn={(v) => uMs(i, "n", v)} st={{ width: "100%", fontWeight: 600 }} />
+                                        </div>
+                                      </td>
+                                      <td style={{ padding: "6px 10px", textAlign: "center", borderBottom: "none" }}>
+                                        <select value={bucket} onChange={(e) => uMs(i, "bucket", e.target.value)} style={{ fontSize: 10, fontWeight: 700, padding: "3px 6px", border: "1px solid " + bucketColor, color: bucketColor, borderRadius: 3, background: "white", fontFamily: "inherit", cursor: "pointer" }}>
+                                          <option value="mci">MCI</option>
+                                          <option value="afo">AFO</option>
+                                          <option value="self">SELF</option>
+                                        </select>
+                                      </td>
+                                      <td style={{ padding: "6px 10px", textAlign: "right", borderBottom: "none" }}>
+                                        <input type="number" value={m.h} onChange={(e) => uMs(i, "h", e.target.value)} style={{ width: 55, textAlign: "right", border: "1px solid #ddd", borderRadius: 3, padding: "3px 6px", fontSize: 11, fontFamily: "inherit", color: "#5C2D91" }} />
+                                      </td>
+                                      <td style={{ padding: "6px 10px", textAlign: "right", borderBottom: "none", fontVariantNumeric: "tabular-nums", color: "#666" }}>{cost > 0 ? fmtMoney(cost) : "-"}</td>
+                                      <td style={{ padding: "6px 10px", textAlign: "right", borderBottom: "none", fontVariantNumeric: "tabular-nums", color: fh > 0 ? "#15803d" : "#cbd5e1", fontWeight: 600, background: bucket === "self" ? "transparent" : "#f0fdf4" }}>{fh > 0 ? fh + "h" : "—"}</td>
+                                      <td style={{ padding: "6px 10px", textAlign: "right", borderBottom: "none", fontVariantNumeric: "tabular-nums", color: fa > 0 ? "#15803d" : "#cbd5e1", fontWeight: 600, background: bucket === "self" ? "transparent" : "#f0fdf4" }}>{fa > 0 ? fmtMoneyClean(fa) : "—"}</td>
+                                      <td style={{ padding: "6px 10px", textAlign: "right", borderBottom: "none" }}>
+                                        <input type="date" value={m.d} onChange={(e) => uMs(i, "d", e.target.value)} style={{ width: 110, border: "1px solid #ddd", borderRadius: 3, padding: "3px 6px", fontSize: 11, fontFamily: "inherit" }} />
+                                      </td>
+                                      <td style={{ padding: "6px 4px", textAlign: "center", borderBottom: "none" }}>
+                                        {sow.milestones.length > 1 && (
+                                          <button onClick={() => removeMilestoneInline(i)} title="Remove this milestone" style={{ border: "none", background: "transparent", color: "#94a3b8", cursor: "pointer", fontSize: 16, padding: 0, lineHeight: 1, fontWeight: 400 }}>×</button>
+                                        )}
+                                      </td>
+                                    </tr>
+                                    <tr style={{ background: bucketBg }}>
+                                      <td colSpan={8} style={{ padding: "0 10px 6px 10px", borderLeft: "3px solid " + bucketColor, borderBottom: "1px solid #f0f0f0" }}>
+                                        <input value={m.x || ""} onChange={(e) => uMs(i, "x", e.target.value)} placeholder="Description (optional)" style={{ width: "100%", border: "none", background: "transparent", fontSize: 11, color: "#666", fontStyle: "italic", padding: "2px 0", fontFamily: "inherit", outline: "none" }} />
+                                      </td>
+                                    </tr>
+                                  </Fragment>
+                                );
+                              });
+                              return rows;
+                            })();
+                          })()}
+                          <tr style={{ fontWeight: 700, background: "white" }}>
+                            <td colSpan={2} style={{ padding: "10px", borderTop: "2px solid #1a1a1a" }}>Total</td>
+                            <td style={{ padding: "10px", textAlign: "right", borderTop: "2px solid #1a1a1a", color: "#5C2D91" }}>{totalH}h</td>
+                            <td style={{ padding: "10px", textAlign: "right", borderTop: "2px solid #1a1a1a" }}>{fmtMoney(totalE)}</td>
+                            <td style={{ padding: "10px", textAlign: "right", borderTop: "2px solid #1a1a1a", color: "#15803d", background: "#f0fdf4" }}>{Math.round((mciCovers + afoCovers) / r)}h</td>
+                            <td style={{ padding: "10px", textAlign: "right", borderTop: "2px solid #1a1a1a", color: "#15803d", background: "#f0fdf4" }}>{fmtMoneyClean(mciCovers + afoCovers)}</td>
+                            <td colSpan={2} style={{ borderTop: "2px solid #1a1a1a" }} />
+                          </tr>
+                        </tbody>
+                      </table>
+
+                      {/* Add milestone + regenerate buttons */}
+                      <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center" }}>
+                        <button onClick={addMilestoneInline} style={{ background: "white", color: "#5C2D91", border: "1px dashed #5C2D91", padding: "6px 12px", fontSize: 11, fontWeight: 600, borderRadius: 4, cursor: "pointer", fontFamily: "inherit", letterSpacing: 0.3 }}>+ Add milestone</button>
+                        <button onClick={generateMilestones} title="Regenerate baseline milestones (overwrites current)" style={{ background: "white", color: "#64748b", border: "1px solid #cbd5e1", padding: "6px 12px", fontSize: 11, fontWeight: 600, borderRadius: 4, cursor: "pointer", fontFamily: "inherit", letterSpacing: 0.3 }}>↻ Regenerate from template</button>
+                        <span style={{ fontSize: 10, color: "#94a3b8", marginLeft: "auto" }}>Edit milestone names, hours, dates, and bucket inline. Description is optional.</span>
+                      </div>
+
+                      {/* Funding split summary */}
+                      <div style={{ padding: "14px 16px", background: "#fafafa", borderRadius: 8, marginBottom: 16 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, textTransform: "uppercase", color: "#64748b", marginBottom: 10 }}>Funding split — {Math.round(coverPct)}% of project covered</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10 }}>
+                          {mciScope > 0 && (
+                            <div style={{ padding: "10px", background: "#f0fdf4", borderRadius: 6, borderLeft: "3px solid #16a34a" }}>
+                              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: "#16a34a", marginBottom: 3 }}>MCI Pre-sales</div>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: "#15803d" }}>{fmtMoney(mciCovers)}</div>
+                              <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>covers {Math.round(mciCovers/r)}h of {Math.round(mciScope/r)}h</div>
                             </div>
                           )}
-                        </div>
-                        <div style={{ fontSize: 12, lineHeight: 1.7, color: "#666" }}>
-                          <div style={{ marginBottom: 8 }}>
-                            <span style={{ fontWeight: 600, color: "#334155" }}>Description of the Task:</span>
-                            <div style={{ paddingLeft: 8, marginTop: 2 }}>
-                              <div><span style={{ fontWeight: 600 }}>Services:</span> {del.services}</div>
-                              <div><span style={{ fontWeight: 600 }}>Customer environment:</span> {del.environment}</div>
-                              <div><span style={{ fontWeight: 600 }}>Execution method:</span> {del.method}</div>
+                          {afoScope > 0 && (
+                            <div style={{ padding: "10px", background: "#fef2f2", borderRadius: 6, borderLeft: "3px solid #dc2626" }}>
+                              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: "#dc2626", marginBottom: 3 }}>AFO ECIF</div>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: "#b91c1c" }}>{fmtMoney(afoCovers)}</div>
+                              <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>covers {Math.round(afoCovers/r)}h of {Math.round(afoScope/r)}h</div>
                             </div>
+                          )}
+                          {selfScope > 0 && (
+                            <div style={{ padding: "10px", background: "#f8fafc", borderRadius: 6, borderLeft: "3px solid #94a3b8" }}>
+                              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: "#64748b", marginBottom: 3 }}>Self</div>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: "#475569" }}>{fmtMoney(selfScope)}</div>
+                              <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>customer SoW</div>
+                            </div>
+                          )}
+                          <div style={{ padding: "10px", background: "#fffbeb", borderRadius: 6, borderLeft: "3px solid #f59e0b" }}>
+                            <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: "#b45309", marginBottom: 3 }}>Customer net</div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#92400e" }}>{fmtMoney(customerPays)}</div>
+                            <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>{Math.round((totalE - totalCovered)/r)}h via own SoW</div>
                           </div>
-                          <div style={{ marginBottom: 4 }}>
-                            <span style={{ fontWeight: 600, color: "#334155" }}>Technical Considerations:</span> {del.technical}
-                          </div>
-                          <div style={{ marginBottom: 4 }}>
-                            <span style={{ fontWeight: 600, color: "#334155" }}>Scope and Responsibilities:</span> The responsible team will include {del.team}, who will be responsible for executing the deliverables above.
-                          </div>
-
                         </div>
                       </div>
-                    )})}
-                  </>
-                )}
 
-                {/* ── ASSUMPTIONS ── */}
-                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Assumptions & Dependencies</h2>
-                <div style={{ marginBottom: 16, fontSize: 13, lineHeight: 1.7, color: "#666" }}>
-                  {assumptions.map((a, i) => <div key={i} style={{ padding: "2px 0", paddingLeft: 12 }}><span style={{ position: "absolute", left: 0, color: "#0078D4" }}>•</span>{a}</div>)}
-                </div>
+                      {/* Channel guidance */}
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+                        {mciScope > 0 && (
+                          <div style={{ padding: "10px 12px", background: "#f0fdf4", borderRadius: 6, borderLeft: "3px solid #16a34a", fontSize: 11, lineHeight: 1.5 }}>
+                            <strong style={{ color: "#15803d" }}>🟢 MCI Pre-sales</strong> — submitted by partner via <strong>Partner Center</strong>. Generates its own SOW. Not part of ECIF Central submission.
+                          </div>
+                        )}
+                        {afoScope > 0 && (
+                          <div style={{ padding: "10px 12px", background: "#fef2f2", borderRadius: 6, borderLeft: "3px solid #dc2626", fontSize: 11, lineHeight: 1.5 }}>
+                            <strong style={{ color: "#b91c1c" }}>🔴 AFO ECIF</strong> — submitted via <strong>ECIF Central</strong> using the template export below. Only AFO milestones included, pro-rated to AFO cap.
+                          </div>
+                        )}
+                      </div>
 
-                {/* ── ACCEPTANCE CRITERIA ── */}
-                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Acceptance Criteria</h2>
-                <div style={{ marginBottom: 16 }}>
-                  {acceptance.map((ac, i) => (
-                    <div key={i} style={{ marginBottom: 8 }}>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#333", marginBottom: 4 }}>{ac.milestone}</div>
-                      {ac.criteria.map((c, j) => <div key={j} style={{ fontSize: 12, color: "#666", paddingLeft: 12, position: "relative", lineHeight: 1.6 }}><span style={{ position: "absolute", left: 0, color: "#059669" }}>✓</span>{c}</div>)}
+                      {/* Export buttons */}
+                      <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", flexWrap: "wrap", paddingTop: 12, borderTop: "1px solid #e5e7eb" }}>
+                        <button onClick={() => exportFundingOnePager()} style={{ background: "white", color: "#1a1a1a", border: "1px solid #1a1a1a", padding: "10px 18px", fontSize: 12, fontWeight: 600, borderRadius: 6, cursor: "pointer", fontFamily: "inherit", letterSpacing: 0.3 }}>📑 Partner Summary One-Pager</button>
+                        <button onClick={() => exportEcifTemplate()} style={{ background: "#dc2626", color: "white", border: "none", padding: "10px 18px", fontSize: 12, fontWeight: 600, borderRadius: 6, cursor: "pointer", fontFamily: "inherit", letterSpacing: 0.3 }}>📄 ECIF Central Submission (XLSX)</button>
+                      </div>
                     </div>
-                  ))}
-                </div>
+                  )}
 
-                {/* ── RISKS & MITIGATIONS ── */}
-                <h2 style={{ fontSize: 13, fontWeight: 700, color: "#0078D4", margin: "0 0 6px", paddingBottom: 3, borderBottom: "2px solid #0078D4" }}>Risks & Mitigations</h2>
-                <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: 16, fontSize: 12 }}>
-                  <thead><tr style={{ background: "#f5f7fa" }}>
-                    <th style={{ padding: "4px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Risk</th>
-                    <th style={{ padding: "4px 6px", textAlign: "center", borderBottom: "2px solid #ddd", width: 60 }}>Likelihood</th>
-                    <th style={{ padding: "4px 6px", textAlign: "center", borderBottom: "2px solid #ddd", width: 50 }}>Impact</th>
-                    <th style={{ padding: "4px 6px", textAlign: "left", borderBottom: "2px solid #ddd" }}>Mitigation</th>
-                  </tr></thead>
-                  <tbody>{risks.map((r, i) => (
-                    <tr key={i} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                      <td style={{ padding: "4px 6px", color: "#333" }}>{r.risk}</td>
-                      <td style={{ padding: "4px 6px", textAlign: "center" }}><span style={{ fontSize: 10, fontWeight: 600, padding: "1px 5px", borderRadius: 4, background: r.lh === "High" ? "#fef2f2" : "#fefce8", color: r.lh === "High" ? "#dc2626" : "#ca8a04" }}>{r.lh}</span></td>
-                      <td style={{ padding: "4px 6px", textAlign: "center" }}><span style={{ fontSize: 10, fontWeight: 600, padding: "1px 5px", borderRadius: 4, background: r.imp === "High" ? "#fef2f2" : "#fefce8", color: r.imp === "High" ? "#dc2626" : "#ca8a04" }}>{r.imp}</span></td>
-                      <td style={{ padding: "4px 6px", color: "#666" }}>{r.mit}</td>
-                    </tr>
-                  ))}</tbody>
-                </table>
-
-                <div style={{ fontSize: 11, color: "#999", borderTop: "1px solid #eee", paddingTop: 8 }}>Non-binding estimate for planning purposes. All amounts subject to Microsoft internal approval. AFO nomination via Azure Offer Navigator (field-nominated). Limited time, first come first served. Anthropic counts as XCR (not ACR) but can be forecasted as 100% ACR in MSX. Agent P3 excluded from AFO eligible workloads. GitHub Copilot is per-seat (XCR, not Azure ACR). Contact PSS/account team for formal nomination.</div>
-              </div>
-            </div>
-
-            {/* ── NEXT WORKLOADS SIDEBAR ── */}
-            {nextWL.length > 0 && (
-              <div style={{ position: "sticky", top: 10 }}>
-                <div style={{ background: "linear-gradient(135deg,#f0f9ff,#e0f2fe)", borderRadius: 10, border: "1.5px solid #7dd3fc", overflow: "hidden" }}>
-                  <div style={{ padding: "10px 12px", background: "linear-gradient(135deg,#0284c7,#0369a1)", color: "white" }}>
-                    <div style={{ fontSize: 10, opacity: 0.7, textTransform: "uppercase", letterSpacing: 0.5 }}>After This Project</div>
-                    <div style={{ fontSize: 13, fontWeight: 700 }}>Recommended Next Workloads</div>
-                    <div style={{ fontSize: 11, opacity: 0.7, marginTop: 2 }}>Natural follow-up projects to expand this customer's Azure footprint</div>
-                  </div>
-                  <div style={{ padding: "8px 10px" }}>
-                    {nextWL.map((nw, i) => (
-                      <div key={i} style={{ padding: "8px 0", borderBottom: i < nextWL.length - 1 ? "1px solid #bae6fd" : "none" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                          <span style={{ fontSize: 16 }}>{nw.icon}</span>
-                          <div>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: "#0c4a6e" }}>{nw.title}</div>
-                            <div style={{ display: "flex", gap: 4, marginTop: 1 }}>
-                              <span style={{ fontSize: 10, padding: "1px 4px", borderRadius: 4, background: nw.funding.includes("AFO") ? "#dcfce7" : "#f0f9ff", color: nw.funding.includes("AFO") ? "#166534" : "#0369a1", fontWeight: 600 }}>{nw.funding}</span>
-                            </div>
-                          </div>
+                  {/* Optional: Account & Project details (collapsed) for ECIF template completion */}
+                  {sow.milestones.length > 0 && sow.milestones[0].n !== "_pending" && (
+                    <details style={cardStyle}>
+                      <summary style={{ fontSize: 14, fontWeight: 700, cursor: "pointer", color: "#1a1a1a", listStyle: "none", display: "flex", alignItems: "center", gap: 10 }}>
+                        <span style={{ fontSize: 12, color: "#64748b" }}>▸</span>
+                        Optional: Additional ECIF template fields
+                        <span style={{ fontSize: 10, color: "#94a3b8", fontWeight: 400 }}>(supplier ID, contact emails, project scope text, etc.)</span>
+                      </summary>
+                      <div style={{ marginTop: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                        <div>
+                          <label style={labelStyle}>Customer contact (Name, email)</label>
+                          <input value={sow.cc} onChange={(e) => setSow(p => ({ ...p, cc: e.target.value }))} placeholder="Name, email" style={inputStyle} />
                         </div>
-                        <div style={{ fontSize: 10, color: "#334155", lineHeight: 1.5, marginBottom: 4 }}>{nw.why}</div>
-                        <div style={{ fontSize: 10, color: "#64748b", fontStyle: "italic" }}>Est. ACR: {nw.acr}</div>
+                        <div>
+                          <label style={labelStyle}>Customer contact email</label>
+                          <input value={sow.custEmail} onChange={(e) => setSow(p => ({ ...p, custEmail: e.target.value }))} placeholder="contact@customer.com" style={inputStyle} />
+                        </div>
+                        <div>
+                          <label style={labelStyle}>Microsoft requestor (Name, email)</label>
+                          <input value={sow.req} onChange={(e) => setSow(p => ({ ...p, req: e.target.value }))} placeholder="Name, alias@microsoft.com" style={inputStyle} />
+                        </div>
+                        <div>
+                          <label style={labelStyle}>Supplier ID</label>
+                          <input value={sow.supplierID} onChange={(e) => setSow(p => ({ ...p, supplierID: e.target.value }))} placeholder="Supplier ID" style={inputStyle} />
+                        </div>
+                        <div>
+                          <label style={labelStyle}>Primary supplier contact (Name)</label>
+                          <input value={sow.sc} onChange={(e) => setSow(p => ({ ...p, sc: e.target.value }))} placeholder="Name, email" style={inputStyle} />
+                        </div>
+                        <div>
+                          <label style={labelStyle}>Supplier contact email</label>
+                          <input value={sow.supEmail} onChange={(e) => setSow(p => ({ ...p, supEmail: e.target.value }))} placeholder="contact@partner.com" style={inputStyle} />
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                  <div style={{ padding: "6px 10px 8px", background: "rgba(2,132,199,0.05)", borderTop: "1px solid #bae6fd" }}>
-                    <div style={{ fontSize: 10, color: "#64748b", lineHeight: 1.5 }}>Use these as conversation starters for the next engagement. Each represents additional ACR and potential funding.</div>
-                  </div>
-                </div>
-              </div>
-            )}
-            </div>
+                    </details>
+                  )}
+                </Fragment>
+              );
+            })()}
           </div>
         )}
 
