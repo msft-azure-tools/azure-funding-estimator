@@ -65,30 +65,30 @@ const ITEMS = [
   { id:"oracle-pg",cat:"db",name:"Oracle to PG",tag:"Data: Oracle to PostgreSQL Flexible",unit:"vCores",up:150,dq:8 },
   { id:"fab-mig",cat:"fab",name:"Analytics Migration",tag:"Data: Analytics - Fabric - Analytics Migration",fab:true,dsku:"F16" },
   { id:"fab-new",cat:"fab",name:"Greenfield Analytics (new build)",tag:"Data: Analytics - Fabric - New Analytics",fab:true,dsku:"F16" },
-  { id:"fab-pbi",cat:"fab",name:"Power BI on Fabric (Premium Capacity)",tag:"Data: Analytics - Fabric - Power BI",fab:true,dsku:"F64",note:"Azure F-SKU = ACR. Funding: AFO (ECIF), Standard ECIF, or MCI Azure Accelerate. F64+ includes free viewer access" },
+  { id:"fab-pbi",cat:"fab",name:"Power BI on Fabric (Premium Capacity)",tag:"Data: Analytics - Fabric - Power BI",fab:true,dsku:"F64",note:"Azure F-SKU = ACR. Funding: Corp ECIF (frontier), Field ECIF, or MCI Frontier Accelerate for Azure (Partner-Nominated). F64+ includes free viewer access" },
   { id:"fab-rti",cat:"fab",name:"Real-Time Intelligence",tag:"Data: Analytics - Fabric - Real-Time Intelligence",fab:true,dsku:"F32" },
   { id:"fab-sql",cat:"fab",name:"Fabric SQL DB",tag:"Data: Analytics - Fabric SQL Databases",fab:true,dsku:"F8" },
   { id:"fab-cos",cat:"fab",name:"Fabric Cosmos DB",tag:"Data: Analytics - Fabric - Cosmos Databases",fab:true,dsku:"F8" },
   { id:"oai-std",cat:"fo",name:"OpenAI (Standard)",tag:"AI: Foundry - OpenAI Standard",unit:"M tok/mo",up:250,dq:10,note:"Blended estimate. Actual cost varies by model (GPT-4o ~$5/M, GPT-4 Turbo ~$30/M) and input/output ratio" },
   { id:"oai-ptu",cat:"fo",name:"OpenAI (PTU)",tag:"AI: Foundry - OpenAI PTU",unit:"PTUs",up:800,dq:10 },
-  { id:"anthro",cat:"fo",name:"Anthropic (XCR - forecast as ACR in MSX)",tag:"AI: Foundry - Anthropic",unit:"M tok/mo",up:300,dq:10,xcr:true,note:"Anthropic = XCR per AFO rules (not ACR). Can be forecasted as 100% ACR in MSX. Does not count toward AFO 50% threshold or funding calculations in this tool" },
+  { id:"anthro",cat:"fo",name:"Anthropic (XCR - forecast as ACR in MSX)",tag:"AI: Foundry - Anthropic",unit:"M tok/mo",up:300,dq:10,xcr:true,note:"Anthropic = XCR per frontier (Corp ECIF) rules (not ACR). Can be forecasted as 100% ACR in MSX. Does not count toward Corp ECIF 50% threshold or funding calculations in this tool" },
   { id:"meta",cat:"fo",name:"Meta / Llama",tag:"AI: Foundry - Meta/Llama",unit:"M tok/mo",up:35,dq:30 },
   { id:"mistral",cat:"fo",name:"Mistral AI",tag:"AI: Foundry - Mistral",unit:"M tok/mo",up:40,dq:20 },
   { id:"other-m",cat:"fo",name:"Other (DeepSeek/Phi)",tag:"AI: Foundry - Other",unit:"M tok/mo",up:27,dq:25 },
   { id:"xai",cat:"fo",name:"X.ai / Grok",tag:"AI: Foundry - X.ai",unit:"M tok/mo",up:100,dq:10 },
   { id:"search",cat:"fo",name:"AI Search",tag:"AI: Search",unit:"replicas",up:250,dq:3,riOpts:[{k:"basic",label:"Basic (~$75/replica/mo)",up:75},{k:"s1",label:"Standard S1 (~$250/replica/mo)",up:250},{k:"s2",label:"Standard S2 (~$1,000/replica/mo)",up:1000},{k:"s3",label:"Standard S3 (~$2,000/replica/mo)",up:2000}],note:"Price per Search Unit (replica x partition). Basic for dev/test, S1 for production, S2/S3 for large-scale. Default = S1" },
-  { id:"translator",cat:"fo",name:"Azure AI Translator",tag:"AI: Tools - Speech (Speech, Language, Translation)",unit:"M chars/mo",up:10,dq:20,note:"Document Translation preserves formatting (PDF, PPTX, DOCX). Text Translation for real-time. Both AFO-eligible under Speech/Language/Translation" },
+  { id:"translator",cat:"fo",name:"Azure AI Translator",tag:"AI: Tools - Speech (Speech, Language, Translation)",unit:"M chars/mo",up:10,dq:20,note:"Document Translation preserves formatting (PDF, PPTX, DOCX). Text Translation for real-time. Both frontier-eligible under Speech/Language/Translation" },
   { id:"docintel",cat:"fo",name:"Azure AI Document Intelligence",tag:"AI: Tools - Vision (Vision, Content Understanding etc.)",unit:"K pages/mo",up:30,dq:5,note:"Extracts text, tables, key-value pairs from PDFs/images. Prebuilt models (~$30/1K pages), Custom models (~$50/1K pages). Essential for RAG pipelines with structured documents" },
   { id:"speech",cat:"fo",name:"Speech/Language (Other)",tag:"AI: Tools - Speech",unit:"M chars/mo",up:16,dq:20 },
   { id:"vision",cat:"fo",name:"Vision/Content (Other)",tag:"AI: Tools - Vision",unit:"K img/mo",up:1.5,dq:300 },
-  { id:"ghc-biz",cat:"oth",name:"GitHub Copilot Business (XCR, not ACR)",tag:"GitHub Copilot Business",unit:"seats",up:19,dq:30,xcr:true,note:"Seats = XCR, no direct seat funding. Strategy: bundle with Azure infra (AKS, App Service, GitHub Actions runners) → nominate as MCI: AI Apps & Developer. Payout based on Azure ACR, not seats" },
-  { id:"ghc-ent",cat:"oth",name:"GitHub Copilot Enterprise (XCR, not ACR)",tag:"GitHub Copilot Enterprise",unit:"seats",up:39,dq:0,xcr:true,note:"Enterprise tier ($39/seat). Same funding rules as Business - seats are XCR. Bundle with Azure infra for MCI eligibility" },
-  { id:"pbi-pro-only",cat:"pbi",name:"Power BI Pro (Shared Capacity - no F-SKU needed)",tag:"Power BI Pro (shared capacity)",unit:"users",up:14,dq:50,xcr:true,note:"M365 license (XCR), no direct seat funding. Strategy: bundle with Azure data sources (SQL DB, PostgreSQL, Cosmos DB) + upgrade to Fabric F-SKU → unlocks AFO/ECIF/MCI on the Azure ACR. CSP rebate 3.75-7% on M365 billed revenue" },
+  { id:"ghc-biz",cat:"oth",name:"GitHub Copilot Business (XCR, not ACR)",tag:"GitHub Copilot Business",unit:"seats",up:19,dq:30,xcr:true,note:"FY27: GitHub is now a frontier workload (Agentic AI Platform: GitHub + Foundry + Fabric). Copilot seats remain XCR (no direct seat funding), but GitHub-on-Azure consumption (Actions, Advanced Security, Codespaces, AKS) is frontier ACR → Corp ECIF (2:1) or MCI Agentic AI Platform payout. Payout based on Azure ACR, not seats" },
+  { id:"ghc-ent",cat:"oth",name:"GitHub Copilot Enterprise (XCR, not ACR)",tag:"GitHub Copilot Enterprise",unit:"seats",up:39,dq:0,xcr:true,note:"Enterprise tier ($39/seat). Seats remain XCR. FY27: GitHub counts as a frontier / Agentic AI Platform workload — bundle with GitHub-on-Azure consumption + Foundry/Fabric for Corp ECIF (2:1) or MCI Agentic AI Platform payout" },
+  { id:"pbi-pro-only",cat:"pbi",name:"Power BI Pro (Shared Capacity - no F-SKU needed)",tag:"Power BI Pro (shared capacity)",unit:"users",up:14,dq:50,xcr:true,note:"M365 license (XCR), no direct seat funding. Strategy: bundle with Azure data sources (SQL DB, PostgreSQL, Cosmos DB) + upgrade to Fabric F-SKU → unlocks ECIF/MCI on the Azure ACR. CSP rebate 3.75-7% on M365 billed revenue" },
   { id:"pbi-pro-creators",cat:"pbi",name:"Power BI Pro - Report Creators",tag:"Power BI Pro (creators)",unit:"creators",up:14,dq:10,xcr:true,note:"Always required, even with Fabric F-SKU. Included in CSP transaction rebate on M365 billed revenue" },
   { id:"pbi-pro-readers",cat:"pbi",name:"Power BI Pro - Report Viewers (only if F-SKU < F64)",tag:"Power BI Pro (readers <F64)",unit:"viewers",up:14,dq:0,xcr:true,note:"Only if F-SKU < F64. Tip: upgrading to F64 removes this cost AND generates more ACR → more Azure funding. Often cheaper total" },
   { id:"aks",cat:"accel",name:"AKS / App Service",tag:"AI Apps: AKS, App Service, Container Apps",unit:"nodes",up:300,dq:6 },
-  { id:"databricks",cat:"accel",name:"Azure Databricks",tag:"Data: Azure Databricks",unit:"DBUs/mo",up:0.5,dq:5000,note:"MCI eligible via Data Platform engagement. Not AFO eligible - pair with Fabric for AFO. Has own Analytics Modernization Accelerator offer (>$100K ACR)" },
-  { id:"oracle-az",cat:"accel",name:"Oracle Database@Azure",tag:"Data: Oracle Database@Azure",unit:"OCPUs",up:500,dq:10,odaOnly:true,note:"ODA ACR does NOT count toward AFO or MCI. Own Azure Accelerate offer: >$100K ACR, up to $500K ECIF. Requires PSS nomination. Only drag-along workloads (Oracle→SQL, Oracle→PG) generate AFO ECIF" },
+  { id:"databricks",cat:"accel",name:"Azure Databricks",tag:"Data: Azure Databricks",unit:"DBUs/mo",up:0.5,dq:5000,note:"MCI eligible via Data Platform engagement. Not Frontier eligible - pair with Fabric for Corp ECIF. Has own Analytics Modernization Accelerator offer (>$100K ACR)" },
+  { id:"oracle-az",cat:"accel",name:"Oracle Database@Azure",tag:"Data: Oracle Database@Azure",unit:"OCPUs",up:500,dq:10,odaOnly:true,note:"ODA ACR does NOT count toward Corp ECIF or MCI. Own Frontier Accelerate for Azure offer: >$100K ACR, up to $500K ECIF. Requires PSS nomination. Only drag-along workloads (Oracle→SQL, Oracle→PG) generate Corp ECIF" },
   { id:"infra-linux",cat:"accel",name:"Core M&M - Linux VMs",tag:"Core: Migrate & Modernize (Linux)",unit:"VMs",up:140,dq:15,riOpts:[{k:"1yr",label:"1yr RI (-35%)",up:91},{k:"3yr",label:"3yr RI (-55%)",up:63}],note:"Average estimate (~D4s v3). Actual cost varies by VM size ($60-$400+/VM). Use Azure Pricing Calculator for precise sizing" },
   { id:"infra-win",cat:"accel",name:"Core M&M - Windows VMs",tag:"Core: Migrate & Modernize (Windows)",unit:"VMs",up:240,dq:10,riOpts:[{k:"1yr",label:"1yr RI (-35%)",up:156},{k:"3yr",label:"3yr RI (-55%)",up:108},{k:"ahub",label:"AHUB (-40%)",up:144},{k:"1yr-ahub",label:"1yr RI + AHUB (-61%)",up:94},{k:"3yr-ahub",label:"3yr RI + AHUB (-73%)",up:65}],note:"Average estimate (~D4s v3 + Windows). Actual cost varies by VM size. AHUB requires SA or Windows Server subscription" },
   { id:"infra-mdc",cat:"accel",name:"Core M&M + Defender (MDC)",tag:"Core: Migrate & Modernize with MDC",unit:"VMs",up:215,dq:20,riOpts:[{k:"1yr",label:"1yr RI (-35%)",up:140},{k:"3yr",label:"3yr RI (-55%)",up:97},{k:"ahub",label:"AHUB (-40%)",up:129},{k:"1yr-ahub",label:"1yr RI + AHUB (-58%)",up:90},{k:"3yr-ahub",label:"3yr RI + AHUB (-70%)",up:65}],note:"AHUB for Windows portion. Defender for Cloud cost remains" },
@@ -116,18 +116,18 @@ const ITEMS = [
 ];
 
 const CATS = [
-  { key: "db", label: "Databases", color: "#0078D4", elig: true, badge: "AFO ELIGIBLE", icon: "🗄️" },
-  { key: "fab", label: "Fabric / Analytics", color: "#107C10", elig: true, badge: "AFO ELIGIBLE", icon: "📊" },
-  { key: "fo", label: "AI Foundry", color: "#B4009E", elig: true, badge: "AFO ELIGIBLE", icon: "🤖" },
-  { key: "accel", label: "Azure Accelerate (non-AFO)", color: "#D83B01", elig: false, badge: "MCI ELIGIBLE", icon: "☁️" },
+  { key: "db", label: "Databases", color: "#0078D4", elig: true, badge: "FRONTIER (ECIF)", icon: "🗄️" },
+  { key: "fab", label: "Fabric / Analytics", color: "#107C10", elig: true, badge: "FRONTIER (ECIF)", icon: "📊" },
+  { key: "fo", label: "AI Foundry", color: "#B4009E", elig: true, badge: "FRONTIER (ECIF)", icon: "🤖" },
+  { key: "accel", label: "Core / Other (non-frontier)", color: "#D83B01", elig: false, badge: "MCI ELIGIBLE", icon: "☁️" },
   { key: "pbi", label: "Power BI Licensing", color: "#E8B800", elig: false, badge: "M365 (XCR)", icon: "📈" },
   { key: "oth", label: "Other Azure Services", color: "#8B8B8B", elig: false, badge: "", icon: "⚙️" },
 ];
 
 /* Solution Plays — two-level mapping per workload:
-   play = Official Microsoft Solution Play (MSX, Investment Request, AFO nomination)
-   scenario = Azure Accelerate Scenario (MCI Partner Center nomination)
-   Source: MS Solution Play list + Azure Accelerate Partner Pitch Deck, March 2026. */
+   play = Official Microsoft Solution Play (MSX, Investment Request, Corp ECIF nomination)
+   scenario = Frontier Accelerate for Azure Scenario (MCI Partner Center nomination)
+   Source: MS Solution Play list + Frontier Accelerate for Azure Partner Pitch Deck, March 2026. */
 const SOLUTION_PLAYS = {
   // ── Migrate and Modernize Your Estate ──
   "infra-linux":  { play: "Migrate and Modernize Your Estate", scenario: "Core Migrate & Modernize", short: "M&M", color: "#0078D4" },
@@ -176,7 +176,7 @@ const SOLUTION_PLAYS = {
   "fab-sql":      { play: "Innovate with Azure AI Apps and Agents", scenario: "Data Platform", short: "Data Platform", color: "#107C10" },
   "fab-cos":      { play: "Innovate with Azure AI Apps and Agents", scenario: "Data Platform", short: "Data Platform", color: "#107C10" },
   "databricks":   { play: "Innovate with Azure AI Apps and Agents", scenario: "Data Platform", short: "Data Platform", color: "#107C10" },
-  // ── ODA — own Azure Accelerate offer, separate from standard plays ──
+  // ── ODA — own Frontier Accelerate for Azure offer, separate from standard plays ──
   "oracle-az":    { play: "Migrate and Modernize Your Estate", scenario: "ODA Accelerate (separate offer)", short: "ODA", color: "#C03B20" },
   // ── Other (supporting, no primary play) ──
   "storage":      { play: null, scenario: null, short: null, color: null },
@@ -330,63 +330,136 @@ function computeFabPhased(phases, qty, ri) {
   return { yr, mo: yr / 12, monthly, sorted };
 }
 const fmt = (n) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
-const fmtRange = (tot) => { const lo = Math.min(tot * 0.14, 250000), hi = Math.min(tot * 0.33, 250000); return "~" + fmt(lo) + "-" + fmt(hi); }; // 3:1 to 7:1 ROI range
+const fmtRange = (tot) => "~" + fmt(Math.min(tot * 0.2, 500000)); // FY27 Field/Local ECIF: up to 20% of Y1 ACR, min 5:1 ROI
 const HDR = "linear-gradient(135deg, #0078D4 0%, #005a9e 50%, #003d6b 100%)";
 
-/* MCI: Azure Accelerate Partner Nominated - verified from MCI Guide effective March 1, 2026.
-   Market A (Sweden). Pre-sales = Assessment & POV. Post-sales = Deployment.
-   Source: Microsoft Commercial Partner Incentives Guide, 9 March 2026. */
-function getMCI(acr) {
-  let pre = 0, preL = "", post = 0, postL = "", ts = "", days = 0;
-  if (acr >= 250000) { pre = 25000; preL = "Large (>$250K)"; }
-  else if (acr >= 15000) { pre = 15000; preL = "Standard ($15K-$250K)"; }
-  if (acr >= 250000) { post = 75000; postL = "$250K-$500K+"; ts = "L"; days = 260; }
-  else if (acr >= 100000) { post = 35000; postL = "$100K-$250K"; ts = "M"; days = 200; }
-  else if (acr >= 50000) { post = 15000; postL = "$50K-$100K"; ts = "S"; days = 120; }
-  else if (acr >= 15000) { post = 6500; postL = "$15K-$50K"; ts = "XS"; days = 120; }
-  else if (acr >= 5000) { post = 2000; postL = "$5K-$15K"; ts = "XXS"; days = 120; }
-  return { pre, preL, post, postL, ts, days };
+/* MCI: Frontier Accelerate for Azure — Partner Nominated (FY27).
+   Investment term: 1 Jul 2026 – 30 Jun 2027. Pre-sales = Assessment & POV. Post-sales = Deployment Accelerator.
+   Payouts are now DIFFERENTIATED BY WORKLOAD and by t-shirt size (XXS–L). Default Market = A (Sweden).
+   Source: FY27 Partner Investments — Cloud & AI Platforms (CAIP) + Microsoft Commercial Partner Incentives Guide (FY27). */
+const MCI_MARKET = "A"; // "A" or "B" — Sweden = Market A
+const MCI_RATES = {
+  // Post-sales (Deployment) by t-shirt size [XXS, XS, S, M, L]
+  A: {
+    db:      [4000, 13000, 30000, 70000, 150000],
+    dbConv:  [1000, 3250, 7500, 17500, 37500],   // Databases Conversion Bonus (compete: AWS RDS/Aurora, Google Cloud SQL/BigQuery)
+    agentic: [3500, 11375, 26250, 61250, 131250], // Agentic AI Platform (GitHub, Foundry, Fabric)
+    coresec: [2300, 7475, 17250, 40250, 86250],   // Core Migrate & Modernize w/ MDC or Sentinel
+    other:   [2000, 6500, 15000, 35000, 75000],   // Core M&M, Data Platform, AI Apps, SAP, VMware, Digital Sovereignty
+    vdi:     [1200, 3900, 9000, 21000, 45000],    // Virtual Desktop Infrastructure Migration
+    preStd: 15000, preLarge: 25000, preSmb: 7500,
+  },
+  B: {
+    db:      [3200, 10400, 24000, 56000, 120000],
+    dbConv:  [800, 2600, 6000, 14000, 30000],
+    agentic: [2800, 9100, 21000, 49000, 105000],
+    coresec: [1840, 5980, 13800, 32200, 69000],
+    other:   [1600, 5200, 12000, 28000, 60000],
+    vdi:     [960, 3120, 7200, 16800, 36000],
+    preStd: 12000, preLarge: 20000, preSmb: 4000,
+  },
+};
+const MCI_TS = ["XXS", "XS", "S", "M", "L"];
+const ENGAGEMENT_LABEL = { db: "Databases", agentic: "Agentic AI Platform", coresec: "Core M&M + MDC/Sentinel", other: "Core / Data / AI / SAP / VMware / Sovereignty", vdi: "VDI Migration" };
+// tsIndex: XXS $5–15K, XS >$15–50K, S >$50–100K, M >$100–250K, L >$250–500K
+function mciTsIndex(acr) {
+  if (acr >= 250000) return 4;
+  if (acr >= 100000) return 3;
+  if (acr >= 50000) return 2;
+  if (acr >= 15000) return 1;
+  if (acr >= 5000) return 0;
+  return -1;
+}
+/* type: "db" | "agentic" | "coresec" | "other" | "vdi". smb: dedicated SMB pre-sales route. */
+function getMCI(acr, type = "other", smb = false, market) {
+  const R = MCI_RATES[market || MCI_MARKET] || MCI_RATES.A;
+  const i = mciTsIndex(acr);
+  let pre = 0, preL = "", post = 0, postL = "", ts = "", days = 0, convBonus = 0;
+  if (i >= 0) {
+    ts = MCI_TS[i];
+    post = (R[type] || R.other)[i];
+    convBonus = type === "db" ? R.dbConv[i] : 0;
+    days = i === 4 ? 260 : i === 3 ? 200 : 120;
+    const bands = ["$5K–$15K", ">$15K–$50K", ">$50K–$100K", ">$100K–$250K", ">$250K–$500K"];
+    postL = ts + " (" + bands[i] + ")";
+  }
+  // Pre-sales (Assessment + POV) — non-SMB starts at >$50K; SMB flat.
+  if (smb) {
+    if (acr >= 50000) { pre = R.preSmb; preL = "SMB (>$50K)"; }
+  } else if (acr >= 250000) { pre = R.preLarge; preL = "Large (>$250K)"; }
+  else if (acr >= 50000) { pre = R.preStd; preL = "Standard (>$50K–$250K)"; }
+  return { pre, preL, post, postL, ts, days, convBonus, type };
+}
+
+/* Consumption Plan — default activity/Gantt timeline generated from the selected workload mix.
+   Months are 1-based. Used by the Consumption Plan tab (pre-sales roadmap for MSX). */
+function getDefaultActivities(rows) {
+  const cats = new Set(rows.map((r) => (ITEMS.find((i) => i.id === r.baseId) || {}).cat));
+  const A = [{ name: "Assessment & Proof of Value", start: 1, dur: 2, color: "#0078D4", phase: "Pre-sales" }];
+  if (cats.has("db")) { A.push({ name: "Database assessment & design", start: 2, dur: 2, color: "#0078D4", phase: "Deploy" }, { name: "Database migration waves", start: 3, dur: 3, color: "#0078D4", phase: "Deploy" }, { name: "Cutover, tuning & handover", start: 6, dur: 2, color: "#0078D4", phase: "Deploy" }); }
+  if (cats.has("fab")) { A.push({ name: "Fabric platform setup", start: 2, dur: 2, color: "#107C10", phase: "Deploy" }, { name: "Pipelines & semantic models", start: 3, dur: 3, color: "#107C10", phase: "Deploy" }, { name: "Reports & enablement", start: 6, dur: 2, color: "#107C10", phase: "Deploy" }); }
+  if (cats.has("fo")) { A.push({ name: "AI architecture & Foundry setup", start: 3, dur: 2, color: "#B4009E", phase: "Deploy" }, { name: "RAG / agent development", start: 4, dur: 3, color: "#B4009E", phase: "Deploy" }, { name: "Pilot, safety & governance", start: 7, dur: 2, color: "#B4009E", phase: "Deploy" }); }
+  if (cats.has("accel")) { A.push({ name: "Landing zone & foundation", start: 1, dur: 2, color: "#D83B01", phase: "Deploy" }, { name: "Migration / modernization waves", start: 3, dur: 4, color: "#D83B01", phase: "Deploy" }); }
+  A.push({ name: "Optimize, secure & scale", start: 8, dur: 4, color: "#5C2D91", phase: "Run" });
+  return A;
 }
 
 /* Smart Funding Recommendation Engine
    Analyzes workload mix and suggests optimal funding strategy to maximize total funding.
    Returns array of recommendation objects. */
-function getRecommendation(el, ot, tot, pct, ok, rows, mci, stdEcif) {
+function getRecommendation(el, ot, tot, pct, ok, rows, mci, stdEcif, mkt, strategic) {
   const recs = [];
   if (tot === 0) return recs;
 
   const nonEligACR = ot;
   const eligACR = el;
-  const nonEligMci = getMCI(nonEligACR);
+  const nonEligMci = getMCI(nonEligACR, "other", false, mkt);
 
-  if (ok) {
+  const ecifBand = tot > 500000 || strategic; // FY27: field-nominated ECIF requires > $500K Y1 ACR (strategic accounts exempt via justification)
+  const corpOk = ok && ecifBand;
+
+  if (!ecifBand) {
+    // ≤ $500K Y1 ACR → Partner-nominated MCI (no % ECIF unless strategic account)
+    const engLabel = ({ db: "Databases", agentic: "Agentic AI Platform", coresec: "Core M&M + MDC/Sentinel", other: "Core / Data / AI / SAP / VMware / Sovereignty", vdi: "VDI Migration" })[mci.type] || "Other";
+    recs.push({ type: "success", title: "Partner-nominated MCI is the path (≤ $500K ACR)",
+      body: `At ${fmt(tot)} Y1 ACR you're below the $500K field-ECIF floor, so the 2:1 Corp ECIF / 5:1 Field ECIF do NOT apply. Fund via Partner-nominated MCI (Frontier Accelerate for Azure): ${engLabel} engagement ${fmt(mci.post)} (${mci.ts || "—"})` +
+        (mci.convBonus > 0 ? ` + up to ${fmt(mci.convBonus)} Databases Conversion Bonus (if migrating from AWS RDS/Aurora, Google Cloud SQL/BigQuery)` : "") +
+        (mci.pre > 0 ? ` + Assessment+POV ${fmt(mci.pre)}` : "") +
+        `. Partner self-submits in Partner Center — no field ECIF nomination.`,
+      action: "Partner submits MCI claim(s) via Partner Center" });
+    recs.push({ type: "tip", title: ok ? "Grow past $500K to unlock Corp ECIF (2:1)" : "Frontier workloads pay the top MCI rates",
+      body: ok
+        ? `This is a frontier deal (${pct.toFixed(0)}% DB/Fabric/Foundry/GitHub). Above $500K Y1 ACR it also qualifies for field-nominated Corp ECIF at 50% of ACR @ 2:1. Strategic accounts are exempt from the $500K floor — check with your Microsoft team.`
+        : `Databases (up to $150K + $37.5K conversion bonus) and Agentic AI Platform (up to $131K) carry the highest MCI payouts. Adding them raises the payout and, above $500K, unlocks Corp ECIF (2:1).`,
+      action: ok ? "Expand scope, or confirm if the account is strategic" : "Explore data & AI use cases with the customer" });
+  } else if (corpOk) {
     const afoEcif = Math.min(tot * 0.5, 500000);
-    recs.push({ type: "success", title: "AFO eligible - submit as single nomination",
-      body: `All workloads qualify as one AFO project. ECIF ${fmt(afoEcif)} (cash to partner).`,
-      action: "Submit via Azure Offer Navigator (field seller nominates)" });
+    recs.push({ type: "success", title: "Frontier (Corp ECIF) eligible — submit as single nomination",
+      body: `> $500K frontier project (DB / Fabric / Foundry / GitHub). Corp ECIF ${fmt(afoEcif)} (cash to partner, 50% of Y1 ACR @ 2:1 ROI), field-nominated post-sales.`,
+      action: "Nominate under \"ECIF\" in Azure Offer Navigator (field seller)" });
 
     if (mci.pre > 0) {
       recs.push({ type: "tip", title: "Stack MCI pre-sales for additional " + fmt(mci.pre),
-        body: `Partner can self-nominate a separate Assessment+POV (${mci.preL}) for ${fmt(mci.pre)} via Partner Center. This does NOT conflict with AFO post-sales.`,
+        body: `Partner can self-nominate a separate Assessment+POV (${mci.preL}) for ${fmt(mci.pre)} via Partner Center. This does NOT conflict with Corp/Field ECIF post-sales.`,
         action: "Partner submits MCI pre-sales claim independently" });
     }
 
     if (rows.some(r => ITEMS.find(i => i.id === r.baseId && i.cat === "fo")) && !rows.some(r => ITEMS.find(i => i.id === r.baseId && (i.cat === "db" || i.cat === "fab")))) {
       recs.push({ type: "warn", title: "Standalone AI Foundry - bundle recommended",
-        body: "AI Foundry without DB or Fabric is not recommended for AFO. Add at least one Database or Fabric workload to strengthen the nomination.",
-        action: "Add DB or Fabric workloads" });
+        body: "Foundry qualifies under the Agentic AI Platform (GitHub + Foundry + Fabric). Pair with Fabric and/or a Database workload to strengthen the frontier nomination and hit the ≥40% workload ACR contribution.",
+        action: "Add Fabric or DB workloads" });
     }
   } else if (pct > 0 && pct < 50 && nonEligACR > 0) {
-    const splitAfoEcif = Math.min(eligACR * 0.5, 500000);
-        const splitStdEcif = Math.min(nonEligACR * 0.2, 250000);
+    const splitAfoEcif = eligACR > 500000 ? Math.min(eligACR * 0.5, 500000) : 0;
+        const splitStdEcif = nonEligACR > 500000 ? Math.min(nonEligACR * 0.2, 500000) : 0;
     const nonEligMciPost = nonEligMci.post;
 
     recs.push({ type: "strategy", title: "Split into two nominations to maximize funding",
-      body: `Current mix is ${pct.toFixed(0)}% eligible - below 50% threshold. Split the project:\n` +
-        `\n• Project A (AFO): DB/Fabric/Foundry workloads only (${fmt(eligACR)} ACR = 100% eligible)\n` +
-        `  → ECIF ${fmt(splitAfoEcif)} (cash to partner)\n` +
-                `\n• Project B: Non-eligible workloads (${fmt(nonEligACR)} ACR) - choose ONE:\n` +
-        `  Option 1: Standard ECIF ~${fmt(splitStdEcif)} (cash, field-led, ~5:1 ROI)\n` +
+      body: `Current mix is ${pct.toFixed(0)}% frontier — below the 50% frontier-scenario threshold. Split the project (note: each split project must itself exceed $500K ACR to qualify for field ECIF; a slice ≤ $500K is funded via MCI instead):\n` +
+        `\n• Project A (Corp ECIF, frontier): DB/Fabric/Foundry/GitHub only (${fmt(eligACR)} ACR = 100% frontier)\n` +
+        `  → Corp ECIF ${fmt(splitAfoEcif)} (cash to partner, 50% @ 2:1)\n` +
+                `\n• Project B: Non-frontier workloads (${fmt(nonEligACR)} ACR) - choose ONE:\n` +
+        `  Option 1: Field/Local ECIF ~${fmt(splitStdEcif)} (cash, field-led, 20% @ min 5:1 ROI)\n` +
         `  Option 2: MCI Partner Nominated ${fmt(nonEligMciPost)} (cash, partner-led, ${nonEligMci.ts || "N/A"})\n` +
         `  ⚠ ECIF and MCI cannot be used on the same project.\n` +
         `\nBest total cash (Option 1): ${fmt(splitAfoEcif + splitStdEcif)}` +
@@ -394,20 +467,20 @@ function getRecommendation(el, ot, tot, pct, ok, rows, mci, stdEcif) {
         (nonEligMci.pre > 0 ? `\n+ MCI Pre-sales ${fmt(nonEligMci.pre)} can be added as separate assessment scope` : ""),
       action: "Submit as two separate nominations with different scopes in Azure Offer Navigator" });
 
-    recs.push({ type: "alt", title: "Alternative: Single Standard ECIF (no split)",
-      body: `Submit everything as one Standard ECIF project (${fmt(tot)} ACR) via Azure Offer Navigator. Estimated ECIF: ${fmtRange(tot)} (cash, 3:1-7:1 ROI). Simpler but less funding.`,
+    recs.push({ type: "alt", title: "Alternative: Single Field/Local ECIF (no split)",
+      body: `Submit everything as one Field/Local ECIF project (${fmt(tot)} ACR) via Azure Offer Navigator. Estimated ECIF: ${fmtRange(tot)} (cash, up to 20% of Y1 ACR, min 5:1 ROI). Simpler but less funding.`,
       action: "Field seller nominates via Azure Offer Navigator" });
   } else if (pct === 0 && tot > 0) {
-    recs.push({ type: "info", title: "No AFO-eligible workloads - choose ECIF or MCI",
-      body: `None of the selected workloads qualify for AFO (requires DB/Fabric/Foundry). Choose ONE per project:\n\n` +
-        `• Option 1 - Standard ECIF: ${fmtRange(tot)} (cash, field-led, 3:1-7:1 ROI)\n` +
+    recs.push({ type: "info", title: "No frontier workloads — choose ECIF or MCI",
+      body: `None of the selected workloads are frontier (frontier = DB/Fabric/Foundry/GitHub). Choose ONE per project:\n\n` +
+        `• Option 1 - Field/Local ECIF: ${fmtRange(tot)} (cash, field-led, up to 20% @ min 5:1 ROI)\n` +
         `• Option 2 - MCI Partner Nominated: ${fmt(mci.post)} (cash, partner-led, ${mci.ts || "N/A"})` +
         (mci.pre > 0 ? `\n  + MCI Pre-sales ${fmt(mci.pre)} as separate assessment scope` : "") +
-        `\n\n⚠ ECIF and MCI cannot be used on the same customer + project.`,
+        `\n\n⚠ ECIF and MCI cannot be used on the same customer + project. Post-sales ECIF needs >$500K ACR; below that, use MCI.`,
       action: "Field seller nominates ECIF via Azure Offer Navigator, OR partner submits MCI via Partner Center" });
 
-    recs.push({ type: "tip", title: "Add DB, Fabric, or AI Foundry to unlock AFO",
-      body: `Even a small eligible workload can flip the mix. Adding ${fmt(tot)} in DB/Fabric/Foundry would make this 50% eligible and unlock ECIF (cash to partner).`,
+    recs.push({ type: "tip", title: "Add DB, Fabric, Foundry or GitHub to unlock Corp ECIF",
+      body: `Even a small frontier workload can flip the mix. Adding ${fmt(tot)} in DB/Fabric/Foundry/GitHub would make this 50% frontier and unlock Corp ECIF (50% @ 2:1 cash to partner).`,
       action: "Explore data modernization or AI use cases with the customer" });
   }
 
@@ -417,8 +490,8 @@ function getRecommendation(el, ot, tot, pct, ok, rows, mci, stdEcif) {
     const odaRow = rows.find(r => r.id === "oracle-az");
     const odaAcr = odaRow ? odaRow.yr : 0;
     recs.push({ type: "warn", title: "ODA ACR excluded from funding calculations",
-      body: `Oracle Database@Azure (${fmt(odaAcr)}/yr) has its own Azure Accelerate offer — separate from AFO and MCI. Requires >$100K ACR and PSS nomination for up to $500K ECIF. Only drag-along workloads (Oracle→SQL, Oracle→PostgreSQL) generate standard AFO ECIF.`,
-      action: "Contact PSS for ODA-specific Azure Accelerate nomination" });
+      body: `Oracle Database@Azure (${fmt(odaAcr)}/yr) has its own Frontier Accelerate for Azure offer — separate from Corp ECIF and MCI. Requires >$100K ACR and PSS nomination for up to $500K ECIF. Only drag-along workloads (Oracle→SQL, Oracle→PostgreSQL) generate standard frontier ECIF.`,
+      action: "Contact PSS for ODA-specific Frontier Accelerate for Azure nomination" });
   }
 
   return recs;
@@ -521,50 +594,50 @@ function getNextWorkloads(rows) {
 
   // DB → suggest Fabric + AI Foundry
   if (cats.has("db") && !cats.has("fab")) {
-    next.push({ icon: "📊", title: "Microsoft Fabric", why: "Build analytics and reporting on top of your migrated databases. Natural next step to unlock business insights from operational data.", acr: "F32-F64 ($4K-$8K/mo)", funding: "AFO eligible" });
+    next.push({ icon: "📊", title: "Microsoft Fabric", why: "Build analytics and reporting on top of your migrated databases. Natural next step to unlock business insights from operational data.", acr: "F32-F64 ($4K-$8K/mo)", funding: "Frontier eligible" });
   }
   if (cats.has("db") && !cats.has("fo")) {
-    next.push({ icon: "🤖", title: "Azure AI Foundry", why: "Build AI agents and copilots grounded in your operational database. RAG on live transactional data for customer service, internal Q&A, or process automation.", acr: "OpenAI PTU 10-50 ($8K-$40K/mo)", funding: "AFO eligible" });
+    next.push({ icon: "🤖", title: "Azure AI Foundry", why: "Build AI agents and copilots grounded in your operational database. RAG on live transactional data for customer service, internal Q&A, or process automation.", acr: "OpenAI PTU 10-50 ($8K-$40K/mo)", funding: "Frontier eligible" });
   }
 
   // Fabric → suggest AI Foundry + DB modernization
   if (cats.has("fab") && !cats.has("fo")) {
-    next.push({ icon: "🤖", title: "Azure AI Foundry", why: "Add AI agents on top of Fabric semantic models. Power copilots with your curated analytics data for natural language insights.", acr: "OpenAI + AI Search ($3K-$15K/mo)", funding: "AFO eligible" });
+    next.push({ icon: "🤖", title: "Azure AI Foundry", why: "Add AI agents on top of Fabric semantic models. Power copilots with your curated analytics data for natural language insights.", acr: "OpenAI + AI Search ($3K-$15K/mo)", funding: "Frontier eligible" });
   }
   if (cats.has("fab") && !cats.has("db")) {
-    next.push({ icon: "🗄️", title: "Database Modernization", why: "Modernize source databases feeding Fabric. Better source data = better analytics. Move from on-prem SQL/Oracle to Azure PaaS.", acr: "SQL MI or PostgreSQL ($1K-$5K/mo)", funding: "AFO eligible" });
+    next.push({ icon: "🗄️", title: "Database Modernization", why: "Modernize source databases feeding Fabric. Better source data = better analytics. Move from on-prem SQL/Oracle to Azure PaaS.", acr: "SQL MI or PostgreSQL ($1K-$5K/mo)", funding: "Frontier eligible" });
   }
 
   // AI Foundry → suggest Fabric + DB
   if (cats.has("fo") && !cats.has("fab")) {
-    next.push({ icon: "📊", title: "Microsoft Fabric", why: "Build a proper data foundation for your AI models. Fabric provides the governed data layer AI agents need for accurate, trustworthy responses.", acr: "F32-F64 ($4K-$8K/mo)", funding: "AFO eligible" });
+    next.push({ icon: "📊", title: "Microsoft Fabric", why: "Build a proper data foundation for your AI models. Fabric provides the governed data layer AI agents need for accurate, trustworthy responses.", acr: "F32-F64 ($4K-$8K/mo)", funding: "Frontier eligible" });
   }
   if (cats.has("fo") && !cats.has("db")) {
-    next.push({ icon: "🗄️", title: "Database Modernization", why: "Ground your AI in real-time operational data. Migrate databases to Azure PaaS for low-latency RAG pipelines.", acr: "SQL MI or Cosmos DB ($1K-$10K/mo)", funding: "AFO eligible" });
+    next.push({ icon: "🗄️", title: "Database Modernization", why: "Ground your AI in real-time operational data. Migrate databases to Azure PaaS for low-latency RAG pipelines.", acr: "SQL MI or Cosmos DB ($1K-$10K/mo)", funding: "Frontier eligible" });
   }
 
   // Infra migration → suggest DB modernization, Fabric, Defender
   if (ids.has("infra-linux") || ids.has("infra-win") || ids.has("infra-mdc")) {
-    if (!cats.has("db")) next.push({ icon: "🗄️", title: "Database Modernization", why: "You're migrating servers - now modernize the databases running on them. Move from SQL VM to SQL MI (PaaS) for lower TCO and automatic patching.", acr: "SQL MI 8-16 vCores ($1.5K-$3K/mo)", funding: "AFO eligible" });
-    if (!cats.has("fab")) next.push({ icon: "📊", title: "Microsoft Fabric", why: "Once workloads are in Azure, connect them to Fabric for centralized analytics and Power BI dashboards across your estate.", acr: "F16-F32 ($2K-$4K/mo)", funding: "AFO eligible" });
-    if (!ids.has("logicapps") && (ids.has("aks") || ids.has("functions") || ids.has("apim"))) next.push({ icon: "🔗", title: "Logic Apps (Integration)", why: "Automate workflows and integrate systems. Direct BizTalk replacement for enterprise integration patterns.", acr: "$185/workflow/mo (Standard)", funding: "Azure Accelerate eligible" });
-    if (!ids.has("infra-mdc")) next.push({ icon: "🛡️", title: "Defender for Cloud (MDC)", why: "Protect your newly migrated VMs with cloud-native security posture management and threat detection.", acr: "$15/server/mo", funding: "Azure Accelerate eligible" });
+    if (!cats.has("db")) next.push({ icon: "🗄️", title: "Database Modernization", why: "You're migrating servers - now modernize the databases running on them. Move from SQL VM to SQL MI (PaaS) for lower TCO and automatic patching.", acr: "SQL MI 8-16 vCores ($1.5K-$3K/mo)", funding: "Frontier eligible" });
+    if (!cats.has("fab")) next.push({ icon: "📊", title: "Microsoft Fabric", why: "Once workloads are in Azure, connect them to Fabric for centralized analytics and Power BI dashboards across your estate.", acr: "F16-F32 ($2K-$4K/mo)", funding: "Frontier eligible" });
+    if (!ids.has("logicapps") && (ids.has("aks") || ids.has("functions") || ids.has("apim"))) next.push({ icon: "🔗", title: "Logic Apps (Integration)", why: "Automate workflows and integrate systems. Direct BizTalk replacement for enterprise integration patterns.", acr: "$185/workflow/mo (Standard)", funding: "Frontier Accelerate for Azure eligible" });
+    if (!ids.has("infra-mdc")) next.push({ icon: "🛡️", title: "Defender for Cloud (MDC)", why: "Protect your newly migrated VMs with cloud-native security posture management and threat detection.", acr: "$15/server/mo", funding: "Frontier Accelerate for Azure eligible" });
   }
 
   // AVS → suggest DB modernization, AVD
   if (ids.has("avs")) {
-    if (!cats.has("db")) next.push({ icon: "🗄️", title: "Database Modernization", why: "After VMware migration, modernize databases from VMs to Azure PaaS for better performance and lower management overhead.", acr: "SQL MI or PostgreSQL ($1K-$5K/mo)", funding: "AFO eligible" });
-    if (!ids.has("avd")) next.push({ icon: "🖥️", title: "Azure Virtual Desktop", why: "Complement your AVS migration by moving VDI workloads to Azure Virtual Desktop - unified management, better user experience.", acr: "AVD sessions ($2.5K+/mo)", funding: "Azure Accelerate eligible" });
+    if (!cats.has("db")) next.push({ icon: "🗄️", title: "Database Modernization", why: "After VMware migration, modernize databases from VMs to Azure PaaS for better performance and lower management overhead.", acr: "SQL MI or PostgreSQL ($1K-$5K/mo)", funding: "Frontier eligible" });
+    if (!ids.has("avd")) next.push({ icon: "🖥️", title: "Azure Virtual Desktop", why: "Complement your AVS migration by moving VDI workloads to Azure Virtual Desktop - unified management, better user experience.", acr: "AVD sessions ($2.5K+/mo)", funding: "Frontier Accelerate for Azure eligible" });
   }
 
   // SAP → suggest Fabric for SAP analytics
   if (ids.has("sap") && !cats.has("fab")) {
-    next.push({ icon: "📊", title: "Fabric for SAP Analytics", why: "Connect Fabric to your SAP on Azure for real-time operational analytics. Mirroring and DirectLake eliminate the need for separate ETL.", acr: "F32-F64 ($4K-$8K/mo)", funding: "AFO eligible" });
+    next.push({ icon: "📊", title: "Fabric for SAP Analytics", why: "Connect Fabric to your SAP on Azure for real-time operational analytics. Mirroring and DirectLake eliminate the need for separate ETL.", acr: "F32-F64 ($4K-$8K/mo)", funding: "Frontier eligible" });
   }
 
   // AKS → suggest AI Foundry
   if (ids.has("aks") && !cats.has("fo")) {
-    next.push({ icon: "🤖", title: "Azure AI Foundry", why: "Add AI capabilities to your containerized apps. Integrate OpenAI models via AI Foundry into your AKS-hosted microservices.", acr: "OpenAI Standard ($2.5K+/mo)", funding: "AFO eligible" });
+    next.push({ icon: "🤖", title: "Azure AI Foundry", why: "Add AI capabilities to your containerized apps. Integrate OpenAI models via AI Foundry into your AKS-hosted microservices.", acr: "OpenAI Standard ($2.5K+/mo)", funding: "Frontier eligible" });
   }
 
   // Always suggest GitHub Copilot if not selected
@@ -807,6 +880,7 @@ function AnimNum({ value, format, style: st }) {
 
 function App() {
   const [sel, setSel] = useState({});
+  const [mkt, setMkt] = useState("A"); // FY27 MCI rate market: "A" (Sweden/Nordics default) or "B"
   const [exCat, setExCat] = useState({ db: true, fab: false, fo: false, accel: false, pbi: false, oth: false });
   const [pg, setPg] = useState("calc");
   const [cp, setCp] = useState("");
@@ -817,7 +891,7 @@ function App() {
   const [showSaves, setShowSaves] = useState(false);
   const ref = useRef(null);
   const [sow, setSow] = useState({
-    cn: "[CUSTOMER NAME]", on: "FY26 - [CUSTOMER]", req: "[Name, email]",
+    cn: "[CUSTOMER NAME]", on: "FY27 - [CUSTOMER]", req: "[Name, email]",
     cc: "[Name, email]", sup: "[Partner] (External)", sc: "[Name, email]",
     scope: "", sd: "", ed: "", rate: 200,
     milestones: [
@@ -829,9 +903,67 @@ function App() {
     serviceLocation: "Sweden", supplierID: "", custEmail: "", supEmail: "",
     // v2.7 wizard state
     useCases: 2, splitMode: "auto", customMciPct: 18,
+    // v3.0 strategic-account override (bypasses the $500K ECIF floor)
+    strategic: false, stratText: "",
   });
   const [showEcifExport, setShowEcifExport] = useState(false);
+  // v3.0 AI polish config (partner's own key; stored only in this browser's localStorage)
+  const [aiCfg, setAiCfg] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("afe_ai") || "{}"); } catch (e) { return {}; }
+  });
+  const [showAiCfg, setShowAiCfg] = useState(false);
+  const [aiBusy, setAiBusy] = useState(false);
+  const saveAiCfg = (c) => { setAiCfg(c); try { localStorage.setItem("afe_ai", JSON.stringify(c)); } catch (e) {} };
+  const stratPrompt = () => "You are a Microsoft partner incentives specialist. Rewrite the following justification into a concise, professional business case (120-180 words) for why this customer should be treated as a STRATEGIC ACCOUNT and funded via Microsoft field-nominated ECIF without the $500K ACR threshold minimum (FY27 Frontier Accelerate for Azure). Use crisp, executive language. Anchor on strategic value: net-new-to-Azure / competitive displacement, multi-year growth trajectory, lighthouse/reference potential, industry or regional significance, and downstream frontier workload expansion (Databases, Fabric, Foundry, GitHub). Do not invent facts not present; tighten and elevate what is written. Return only the rewritten justification.\n\nCustomer: " + (sow.cn === "[CUSTOMER NAME]" ? "the customer" : sow.cn) + "\nY1 ACR: " + fmt(C.tot) + "\nWorkloads: " + (C.rows.map(r => r.name).join(", ") || "TBD") + "\n\nPartner's draft justification:\n" + (sow.stratText || "");
+  const polishStrategic = async () => {
+    const draft = (sow.stratText || "").trim();
+    if (draft.length < 10) { alert("Write a few sentences of justification first, then I'll polish it."); return; }
+    const key = aiCfg.key, endpoint = aiCfg.endpoint, model = aiCfg.model || "gpt-4o-mini";
+    if (!key || !endpoint) { setShowAiCfg(true); return; }
+    setAiBusy(true);
+    try {
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + key, "api-key": key },
+        body: JSON.stringify({ model, messages: [{ role: "user", content: stratPrompt() }], temperature: 0.4, max_tokens: 500 }),
+      });
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+      const out = (data.choices && data.choices[0] && (data.choices[0].message ? data.choices[0].message.content : data.choices[0].text) || "").trim();
+      if (out) { us("stratText", out); setSaveStatus("AI polished the justification"); setTimeout(() => setSaveStatus(""), 3000); }
+      else throw new Error("Empty response");
+    } catch (e) {
+      alert("AI polish failed (" + e.message + "). Check your endpoint/key in AI settings, or use \"Copy AI prompt\" to run it in Copilot/ChatGPT/Claude.");
+    } finally { setAiBusy(false); }
+  };
   const us = (k, v) => setSow((p) => ({ ...p, [k]: v }));
+  const exportPlan = () => {
+    if (!window.jspdf) { alert("PDF library not loaded. Refresh and try again."); return; }
+    const { jsPDF } = window.jspdf;
+    const planAct = (sow.planActivities && sow.planActivities.length) ? sow.planActivities : getDefaultActivities(C.rows);
+    const months = Math.min(Math.max(12, ...planAct.map((a) => (a.start || 1) + (a.dur || 1) - 1)), 18);
+    const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "landscape" });
+    const pw = 297, ml = 12; let y = 14;
+    const cn = sow.cn === "[CUSTOMER NAME]" ? "Customer" : sow.cn;
+    doc.setFontSize(16); doc.setFont("helvetica", "bold"); doc.setTextColor(26, 26, 46); doc.text("Azure Consumption Roadmap — " + cn, ml, y); y += 6;
+    doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(110);
+    doc.text("Pre-sales roadmap for MSX · Prepared by RAI CHOWDHURY · " + new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }), ml, y); y += 5;
+    doc.setTextColor(30);
+    doc.text("Y1 ACR: " + fmt(C.tot) + "    Run-rate: " + fmt(C.totAnnual / 12) + "/mo    Scenario: " + (C.sc || "TBD") + "    Funding: " + C.custFundingLabel + " " + fmt(C.custFunding), ml, y); y += 6;
+    doc.autoTable({ startY: y, head: [["Workload", "Category", "Go-live", "Monthly", "Y1 ACR", "Funding"]],
+      body: C.rows.map((r) => { const it = ITEMS.find((i) => i.id === r.baseId) || {}; const cat = CATS.find((c) => c.key === it.cat) || {}; return [r.name, cat.label || "", "M" + (r.startMo || 1), fmt(r.mo || 0), fmt(r.yr || 0), r.elig ? "Frontier" : r.xcr ? "XCR" : "Core"]; }),
+      styles: { fontSize: 8, cellPadding: 1.5 }, headStyles: { fillColor: [0, 120, 212] }, margin: { left: ml, right: ml } });
+    y = doc.lastAutoTable.finalY + 6;
+    doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(26, 26, 46); doc.text("Delivery roadmap (Gantt)", ml, y); y += 2;
+    const head = ["Activity", "Phase"]; for (let m = 1; m <= months; m++) head.push("M" + m);
+    const body = planAct.map((a) => { const row = [a.name, a.phase || ""]; for (let m = 1; m <= months; m++) { const on = m >= (a.start || 1) && m < ((a.start || 1) + (a.dur || 1)); row.push(on ? "|||" : ""); } return row; });
+    doc.autoTable({ startY: y + 2, head: [head], body, styles: { fontSize: 7, cellPadding: 1, halign: "center" }, columnStyles: { 0: { halign: "left", cellWidth: 54 }, 1: { halign: "left", cellWidth: 20 } }, headStyles: { fillColor: [92, 45, 145], fontSize: 7 }, margin: { left: ml, right: ml },
+      didParseCell: (d) => { if (d.section === "body" && d.column.index >= 2 && d.cell.raw === "|||") { d.cell.styles.fillColor = [167, 139, 250]; d.cell.styles.textColor = [167, 139, 250]; } } });
+    y = doc.lastAutoTable.finalY + 6;
+    if (C.strategic && sow.stratText) { if (y > 180) { doc.addPage(); y = 14; } doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(91, 33, 182); doc.text("Strategic account justification", ml, y); y += 4; doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(80); doc.text(doc.splitTextToSize(sow.stratText, pw - 2 * ml), ml, y); }
+    doc.save("Consumption_Roadmap_" + cn.replace(/[^a-zA-Z0-9_-]/g, "_") + ".pdf");
+    setSaveStatus("Consumption plan exported"); setTimeout(() => setSaveStatus(""), 3000);
+  };
   const uMs = (idx, field, val) => setSow((p) => {
     const ms = [...p.milestones];
     ms[idx] = { ...ms[idx], [field]: val };
@@ -875,7 +1007,7 @@ function App() {
     }
   };
 
-  // ── AFO Pre-Assessment Questionnaire ──
+  // ── Frontier Pre-Assessment Questionnaire ──
   const [showChangelog, setShowChangelog] = useState(false);
   const [conStart, setConStart] = useState({});
   const [showQuest, setShowQuest] = useState(false);
@@ -1002,13 +1134,13 @@ function App() {
     const tips = [];
     const gap = 50 - C.pct;
     
-    // Tip 1: Close to AFO threshold
+    // Tip 1: Close to frontier threshold
     if (!C.ok && C.el > 0 && gap <= 25 && gap > 0) {
       const needed = (C.ot * 50 / 50) - C.el; // ACR needed to reach 50%
       const potentialEcif = Math.min((C.tot + needed) * 0.5, 500000);
       tips.push({
         icon: "🎯",
-        title: "You're " + gap.toFixed(0) + "% from AFO threshold",
+        title: "You're " + gap.toFixed(0) + "% from frontier threshold",
         desc: "Add ~" + fmt(needed) + " in DB/Fabric/AI Foundry workloads to unlock up to " + fmt(potentialEcif) + " ECIF.",
         action: "reach-afo",
         impact: potentialEcif,
@@ -1020,14 +1152,28 @@ function App() {
       });
     }
     
-    // Tip 2: AFO eligible but ACR could be higher → more ECIF
-    if (C.ok && C.ecif < 500000) {
+    // Tip 2a: Frontier deal but ≤ $500K → grow past the ECIF floor to unlock Corp ECIF (2:1)
+    if (C.ok && !C.ecifBand) {
+      const needed = 500001 - C.tot;
+      tips.push({
+        icon: "🚪",
+        title: "You're " + fmt(needed) + " from the $500K ECIF floor",
+        desc: "At ≤$500K this funds via Partner-nominated MCI. Above $500K the frontier mix unlocks Corp ECIF at 50% of ACR @ 2:1 (up to $500K cash). Strategic accounts are exempt from the floor.",
+        impact: Math.min(C.tot * 0.5, 500000),
+        items: [
+          !sel["fab-pbi"] && { id: "fab-pbi", name: "Power BI on Fabric (F64)", add: "$8,276/mo" },
+          !sel["oai-std"] && { id: "oai-std", name: "OpenAI Standard (10M tok)", add: "$2,500/mo" },
+        ].filter(Boolean).slice(0, 3)
+      });
+    }
+    // Tip 2b: Corp ECIF active (>$500K frontier) but below the $500K ECIF cap → more ACR = more ECIF
+    if (C.corpOk && C.ecif < 500000) {
       const headroom = 500000 - C.ecif;
       const acrNeeded = headroom * 2; // 2:1 ROI = need 2x more ACR
       tips.push({
         icon: "📈",
-        title: "ECIF headroom: " + fmt(headroom) + " available",
-        desc: "Add ~" + fmt(acrNeeded) + " more ACR to maximize ECIF to $500K cap.",
+        title: "Corp ECIF headroom: " + fmt(headroom) + " available",
+        desc: "Add ~" + fmt(acrNeeded) + " more ACR to maximize Corp ECIF to the $500K cap.",
         impact: headroom,
         items: [
           !sel["fab-pbi"] && { id: "fab-pbi", name: "Power BI on Fabric (F64)", add: "$8,276/mo" },
@@ -1062,7 +1208,7 @@ function App() {
       tips.push({
         icon: "💰",
         title: "Don't forget MCI Pre-sales (" + fmt(C.mci.pre) + ")",
-        desc: C.ok ? "Stackable with AFO ECIF - separate assessment scope. Free money." : "Available via Partner Center. Submit before starting post-sales.",
+        desc: C.ok ? "Stackable with Corp ECIF - separate assessment scope. Free money." : "Available via Partner Center. Submit before starting post-sales.",
         impact: C.mci.pre,
       });
     }
@@ -1427,7 +1573,7 @@ function App() {
     y += 7;
 
     // ── Funding breakdown: TWO columns side by side ──
-    // Left: MCI Pre-sales (green) | Right: AFO ECIF (red)
+    // Left: MCI Pre-sales (green) | Right: Corp ECIF (red)
     // Each shows: Funding cap | Scope | Covers | Customer pays for that bucket
 
     const breakdownColW = (contentW - 8) / 2;
@@ -1476,7 +1622,7 @@ function App() {
         });
       }
 
-      // AFO column (right)
+      // Corp ECIF column (right)
       if (afoScopeH > 0) {
         const afoX = ml + breakdownColW + 8;
         doc.setFillColor(...accentRed);
@@ -1484,7 +1630,7 @@ function App() {
         doc.setFont("helvetica", "bold");
         doc.setFontSize(9);
         doc.setTextColor(...grayDark);
-        doc.text("AFO ECIF", afoX + 5, y + 3);
+        doc.text("Corp ECIF", afoX + 5, y + 3);
         doc.setFont("helvetica", "normal");
         doc.setFontSize(7.5);
         doc.setTextColor(...grayMid);
@@ -1554,7 +1700,7 @@ function App() {
     const wfRows = [];
     wfRows.push(["Total project cost", totalH + "h", fmtMoney(totalE)]);
     if (mciCovers > 0) wfRows.push(["less MCI Pre-sales funding", "-" + Math.round(mciHrs) + "h", "-" + fmtMoney(mciCovers)]);
-    if (afoCovers > 0) wfRows.push(["less AFO ECIF funding", "-" + Math.round(afoHrs) + "h", "-" + fmtMoney(afoCovers)]);
+    if (afoCovers > 0) wfRows.push(["less Corp ECIF funding", "-" + Math.round(afoHrs) + "h", "-" + fmtMoney(afoCovers)]);
 
     doc.autoTable({
       startY: y + 3,
@@ -1610,7 +1756,7 @@ function App() {
                 h: m.h || m.hours || "",
                 d: m.d || m.date || "",
                 x: m.x || m.desc || "",
-                bucket: m.bucket || "afo"  // Default legacy milestones to AFO
+                bucket: m.bucket || "afo"  // Default legacy milestones to Corp ECIF
               }));
             }
             if (!merged.customRows) merged.customRows = [];
@@ -1643,8 +1789,8 @@ function App() {
   useEffect(() => { loadSavedList(); }, []);
 
   // ── Export ECIF Template (Microsoft Supplier Scope template — fills exact cell positions) ──
-  // Replaces the old Universal v2.1 export. Only AFO-bucketed milestones are included,
-  // with hours and amounts pro-rated to AFO ECIF cap.
+  // Replaces the old Universal v2.1 export. Only Corp-ECIF-bucketed milestones are included,
+  // with hours and amounts pro-rated to Corp ECIF cap.
   // ── Export ECIF Template (modifies embedded Microsoft template via JSZip — preserves formulas, formatting, macros) ──
   // ── Export ECIF Template (modifies embedded Microsoft Milestones template via JSZip — preserves formulas & formatting) ──
   // New simplified template: single sheet "Milestones" with Project Summary at top, milestones in rows 16-21.
@@ -1657,10 +1803,10 @@ function App() {
     const afoMs = sow.milestones.filter(m => (m.bucket || "afo") === "afo" && m.n && m.n.trim() && m.n !== "_pending");
     const mciMs = sow.milestones.filter(m => (m.bucket || "afo") === "mci" && m.n && m.n.trim() && m.n !== "_pending");
     const selfMs = sow.milestones.filter(m => (m.bucket || "afo") === "self" && m.n && m.n.trim() && m.n !== "_pending");
-    if (afoMs.length === 0) { alert("No AFO-bucketed milestones found. Tag at least one milestone as AFO before exporting."); return; }
+    if (afoMs.length === 0) { alert("No Corp-ECIF-bucketed milestones found. Tag at least one milestone as Corp ECIF before exporting."); return; }
 
     // Confirm export — explicitly show what's included and excluded
-    let confirmMsg = "ECIF Word document will include " + afoMs.length + " AFO milestone" + (afoMs.length > 1 ? "s" : "") + ":\n\n";
+    let confirmMsg = "ECIF Word document will include " + afoMs.length + " Corp ECIF milestone" + (afoMs.length > 1 ? "s" : "") + ":\n\n";
     afoMs.forEach((m, i) => { confirmMsg += "  " + (i + 1) + ". " + m.n + " (" + m.h + "h)\n"; });
     if (mciMs.length > 0) {
       confirmMsg += "\nExcluded — MCI Pre-sales (partner submits separately via Partner Center):\n";
@@ -1680,10 +1826,10 @@ function App() {
     const fxRate = parseFloat(sow.fxRate) || defaultFx[ccyCode] || 1;
     const afoFundingUsd = C.ok ? C.ecif : C.stdEcif;
     const afoFundingLocal = afoFundingUsd * fxRate;
-    if (afoFundingUsd <= 0) { alert("AFO ECIF cap is $0 — verify ACR settings and Y1 ACR before exporting."); return; }
+    if (afoFundingUsd <= 0) { alert("Corp ECIF cap is $0 — verify ACR settings and Y1 ACR before exporting."); return; }
 
     const afoTotalScope = afoMs.reduce((s, m) => s + (parseFloat(m.h) || 0), 0);
-    if (afoTotalScope === 0) { alert("AFO milestones have 0 total hours."); return; }
+    if (afoTotalScope === 0) { alert("Corp ECIF milestones have 0 total hours."); return; }
     const afoTotalCoverLocal = Math.min(afoFundingLocal, afoTotalScope * r);
     const afoTotalHours = afoTotalCoverLocal / r;
 
@@ -1754,9 +1900,9 @@ function App() {
       ];
       body.push('<w:tbl><w:tblPr><w:tblW w:w="9500" w:type="dxa"/></w:tblPr>' + psRows.join('') + '</w:tbl>');
 
-      // Milestones (AFO-only)
-      body.push(heading("AFO ECIF Milestones"));
-      body.push(para("Total scope: " + Math.round(afoTotalScope) + "h, " + fmtMoney(afoTotalScope * r) + ". Pro-rata to AFO cap of " + fmtMoney(afoFundingLocal) + " (50% of Y1 ACR " + fmtMoney(afoFundingLocal * 2) + ").", { size: 18, color: "888888", after: 200 }));
+      // Milestones (Corp-ECIF-only)
+      body.push(heading("Corp ECIF Milestones"));
+      body.push(para("Total scope: " + Math.round(afoTotalScope) + "h, " + fmtMoney(afoTotalScope * r) + ". Pro-rata to Corp ECIF cap of " + fmtMoney(afoFundingLocal) + " (50% of Y1 ACR " + fmtMoney(afoFundingLocal * 2) + ").", { size: 18, color: "888888", after: 200 }));
 
       const msHeader = trow([
         tcell("Milestone Name", { bold: true, fill: "DC2626", color: "FFFFFF", width: 2300 }),
@@ -1832,7 +1978,7 @@ function App() {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
       }, 100);
-      setSaveStatus("ECIF Word doc exported (AFO-only)"); setTimeout(() => setSaveStatus(""), 3000);
+      setSaveStatus("ECIF Word doc exported (Corp-ECIF-only)"); setTimeout(() => setSaveStatus(""), 3000);
     } catch (err) {
       console.error("ECIF export error:", err);
       alert("ECIF export failed: " + err.message);
@@ -1921,7 +2067,7 @@ function App() {
       // Annualized full-year (for display only — "what kunden konsumerar at run-rate")
       const yrAnnual = phased ? phased.yr : mo * 12;
       // Baseline: existing customer consumption that is NOT incremental.
-      // Per AFO rules, only incremental Y1 ACR counts toward eligibility/funding.
+      // Per frontier (Corp ECIF) rules, only incremental Y1 ACR counts toward eligibility/funding.
       // Currently supported on Fabric rows where customer may already run a base SKU.
       // Baseline scales with same Y1 timing as the workload (same months active).
       const baselineYr = itm.fab && s.baselineSku ? skuMo(s.baselineSku, s.ri) * (s.qty || 1) * monthsInY1(start) : 0;
@@ -1934,7 +2080,7 @@ function App() {
       const displayName = isInstance(rowId) ? itm.name + " #" + instanceNum(rowId) : itm.name;
       rows.push({ id: rowId, baseId: itm.id, name: displayName, tag: itm.tag, color: cat.color, elig: cat.elig, mo, yr, yrAnnual, startMo: start, incrYr, baselineYr, baselineSku: s.baselineSku || null, sku: s.sku || "", xcr: !!itm.xcr, odaOnly: !!itm.odaOnly, phases: s.phases || null, monthly: phased ? phased.monthly : null });
     });
-    const tot = el + ot; // Fundable INCREMENTAL ACR (used for AFO/MCI calculations)
+    const tot = el + ot; // Fundable INCREMENTAL ACR (used for Corp ECIF/MCI calculations)
     const totFull = elFull + otFull; // Customer-pays Y1 (timing-adjusted) — used for ECIF nomination
     const totAnnual = elAnnual + otAnnual; // Annualized full-year run-rate (mo*12 sum) — what customer pays Azure when everything is fully live
     const totAll = el + ot + odaAcr; // Total fundable ACR including ODA (for display/SOW)
@@ -1952,43 +2098,46 @@ function App() {
     else if (fab) sc = "Fabric";
     else if (fo) sc = "Standalone Foundry";
     if (accel) sc = sc ? sc + " + Infra" : "Infrastructure";
-    const mci = getMCI(tot);
-    const ecif = ok ? Math.min(tot * 0.5, 500000) : 0;
-    const aco = 0; // ACO removed from tool
-    // Standard ECIF (non-AFO): available for ALL Azure workloads, field-nominated
-    const stdEcif = tot > 0 ? Math.min(tot * 0.2, 250000) : 0; // Conservative ~5:1 ROI est. Actual varies 3:1-7:1 per deal
-    const recs = getRecommendation(el, ot, tot, pct, ok, rows, mci, stdEcif);
+    // FY27 MCI workload type (drives differentiated payout): Databases > Agentic AI Platform > Core+Security > VDI > Other
+    const hasSec = rows.some((r) => r.baseId === "def" || r.baseId === "sentinel" || r.baseId === "infra-mdc");
+    const hasAvd = rows.some((r) => r.baseId === "avd");
+    const mciType = db ? "db" : (fo || fab) ? "agentic" : (accel && hasSec) ? "coresec" : hasAvd ? "vdi" : "other";
+    const mci = getMCI(tot, mciType, false, mkt);
+    // FY27 $500K threshold: field-nominated ECIF (Corp @ 2:1 and Field/Local @ 5:1) requires > $500K Y1 ACR.
+    // Strategic accounts are exempt from this floor (not detectable in-tool — see note). ≤ $500K → Partner-nominated MCI.
+    const strategic = !!sow.strategic && (sow.stratText || "").trim().length >= 20; // strategic account: exempt from $500K floor (requires written justification)
+    const ecifBand = tot > 500000 || strategic;
+    const corpOk = ok && ecifBand; // Corp ECIF (frontier 50% @ 2:1): >$500K, or strategic account with justification
+    // Corp ECIF (frontier: DB/Fabric/Foundry/GitHub) — 50% of Y1 ACR @ 2:1, cap $500K. Field-nominated, post-sales > $500K ACR (or strategic).
+    const ecif = corpOk ? Math.min(tot * 0.5, 500000) : 0;
+    const aco = 0; // ACO (Azure Credit Offers) surfaced as guidance, not calculated. FY27 ACO max $500K; lead SS-CACO → CACO → Upfront/TACO.
+    // Field / Local ECIF (all scenarios) — FY27: up to 20% of Y1 ACR, min 5:1 ROI. Field-nominated, > $500K ACR.
+    const stdEcif = ecifBand ? Math.min(tot * 0.2, 500000) : 0;
+    const recs = getRecommendation(el, ot, tot, pct, ok, rows, mci, stdEcif, mkt, strategic);
 
-    // Recommended total: the maximum achievable with correct stacking rules
-    // Rule: ECIF and MCI cannot be used on the same customer + project
+    // Recommended total: the maximum achievable with correct FY27 stacking + $500K threshold rules.
+    // Rule: ECIF and MCI post-sales cannot be used on the same customer + project. MCI pre-sales can stack with ECIF.
     let recCash = 0, recCredits = 0;
-    let recStrategy = "AFO";
-    if (ok) {
-      // AFO eligible: ECIF + MCI pre-sales (as separate assessment scope)
-      recCash = ecif + mci.pre; // MCI post conflicts with ECIF
-      recCredits = 0;
-      recStrategy = "AFO + MCI Pre-sales";
-    } else if (!ok && el > 0 && ot > 0) {
-      // Split: Project A = AFO (eligible), Project B = best of (Std ECIF OR MCI)
-      const splitAfoEcif = Math.min(el * 0.5, 500000);
-        const splitNonEligMci = getMCI(ot);
-      const splitStdEcif = Math.min(ot * 0.2, 250000);
-      const projBbest = Math.max(splitStdEcif, splitNonEligMci.pre + splitNonEligMci.post);
-      recCash = splitAfoEcif + projBbest;
-      recCredits = 0;
-      recStrategy = "Split";
-    } else if (!ok) {
-      // No AFO: best of (Std ECIF) OR (MCI pre+post) - can't stack
+    let recStrategy = "MCI";
+    if (corpOk) {
+      // > $500K frontier: Corp ECIF + MCI pre-sales (post can't stack)
+      recCash = ecif + mci.pre;
+      recStrategy = "Corp ECIF + MCI Pre-sales";
+    } else if (ecifBand) {
+      // > $500K, non-frontier: best of Field/Local ECIF OR (MCI pre+post)
       recCash = Math.max(stdEcif, mci.pre + mci.post);
-      recCredits = 0;
-      recStrategy = recCash === stdEcif ? "Standard ECIF" : "MCI";
+      recStrategy = recCash === stdEcif ? "Field ECIF" : "MCI";
+    } else {
+      // ≤ $500K: Partner-nominated MCI only (no % ECIF unless strategic account)
+      recCash = mci.pre + mci.post;
+      recStrategy = "MCI (Partner-Nominated)";
     }
 
-    // Customer-visible funding = single-path amount (not split)
-    const custFunding = ok ? (ecif + mci.pre) : Math.max(stdEcif, mci.pre + mci.post);
-    const custFundingLabel = ok ? "AFO ECIF" + (mci.pre > 0 ? " + Assessment" : "") : (mci.pre + mci.post) >= stdEcif ? "MCI Partner Program" : "Standard ECIF";
-    return { el, ot, xcr, odaAcr, tot, totFull, totAnnual, totAll, totBaseline: totFull - tot, pct, ok, rows, sc, ecif, stdEcif, db, fab, fo, accel, mci, recs, recCash, recCredits, recStrategy, custFunding, custFundingLabel, solutionPlays: getSolutionPlays(rows) };
-  }, [sel, conStart]);
+    // Customer-visible funding = single recommended path amount
+    const custFunding = corpOk ? (ecif + mci.pre) : ecifBand ? Math.max(stdEcif, mci.pre + mci.post) : (mci.pre + mci.post);
+    const custFundingLabel = corpOk ? "Corp ECIF" + (mci.pre > 0 ? " + Assessment" : "") : (ecifBand && stdEcif >= (mci.pre + mci.post)) ? "Field ECIF" : "MCI Partner-Nominated";
+    return { el, ot, xcr, odaAcr, tot, totFull, totAnnual, totAll, totBaseline: totFull - tot, pct, ok, ecifBand, corpOk, strategic, rows, sc, ecif, stdEcif, db, fab, fo, accel, mci, recs, recCash, recCredits, recStrategy, custFunding, custFundingLabel, solutionPlays: getSolutionPlays(rows) };
+  }, [sel, conStart, mkt, sow.strategic, sow.stratText]);
 
   const dyn = useMemo(() => getScope(C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn), [C.db, C.fab, C.fo, C.accel, C.rows, C.tot, sow.cn]);
   const nextWL = useMemo(() => getNextWorkloads(C.rows), [C.rows]);
@@ -2010,8 +2159,8 @@ function App() {
     // Per-bucket totals
     const buckets = { mci: { h: 0, e: 0 }, afo: { h: 0, e: 0 }, self: { h: 0, e: 0 } };
     perMs.forEach(m => { if (buckets[m.bucket]) { buckets[m.bucket].h += m.h; buckets[m.bucket].e += m.e; } });
-    // Budget = max stackable funding. When AFO works: ECIF + MCI Pre-sales (post can't stack).
-    // When AFO doesn't work: best of standard ECIF OR (MCI pre+post) - they don't stack with each other either.
+    // Budget = max stackable funding. When Corp ECIF works: ECIF + MCI Pre-sales (post can't stack).
+    // When Corp ECIF doesn't work: best of standard ECIF OR (MCI pre+post) - they don't stack with each other either.
     const budget = C.custFunding || (C.ok ? (C.ecif + C.mci.pre) : Math.max(C.stdEcif, C.mci.pre + C.mci.post));
     const suggestedH = r > 0 ? Math.floor(budget / r) : 0;
     return { perMs, totalH, totalE, buckets, budget, suggestedH, overBudget: totalE > budget && budget > 0 };
@@ -2053,7 +2202,7 @@ function App() {
 
   const partnerMail = useMemo(() => {
     const wl = C.rows.map((r) => "  - " + r.name + (r.sku ? " (" + r.sku + ")" : "") + ": ~" + fmt(r.mo) + "/mo").join("\n");
-    return "Subject: Azure Funding Opportunity - " + sow.cn + " (" + fmt(C.tot) + " Y1 ACR)\n\nHi [Partner],\n\nOPPORTUNITY\n- Customer: " + sow.cn + "\n- Y1 ACR: " + fmt(C.tot) + "\n- Scenario: " + (C.sc || "TBD") + "\n- AFO Eligible: " + C.pct.toFixed(0) + "%\n\nWORKLOADS\n" + (wl || "  [None]") + "\n\nFIELD-LED FUNDING\n- ECIF (cash to partner): up to " + fmt(C.ok ? C.ecif : C.stdEcif) + (C.ok ? " (AFO, 2:1 ROI)" : " (Standard, 3:1-7:1 ROI)") + "\n- Nominated by MS field seller via Azure Offer Navigator\n\nPARTNER-LED (MCI Azure Accelerate)\n- Pre-sales (Assessment+POV): " + (C.mci.pre > 0 ? fmt(C.mci.pre) + " (" + C.mci.preL + ")" : "N/A (ACR < $15K)") + "\n- Post-sales (Deployment): " + (C.mci.post > 0 ? fmt(C.mci.post) + " (" + C.mci.ts + ", " + C.mci.days + " days)" : "N/A") + "\n- Partner self-serve via Partner Center\n- Note: ECIF and MCI cannot be used on same customer + project\n\nNEXT STEPS\n1. Confirm scope with customer\n2. Prepare SOW\n3. Submit nomination via Azure Offer Navigator (field-led)\n4. Submit MCI pre-sales claim via Partner Center (partner-led)\n\nFirst come, first served - limited funding.\n\n[Your name]";
+    return "Subject: Azure Funding Opportunity - " + sow.cn + " (" + fmt(C.tot) + " Y1 ACR)\n\nHi [Partner],\n\nOPPORTUNITY\n- Customer: " + sow.cn + "\n- Y1 ACR: " + fmt(C.tot) + "\n- Scenario: " + (C.sc || "TBD") + "\n- Frontier Eligible: " + C.pct.toFixed(0) + "%\n\nWORKLOADS\n" + (wl || "  [None]") + "\n\nFIELD-LED FUNDING\n- ECIF (cash to partner): up to " + fmt(C.ok ? C.ecif : C.stdEcif) + (C.ok ? " (Corp ECIF, 2:1 ROI)" : " (Field/Local, min 5:1 ROI)") + "\n- Nominated by MS field seller via Azure Offer Navigator\n\nPARTNER-LED (MCI Frontier Accelerate for Azure)\n- Pre-sales (Assessment+POV): " + (C.mci.pre > 0 ? fmt(C.mci.pre) + " (" + C.mci.preL + ")" : "N/A (ACR < $50K)") + "\n- Post-sales (Deployment): " + (C.mci.post > 0 ? fmt(C.mci.post) + " (" + C.mci.ts + ", " + C.mci.days + " days)" : "N/A") + "\n- Partner self-serve via Partner Center\n- Note: ECIF and MCI cannot be used on same customer + project\n\nNEXT STEPS\n1. Confirm scope with customer\n2. Prepare SOW\n3. Submit nomination via Azure Offer Navigator (field-led)\n4. Submit MCI pre-sales claim via Partner Center (partner-led)\n\nFirst come, first served - limited funding.\n\n[Your name]";
   }, [C, sow.cn]);
 
   const custMail = useMemo(() => {
@@ -2152,7 +2301,7 @@ button{display:none!important}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <svg width="24" height="24" viewBox="0 0 20 20"><rect width="9" height="9" fill="#f25022" rx="1" /><rect x="11" width="9" height="9" fill="#7fba00" rx="1" /><rect y="11" width="9" height="9" fill="#00a4ef" rx="1" /><rect x="11" y="11" width="9" height="9" fill="#ffb900" rx="1" /></svg>
               <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}><div style={{ fontSize: 18, lineHeight: 1.1, letterSpacing: -0.3 }}><span style={{ fontWeight: 300 }}>Azure</span> <span style={{ fontWeight: 700 }}>Funding Estimator</span></div><div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.3)" }} /><div style={{ fontSize: 14, letterSpacing: 4, color: "rgba(255,255,255,0.8)", fontFamily: "'Bebas Neue', sans-serif", lineHeight: 1 }}>RAI CHOWDHURY</div></div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}><div style={{ fontSize: 18, lineHeight: 1.1, letterSpacing: -0.3 }}><span style={{ fontWeight: 300 }}>Azure</span> <span style={{ fontWeight: 700 }}>Funding Estimator</span></div><div style={{ width: 1, height: 20, background: "rgba(255,255,255,0.3)" }} /><div style={{ fontSize: 14, letterSpacing: 4, color: "rgba(255,255,255,0.8)", fontFamily: "'Bebas Neue', sans-serif", lineHeight: 1 }}>RAI CHOWDHURY</div><div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.5, background: "rgba(255,255,255,0.18)", color: "white", borderRadius: 5, padding: "2px 7px" }}>FY27 · Frontier Accelerate</div></div>
                 
               </div>
             </div>
@@ -2162,6 +2311,13 @@ button{display:none!important}
                 <input value={sow.cn} onChange={(e) => us("cn", e.target.value)} placeholder="Enter name..." aria-label="Customer name" style={{ background: "transparent", border: "none", color: "white", fontSize: 12, fontWeight: 600, fontFamily: "inherit", outline: "none", width: 160 }} />
               </div>
               {saveStatus && <span style={{ fontSize: 12, padding: "3px 8px", background: "rgba(255,255,255,0.2)", borderRadius: 4 }}>{saveStatus}</span>}
+              <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.12)", borderRadius: 6, padding: "4px 8px" }} title="FY27 MCI payout rate market. Sweden/Nordics = Market A.">
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}>Market</span>
+                <select value={mkt} onChange={(e) => setMkt(e.target.value)} aria-label="MCI rate market" style={{ background: "transparent", border: "none", color: "white", fontSize: 12, fontWeight: 700, fontFamily: "inherit", outline: "none", cursor: "pointer" }}>
+                  <option value="A" style={{ color: "#1a1a2e" }}>A</option>
+                  <option value="B" style={{ color: "#1a1a2e" }}>B</option>
+                </select>
+              </div>
               <input ref={fileRef} type="file" accept=".xlsx,.xls" onChange={handleExcelUpload} style={{ display: "none" }} />
               <button onClick={() => fileRef.current && fileRef.current.click()} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>📊 Import</button>
               <button onClick={() => saveProject()} style={{ padding: "5px 12px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>💾 Save</button>
@@ -2194,6 +2350,7 @@ button{display:none!important}
           <div style={{ display: "flex", gap: 0 }} className="tab-nav">
             {[
               { k: "calc", label: "Calculator" },
+              { k: "plan", label: "Consumption Plan" },
               { k: "sow", label: "SOW & Email", match: ["sow", "email"] },
               { k: "cust", label: "Customer Summary" },
             ].map(t => {
@@ -2228,7 +2385,7 @@ button{display:none!important}
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <span style={{ fontSize: 18, width: 24, textAlign: "center" }}>{cat.icon}</span>
                         <span style={{ color: cat.color }}>{cat.label}</span>
-                        {cat.elig && <span style={{ fontSize: 10, fontWeight: 700, background: "#dcfce7", color: "#166534", padding: "1px 5px", borderRadius: 6 }}>AFO ELIGIBLE</span>}
+                        {cat.elig && <span style={{ fontSize: 10, fontWeight: 700, background: "#dcfce7", color: "#166534", padding: "1px 5px", borderRadius: 6 }}>FRONTIER (ECIF)</span>}
                         {!cat.elig && cat.badge && <span style={{ fontSize: 10, fontWeight: 700, background: cat.key === "accel" ? "#fff3e0" : cat.key === "pbi" ? "#fef9c3" : "#f5f5f5", color: cat.key === "accel" ? "#e65100" : cat.key === "pbi" ? "#854d0e" : "#888", padding: "1px 5px", borderRadius: 6 }}>{cat.badge}</span>}
                         {cnt > 0 && <span style={{ fontSize: 11, fontWeight: 600, background: cat.color + "15", color: cat.color, padding: "1px 5px", borderRadius: 6 }}>{cnt}</span>}
                       </div>
@@ -2416,7 +2573,7 @@ button{display:none!important}
                                         Customer already runs <strong>{baselineSku}</strong> · Baseline excluded: <strong>{fmt(baselineYr)}/yr</strong> · Fundable incremental: <strong style={{ color: "#059669" }}>{fmt(incrYr)}/yr</strong>
                                       </span>
                                     )}
-                                    {!baselineSku && <span style={{ fontSize: 10, color: "#999", fontStyle: "italic" }}>Set if customer already runs an F-SKU today (only the upgrade delta is fundable per AFO/MCI rules)</span>}
+                                    {!baselineSku && <span style={{ fontSize: 10, color: "#999", fontStyle: "italic" }}>Set if customer already runs an F-SKU today (only the upgrade delta is fundable per Corp ECIF/MCI rules)</span>}
                                   </div>
                                 )}
                               </div>
@@ -2447,7 +2604,7 @@ button{display:none!important}
 
                 {C.tot === 0 ? <div style={{ fontSize: 13, color: "#ccc" }}>Select workloads to see eligibility...</div> : (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }} className="grid-2col">
-                    {/* Field-Led (AFO) */}
+                    {/* Field-Led (Corp ECIF) */}
                     <div style={{ borderRadius: 8, padding: 10, background: C.ok ? "linear-gradient(135deg,#ecfdf5,#d1fae5)" : "linear-gradient(135deg,#f8f9fa,#f0f1f3)", border: "1.5px solid " + (C.ok ? "#6ee7b7" : "#d1d5db"), textAlign: "center" }}>
                       <div style={{ fontSize: 10, fontWeight: 700, color: "#999", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>Field-Led</div>
                       {/* Ring indicator */}
@@ -2456,9 +2613,9 @@ button{display:none!important}
                           <span style={{ fontSize: 13, fontWeight: 700, color: C.ok ? "#059669" : "#64748b" }}>{C.pct.toFixed(0)}%</span>
                         </div>
                       </div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: C.ok ? "#059669" : "#64748b" }}>{C.ok ? "✓ AFO ELIGIBLE" : "Standard ECIF / MCI path"}</div>
-                      <div style={{ fontSize: 10, color: "#999", marginTop: 2 }}>{C.ok ? "Requires ≥50% DB/Fabric/Foundry" : C.pct > 0 ? C.pct.toFixed(0) + "% eligible - add Data/AI to unlock AFO" : "Add DB, Fabric, or AI Foundry for AFO"}</div>
-                      <div style={{ fontSize: 10, color: "#999", marginTop: 1 }}>ECIF up to {fmt(C.ecif)}</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: C.corpOk ? "#059669" : C.ecifBand ? "#0369a1" : "#64748b" }}>{C.corpOk ? "✓ CORP ECIF (2:1)" : C.ok && !C.ecifBand ? "Frontier · needs >$500K" : C.ecifBand ? "Field ECIF (5:1)" : "MCI path (≤$500K)"}</div>
+                      <div style={{ fontSize: 10, color: "#999", marginTop: 2 }}>{C.corpOk ? "≥50% frontier & >$500K ACR" : C.ok && !C.ecifBand ? "Frontier mix OK — ECIF needs >$500K (strategic exempt)" : C.ecifBand ? (C.pct > 0 ? C.pct.toFixed(0) + "% frontier — <50%, Field ECIF 20% @ 5:1" : "Field ECIF 20% @ 5:1") : "≤$500K → Partner-nominated MCI"}</div>
+                      <div style={{ fontSize: 10, color: "#999", marginTop: 1 }}>{C.ecifBand ? "ECIF up to " + fmt(C.corpOk ? C.ecif : C.stdEcif) : "via MCI: " + fmt(C.mci.pre + C.mci.post)}</div>
                       <div style={{ display: "flex", gap: 2, justifyContent: "center", marginTop: 4 }}>
                         <span style={{ fontSize: 10, padding: "1px 4px", borderRadius: 4, background: "#eff6ff", color: "#0078D4", fontWeight: 600 }}>ECIF</span>
 
@@ -2482,8 +2639,10 @@ button{display:none!important}
                         );
                       })()}
                       <div style={{ fontSize: 13, fontWeight: 700, color: C.tot >= 5000 ? "#2563eb" : "#999" }}>{C.tot >= 5000 ? "✓ MCI ELIGIBLE" : "✗ ACR < $5K"}</div>
-                      <div style={{ fontSize: 10, color: "#999", marginTop: 2 }}>Partner self-serve via PC</div>
+                      <div style={{ fontSize: 10, color: "#999", marginTop: 2 }}>Partner self-serve via PC{C.tot > 500000 ? " · >$500K → use ECIF" : ""}</div>
+                      {C.tot >= 5000 && <div style={{ fontSize: 10, color: "#2563eb", marginTop: 1, fontWeight: 600 }}>{ENGAGEMENT_LABEL[C.mci.type] || "Other"} · Market {mkt}</div>}
                       <div style={{ fontSize: 10, color: "#999", marginTop: 1 }}>Up to {fmt(C.mci.pre + C.mci.post)}</div>
+                      {C.mci.convBonus > 0 && <div style={{ fontSize: 10, color: "#059669", marginTop: 1, fontWeight: 600 }}>+ up to {fmt(C.mci.convBonus)} DB Conversion Bonus*</div>}
                       <div style={{ display: "flex", gap: 2, justifyContent: "center", marginTop: 4 }}>
                         <span style={{ fontSize: 10, padding: "1px 4px", borderRadius: 4, background: "#eff6ff", color: "#2563eb", fontWeight: 600 }}>Pre-sales</span>
                         <span style={{ fontSize: 10, padding: "1px 4px", borderRadius: 4, background: "#ecfdf5", color: "#059669", fontWeight: 600 }}>Post-sales</span>
@@ -2494,7 +2653,72 @@ button{display:none!important}
 
                 {/* Scenario badge */}
                 {C.sc && C.tot > 0 && <div style={{ marginTop: 8, fontSize: 12, color: "#666", padding: "4px 8px", background: "#f8f9fa", borderRadius: 6, textAlign: "center" }}>Scenario: <strong>{C.sc}</strong></div>}
+                {/* FY27 nomination-path guidance */}
+                {C.tot > 0 && <div style={{ marginTop: 8, fontSize: 10, color: C.tot > 500000 ? "#7c2d12" : "#1e40af", padding: "5px 8px", background: C.tot > 500000 ? "#fff7ed" : "#eff6ff", border: "1px solid " + (C.tot > 500000 ? "#fed7aa" : "#bfdbfe"), borderRadius: 6 }}>
+                  <strong>FY27 route:</strong> {C.tot > 500000 ? "Y1 ACR > $500K → Microsoft field-nominated ECIF (Corp ECIF for frontier @ 2:1, Field ECIF otherwise @ min 5:1)." : "Y1 ACR ≤ $500K → Partner-nominated MCI (Frontier Accelerate for Azure) via Partner Center. ECIF post-sales needs > $500K (strategic accounts exempt)."}
+                </div>}
               </div>
+
+              {/* ── STRATEGIC ACCOUNT OVERRIDE ($500K floor exemption) ── */}
+              {C.tot > 0 && (C.tot <= 500000 || sow.strategic) && (
+                <div style={{ background: "white", borderRadius: 12, border: "1px solid " + (C.strategic ? "#c4b5fd" : "#e8e8ec"), padding: 14, marginBottom: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                  <label style={{ display: "flex", alignItems: "flex-start", gap: 8, cursor: "pointer" }}>
+                    <input type="checkbox" checked={!!sow.strategic} onChange={(e) => us("strategic", e.target.checked)} style={{ marginTop: 2 }} />
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#5b21b6" }}>Strategic account — exempt from the $500K ECIF floor</div>
+                      <div style={{ fontSize: 10, color: "#999", marginTop: 1 }}>Strategic accounts can be field-nominated for ECIF (2:1 / 5:1) below $500K. Requires a written justification for the specialist.</div>
+                    </div>
+                  </label>
+                  {sow.strategic && (
+                    <div style={{ marginTop: 10 }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#999", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>What makes a case strategic? (tap to insert an example)</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 8 }}>
+                        {[
+                          "Net-new to Azure — competitive displacement from AWS/GCP.",
+                          "Multi-year growth trajectory toward a large MACC.",
+                          "Lighthouse / reference customer in a key industry.",
+                          "Regulated / sovereign / public-sector significance.",
+                          "Anchor account that unlocks downstream Fabric, Foundry & GitHub.",
+                        ].map((ex, i) => (
+                          <button key={i} onClick={() => us("stratText", ((sow.stratText || "").trim() ? sow.stratText.trim() + " " : "") + ex)} style={{ fontSize: 10, padding: "3px 8px", borderRadius: 12, border: "1px solid #ddd6fe", background: "#f5f3ff", color: "#6d28d9", cursor: "pointer" }}>+ {ex.split(" —")[0].split(" (")[0].slice(0, 28)}</button>
+                        ))}
+                      </div>
+                      <textarea value={sow.stratText} onChange={(e) => us("stratText", e.target.value)} placeholder="Motivate why this customer is strategic (min ~20 chars to unlock ECIF): competitive displacement, growth trajectory, reference potential, industry/regional significance, downstream frontier workload expansion…" rows={4} style={{ width: "100%", boxSizing: "border-box", fontSize: 12, fontFamily: "inherit", padding: 8, border: "1px solid " + (C.strategic ? "#a78bfa" : "#e0e0e0"), borderRadius: 8, resize: "vertical", outline: "none" }} />
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                        <button onClick={polishStrategic} disabled={aiBusy} style={{ fontSize: 11, fontWeight: 600, padding: "5px 10px", borderRadius: 6, border: "none", background: "linear-gradient(135deg,#7c3aed,#a855f7)", color: "white", cursor: aiBusy ? "default" : "pointer", opacity: aiBusy ? 0.6 : 1 }}>{aiBusy ? "Polishing…" : "✨ Polish with AI"}</button>
+                        <button onClick={() => copy(stratPrompt(), "aiprompt")} style={{ fontSize: 11, fontWeight: 600, padding: "5px 10px", borderRadius: 6, border: "1px solid #ddd", background: "white", color: "#555", cursor: "pointer" }}>{cp === "aiprompt" ? "Copied ✓" : "Copy AI prompt"}</button>
+                        <button onClick={() => setShowAiCfg(!showAiCfg)} style={{ fontSize: 11, padding: "5px 8px", borderRadius: 6, border: "1px solid #ddd", background: "white", color: "#888", cursor: "pointer" }}>⚙ AI settings</button>
+                        <span style={{ fontSize: 10, color: C.strategic ? "#059669" : "#f59e0b", fontWeight: 600 }}>{C.strategic ? "✓ ECIF unlocked (strategic)" : "Add ~20+ chars to unlock ECIF"}</span>
+                      </div>
+                      {showAiCfg && (
+                        <div style={{ marginTop: 8, padding: 8, background: "#faf5ff", border: "1px solid #e9d5ff", borderRadius: 8 }}>
+                          <div style={{ fontSize: 10, color: "#6d28d9", marginBottom: 6 }}>Your own AI key — stored only in this browser, sent only to your endpoint. Works with OpenAI or Azure OpenAI (chat/completions URL).</div>
+                          <input value={aiCfg.endpoint || ""} onChange={(e) => saveAiCfg({ ...aiCfg, endpoint: e.target.value })} placeholder="Endpoint URL (e.g. https://api.openai.com/v1/chat/completions)" style={{ width: "100%", boxSizing: "border-box", fontSize: 11, padding: 6, border: "1px solid #e0e0e0", borderRadius: 6, marginBottom: 4, fontFamily: "inherit" }} />
+                          <input value={aiCfg.model || ""} onChange={(e) => saveAiCfg({ ...aiCfg, model: e.target.value })} placeholder="Model / deployment (e.g. gpt-4o-mini)" style={{ width: "100%", boxSizing: "border-box", fontSize: 11, padding: 6, border: "1px solid #e0e0e0", borderRadius: 6, marginBottom: 4, fontFamily: "inherit" }} />
+                          <input type="password" value={aiCfg.key || ""} onChange={(e) => saveAiCfg({ ...aiCfg, key: e.target.value })} placeholder="API key" style={{ width: "100%", boxSizing: "border-box", fontSize: 11, padding: 6, border: "1px solid #e0e0e0", borderRadius: 6, fontFamily: "inherit" }} />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── FY27 AZURE CREDIT OFFERS (ACO) ── */}
+              {C.tot > 0 && (
+                <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 14, marginBottom: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#999", marginBottom: 6, letterSpacing: 0.5 }}>Azure Credit Offers (ACO) · FY27</div>
+                  <div style={{ fontSize: 11, color: "#555", lineHeight: 1.5 }}>
+                    Credits to win deals / offset dual-run. <strong>Max $500K USD.</strong> Lead with the deepest construct the deal supports:
+                    <div style={{ marginTop: 6, display: "grid", gap: 4 }}>
+                      <div style={{ display: "flex", gap: 6 }}><span style={{ flexShrink: 0, width: 74, fontWeight: 700, color: "#B4009E" }}>SS-CACO</span><span>Service-specific, MCA-E + MACC. 2–3x ROI (DB 2x · Modernization/Fabric/Agents 3x). Lead here when a priority workload qualifies.</span></div>
+                      <div style={{ display: "flex", gap: 6 }}><span style={{ flexShrink: 0, width: 74, fontWeight: 700, color: "#0027b3" }}>CACO</span><span>Conditional (targets), MCA-E + MACC. ~5x ROI. Broad MACC growth.</span></div>
+                      <div style={{ display: "flex", gap: 6 }}><span style={{ flexShrink: 0, width: 74, fontWeight: 700, color: "#0078D4" }}>TACO</span><span>Time-based (non-MACC). Frontier Accelerate Local ACO ~10x. Cover short-term dual-run.</span></div>
+                      <div style={{ display: "flex", gap: 6 }}><span style={{ flexShrink: 0, width: 74, fontWeight: 700, color: "#555" }}>Upfront</span><span>Non-MACC, applied at signing. ~5x ROI. Simplest, lowest leverage.</span></div>
+                    </div>
+                    <div style={{ marginTop: 6, fontSize: 10, color: "#999" }}>Order: SS-CACO → CACO → Upfront/TACO. ACO/credits reduce reportable incremental ACR and must be fully consumed before incremental ACR is recognized.</div>
+                  </div>
+                </div>
+              )}
 
               {/* ── YEAR 1 ACR ── */}
               <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 14, marginBottom: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
@@ -2520,7 +2744,7 @@ button{display:none!important}
                   return null;
                 })()}
                 <div style={{ display: "grid", gridTemplateColumns: C.xcr > 0 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 4 }} className="grid-acr">
-                  <div style={{ background: "#eff6ff", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>AFO Eligible ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>{fmt(C.el)}</div></div>
+                  <div style={{ background: "#eff6ff", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>Frontier ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#059669" }}>{fmt(C.el)}</div></div>
                   <div style={{ background: "#fff7ed", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>ACR</div><div style={{ fontSize: 13, fontWeight: 700, color: "#D83B01" }}>{fmt(C.ot)}</div></div>
                   {C.xcr > 0 && <div style={{ background: "#fef3c7", padding: 5, borderRadius: 4, textAlign: "center" }}><div style={{ fontSize: 10 }}>XCR (not ACR)</div><div style={{ fontSize: 13, fontWeight: 700, color: "#d97706" }}>{fmt(C.xcr)}</div></div>}
                 </div>
@@ -2539,19 +2763,19 @@ button{display:none!important}
                   {(() => {
                     const lines = [];
                     let note = "";
-                    if (C.ok) {
-                      if (C.ecif > 0) lines.push({ label: "AFO ECIF", sub: "Cash to partner (2:1 ROI)", amount: C.ecif, color: "#3b82f6" });
+                    if (C.corpOk) {
+                      if (C.ecif > 0) lines.push({ label: "Corp ECIF", sub: "Cash to partner · 50% @ 2:1 · >$500K", amount: C.ecif, color: "#3b82f6" });
                       
                       if (C.mci.pre > 0) lines.push({ label: "MCI Pre-sales", sub: "Cash to partner (" + C.mci.preL + ")", amount: C.mci.pre, color: "#22c55e" });
-                      note = C.mci.post > 0 ? "MCI Post-sales (" + fmt(C.mci.post) + ") available but cannot stack with AFO ECIF on same project." : "";
+                      note = C.mci.post > 0 ? "MCI Post-sales (" + fmt(C.mci.post) + ") available but cannot stack with Corp ECIF on same project." : "";
                     }
                     const cashLines = lines;
                     const cashTotal = cashLines.reduce((s, l) => s + l.amount, 0);
                     
                     const grandTotal = lines.reduce((s, l) => s + l.amount, 0);
 
-                    // Non-AFO: show two options since ECIF and MCI can't stack
-                    const isNonAfo = !C.ok && C.tot > 0;
+                    // Non-Corp ECIF: show two options since ECIF and MCI can't stack
+                    const isNonAfo = !C.corpOk && C.tot > 0;
                     const opt1Total = C.stdEcif; // Std ECIF path
                     const opt2Total = C.mci.pre + C.mci.post; // MCI path
 
@@ -2559,9 +2783,9 @@ button{display:none!important}
                       <div style={{ padding: 14 }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "#a5b4fc", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Your Funding Plan</div>
 
-                        {C.ok ? (
+                        {C.corpOk ? (
                           <>
-                            {/* AFO eligible - show stacked funding */}
+                            {/* Frontier + >$500K - show stacked Corp ECIF funding */}
                             <AnimNum value={grandTotal} format={fmt} style={{ fontSize: 24, fontWeight: 700, color: "white", textAlign: "center", display: "block" }} />
                             <div style={{ fontSize: 11, color: "#a5b4fc", textAlign: "center", marginBottom: 8 }}>total stackable funding</div>
 
@@ -2595,7 +2819,7 @@ button{display:none!important}
                           </>
                         ) : isNonAfo ? (
                           <>
-                            {/* Not AFO eligible - show best option as primary with alternative */}
+                            {/* Not Frontier eligible - show best option as primary with alternative */}
                             {(() => {
                               const best = opt2Total > opt1Total ? "MCI" : "ECIF";
                               const bestTotal = Math.max(opt1Total, opt2Total);
@@ -2603,9 +2827,11 @@ button{display:none!important}
                                 ...(C.mci.post > 0 ? [{ label: "Implementation Support", sub: "Partner-led · " + C.mci.ts + " tier · " + C.mci.days + " days", amount: C.mci.post, color: "#22c55e" }] : []),
                                 ...(C.mci.pre > 0 ? [{ label: "Assessment & POV", sub: "Partner-led · Pre-sales", amount: C.mci.pre, color: "#0ea5e9" }] : []),
                               ] : [
-                                { label: "Standard ECIF", sub: "Field-led · 3:1-7:1 ROI · Azure Offer Navigator", amount: opt1Total, color: "#f97316" },
+                                { label: "Field ECIF", sub: "Field-led · min 5:1 ROI · Azure Offer Navigator", amount: opt1Total, color: "#f97316" },
                               ];
-                              const altLabel = best === "MCI" ? "Standard ECIF (" + fmtRange(C.tot) + ", field-led)" : "MCI Partner Nominated (" + fmt(opt2Total) + ", partner-led)";
+                              const altLabel = !C.ecifBand
+                                ? "Corp ECIF (50% @ 2:1) / Field ECIF (20% @ 5:1) apply only above $500K Y1 ACR — strategic accounts exempt."
+                                : best === "MCI" ? "Field ECIF (" + fmtRange(C.tot) + ", field-led, >$500K)" : "MCI Partner Nominated (" + fmt(opt2Total) + ", partner-led)";
 
                               return (
                                 <>
@@ -2641,7 +2867,7 @@ button{display:none!important}
                                     <div style={{ fontSize: 10, color: "#a5b4fc", lineHeight: 1.5 }}>
                                       <strong>Alternative:</strong> {altLabel}
                                     </div>
-                                    <div style={{ fontSize: 10, color: "#818cf8", marginTop: 2 }}>ECIF and MCI cannot be used on same project - choose one path.</div>
+                                    <div style={{ fontSize: 10, color: "#818cf8", marginTop: 2 }}>{C.ecifBand ? "ECIF and MCI post-sales cannot be used on the same project - choose one path." : "≤ $500K Y1 ACR → Partner-nominated MCI is the route (no % ECIF)."}</div>
                                   </div>
                                 </>
                               );
@@ -2652,12 +2878,12 @@ button{display:none!important}
                         {/* Split suggestion if not eligible */}
                         {!C.ok && C.el > 0 && (
                           <div style={{ marginTop: 8, padding: "6px 8px", background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)", borderRadius: 4, fontSize: 11, color: "#fbbf24", lineHeight: 1.5 }}>
-                            💡 <strong>Split tip:</strong> Nominate DB/Fabric/Foundry ({fmt(C.el)}) as separate AFO project → unlocks <strong>{fmt(Math.min(C.el * 0.5, 500000))}</strong> ECIF (cash to partner).{C.el < 10000 && <span style={{ display: "block", marginTop: 4, fontSize: 10, color: "#f59e0b" }}>⚠ Small deal ({fmt(C.el)} ACR) - field may deprioritize. Consider adding more DB/Fabric/AI workloads first, or go MCI-only.</span>}
+                            💡 <strong>Split tip:</strong> Nominate DB/Fabric/Foundry ({fmt(C.el)}) as separate Corp ECIF (frontier) project → unlocks <strong>{fmt(Math.min(C.el * 0.5, 500000))}</strong> ECIF (cash to partner).{C.el < 10000 && <span style={{ display: "block", marginTop: 4, fontSize: 10, color: "#f59e0b" }}>⚠ Small deal ({fmt(C.el)} ACR) - field may deprioritize. Consider adding more DB/Fabric/AI workloads first, or go MCI-only.</span>}
                           </div>
                         )}
                         {!C.ok && C.el === 0 && (
                           <div style={{ marginTop: 8, padding: "5px 8px", background: "rgba(255,255,255,0.06)", borderRadius: 4, fontSize: 10, color: "#fbbf24", lineHeight: 1.5 }}>
-                            Add DB, Fabric, or AI Foundry workloads to unlock AFO (ECIF cash).
+                            Add DB, Fabric, Foundry or GitHub workloads to unlock Corp ECIF (50% @ 2:1 cash).
                           </div>
                         )}
                       </div>
@@ -2702,7 +2928,7 @@ button{display:none!important}
               })()}
               <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.04)", marginBottom: 8 }}>
                 <button onClick={() => setShowGuide(!showGuide)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 10px", border: "none", background: "transparent", cursor: "pointer", fontSize: 12, fontWeight: 700, color: "#666" }}>
-                  <span>AFO vs ECIF vs MCI - Program Guide</span>
+                  <span>Frontier vs Field ECIF vs MCI - Program Guide</span>
                   <span style={{ opacity: 0.3, transition: "0.2s", transform: showGuide ? "rotate(0)" : "rotate(-90deg)" }}>▾</span>
                 </button>
                 {showGuide && (
@@ -2710,20 +2936,20 @@ button{display:none!important}
                     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11, marginBottom: 8 }}>
                       <thead><tr style={{ background: "#f8f9fa" }}>
                         <th style={{ padding: "4px 5px", textAlign: "left", borderBottom: "2px solid #ddd", fontSize: 10, fontWeight: 700, color: "#999" }}></th>
-                        <th style={{ padding: "4px 5px", textAlign: "center", borderBottom: "2px solid #ddd", fontSize: 10, fontWeight: 700, color: "#0078D4" }}>AFO (Frontier)</th>
-                        <th style={{ padding: "4px 5px", textAlign: "center", borderBottom: "2px solid #ddd", fontSize: 10, fontWeight: 700, color: "#D83B01" }}>ECIF (Standard)</th>
+                        <th style={{ padding: "4px 5px", textAlign: "center", borderBottom: "2px solid #ddd", fontSize: 10, fontWeight: 700, color: "#0078D4" }}>Corp ECIF (Frontier)</th>
+                        <th style={{ padding: "4px 5px", textAlign: "center", borderBottom: "2px solid #ddd", fontSize: 10, fontWeight: 700, color: "#D83B01" }}>Field/Local ECIF</th>
                         <th style={{ padding: "4px 5px", textAlign: "center", borderBottom: "2px solid #ddd", fontSize: 10, fontWeight: 700, color: "#107C10" }}>MCI Partner Nom.</th>
                       </tr></thead>
                       <tbody>
                         {[
                           ["Nomination", "Field (MS seller)", "Field (MS seller)", "Partner (self-serve)"],
                           ["Type", "Post-sales only", "Pre- & Post-sales", "Pre- & Post-sales"],
-                          ["Max ECIF", "$500K", "Varies", "-"],
-                                                    ["ROI req.", "2:1", "Varies", "ACR threshold"],
-                          ["Eligible WL", "DB/Fabric/AI Foundry", "All Azure", "All Azure Accel."],
-                          ["50% rule", "Yes (DB/Fab/Fo)", "No", "No"],
-                          ["Time-limited", "Yes (first come)", "Quarterly budget", "FY-based"],
-                          ["Stacking", "Not w/ MCI post", "Not w/ MCI post", "Not w/ ECIF"],
+                          ["ACR band", ">$500K Y1", ">$500K (strat. exempt)", "$5K–$500K"],
+                          ["Max", "$500K", "20% of Y1 ACR", "$150K + $37.5K conv."],
+                          ["ROI req.", "2:1", "min 5:1", "By t-shirt size"],
+                          ["Eligible WL", "DB/Fabric/Foundry/GitHub", "All Azure (incl. SAP RISE, DBX)", "All (differentiated payout)"],
+                          ["50% frontier rule", "Yes", "No", "No"],
+                          ["Stacking", "Not w/ MCI post", "Not w/ MCI post", "Not w/ ECIF post"],
                         ].map(([l, a, b, c], i) => (
                           <tr key={i} style={{ borderBottom: "1px solid #f0f0f0" }}>
                             <td style={{ padding: "3px 5px", fontWeight: 600, color: "#666" }}>{l}</td>
@@ -2735,22 +2961,23 @@ button{display:none!important}
                       </tbody>
                     </table>
                     <div style={{ fontWeight: 600, color: "#333", marginTop: 6, marginBottom: 2 }}>Best strategy:</div>
-                    <div>• <strong>AFO</strong> - Customer with DB/Fabric/AI Foundry ≥50% of ACR. ECIF (cash to partner).</div>
-                    <div>• <strong>Standard ECIF</strong> - All Azure workloads. More flexible, but requires field seller nomination per deal.</div>
-                    <div>• <strong>MCI Partner Nominated</strong> - Partner self-serve via Partner Center. Faster, less admin, but lower amounts ($2K-$75K).</div>
-                    <div>• <strong>Pre-sales MCI + AFO post-sales</strong> - Best combo: partner runs Assessment+POV (MCI $15-25K cash), then AFO post-sales (ECIF cash).</div>
-                    <div style={{ marginTop: 4, fontStyle: "italic", color: "#999" }}>Note: MCI post-sales and ECIF/AFO can never be used on the same customer+project.</div>
+                    <div>• <strong>Corp ECIF</strong> - Customer with DB/Fabric/Foundry/GitHub ≥50% of ACR. Corp ECIF (50% of Y1 ACR @ 2:1, cash to partner, >$500K).</div>
+                    <div>• <strong>Field ECIF</strong> - All Azure workloads. More flexible, but requires field seller nomination per deal.</div>
+                    <div>• <strong>MCI Partner Nominated</strong> - Partner self-serve via Partner Center. Faster, less admin. FY27 payouts differ by workload & t-shirt size: Databases up to $150K (+$37.5K conversion bonus), Agentic AI Platform up to $131K, Core M&M+MDC/Sentinel up to $86K, other up to $75K, VDI up to $45K.</div>
+                    <div>• <strong>Pre-sales MCI + Corp ECIF post-sales</strong> - Best combo: partner runs Assessment+POV (MCI $15-25K cash), then Corp ECIF post-sales (ECIF cash).</div>
+                    <div style={{ marginTop: 4, fontStyle: "italic", color: "#999" }}>Note: MCI post-sales and ECIF/Corp ECIF can never be used on the same customer+project.</div>
                     <div style={{ marginTop: 6, paddingTop: 6, borderTop: "1px solid #eee" }}>
-                      <a href="https://partner.microsoft.com/en-us/partnership/azure-for-partners" target="_blank" rel="noopener" style={{ fontSize: 11, color: "#0078D4", textDecoration: "none", fontWeight: 600 }}>Azure Accelerate - Official Partner Portal ↗</a>
+                      <a href="https://partner.microsoft.com/en-us/partnership/azure-for-partners" target="_blank" rel="noopener" style={{ fontSize: 11, color: "#0078D4", textDecoration: "none", fontWeight: 600 }}>Frontier Accelerate for Azure - Official Partner Portal ↗</a>
                       <span style={{ fontSize: 11, color: "#ccc" }}> · </span>
-                      <a href="https://azure.microsoft.com/en-us/solutions/azure-accelerate/" target="_blank" rel="noopener" style={{ fontSize: 11, color: "#0078D4", textDecoration: "none" }}>Azure Accelerate Overview ↗</a>
+                      <a href="https://azure.microsoft.com/en-us/solutions/azure-accelerate/" target="_blank" rel="noopener" style={{ fontSize: 11, color: "#0078D4", textDecoration: "none" }}>Frontier Accelerate for Azure Overview ↗</a>
                     </div>
                   </div>
                 )}
               </div>
 
               <div style={{ background: "white", borderRadius: 10, border: "1px solid #e8e8ec", padding: 10, fontSize: 12, color: "#999", marginBottom: 8 }}>
-                <strong style={{ color: "#666" }}>AFO Rules:</strong> ≥50% eligible (DB/Fabric/Foundry) · 2:1 ROI · ECIF max $500K · Post-sales · Field-nominated · Limited time, first come first served
+                <strong style={{ color: "#666" }}>Corp ECIF Rules:</strong> ≥50% frontier (DB/Fabric/Foundry/GitHub) · 2:1 ROI · Corp ECIF max $500K · Post-sales >$500K ACR · Field-nominated · Limited time, first come first served
+                <div style={{ marginTop: 6, paddingTop: 6, borderTop: "1px solid #eee" }}><strong style={{ color: "#666" }}>FY27 MCI guardrails:</strong> Pre-sales must maintain a 2:1 (50%) pre→post conversion ratio · Post-sales must hit ACR targets on &gt;60% of claims (12-month rolling) · Workload ACR contribution: Databases ≥40%, Agentic AI Platform ≥40%, Core M&amp;M+security ≥4% · Pre-sales claim limits per t-shirt size/tenant. Cloud Accelerate Factory now combines with funded incentives (Azure Specialized partners, no funding impact).</div>
               </div>
 
               <div style={{ background: "#eff6ff", borderRadius: 12, border: "1px solid #bfdbfe", padding: 10, fontSize: 12, color: "#1e40af", marginBottom: 8 }}>
@@ -2766,10 +2993,10 @@ button{display:none!important}
                 {showAbout && (
                   <div style={{ padding: "0 12px 12px", fontSize: 12, color: "#666", lineHeight: 1.7 }}>
                     <p style={{ margin: "0 0 8px" }}>This tool is an <strong>independently authored estimation aid</strong> and is not an official Microsoft pricing or funding calculator.</p>
-                    <p style={{ margin: "0 0 8px" }}><strong>What it does:</strong> Estimates Azure workload costs across 47 services, calculates potential funding through AFO (ECIF), Standard ECIF, and MCI Partner Nominated programs, generates Statements of Work, and produces customer-facing investment summaries.</p>
+                    <p style={{ margin: "0 0 8px" }}><strong>What it does:</strong> Estimates Azure workload costs across 47 services, calculates potential funding through Corp ECIF, Field/Local ECIF, and MCI Partner-Nominated (Frontier Accelerate for Azure) programs, generates Statements of Work, and produces customer-facing investment summaries.</p>
                     <p style={{ margin: "0 0 8px" }}><strong>Data sources:</strong> Azure list pricing (approximate, March 2026), Microsoft Commercial Partner Incentives Guide (9 March 2026, Market A), and Azure Frontier Offer partner documentation.</p>
                     <p style={{ margin: "0 0 8px" }}><strong>Limitations:</strong> All prices are planning estimates - actual Azure pricing varies by region, tier, and negotiated discounts. Funding amounts are indicative and subject to Microsoft internal approval, program availability, and eligibility verification. Always validate with Azure Pricing Calculator and your Microsoft PSS/account team before submitting nominations.</p>
-                    <p style={{ margin: "0 0 4px" }}><strong>Coverage:</strong> 58 workloads · 6 categories · 7 quick-start scenarios · Fabric F-SKU pricing (F2-F256) · Phased SKU upgrade ramps · RI and AHUB options · MCI Market A tiers (XXS-L) · AFO 50% eligibility engine · Smart split recommendations · Dynamic SOW with milestones · ECIF Workscope .xlsx export · Customer-facing summary view</p>
+                    <p style={{ margin: "0 0 4px" }}><strong>Coverage (FY27):</strong> 58 workloads · 6 categories · 7 quick-start scenarios · Fabric F-SKU pricing (F2-F256) · Phased SKU upgrade ramps · RI and AHUB options · FY27 workload-differentiated MCI tables (Market A/B, XXS-L) incl. Databases Conversion Bonus & Agentic AI Platform · Corp ECIF 50% frontier engine · $500K nomination-route logic · ACO/CACO guidance · MCI guardrails · Smart split recommendations · Dynamic SOW with milestones · ECIF Workscope .xlsx export · Customer-facing summary view · Investment term 1 Jul 2026 – 30 Jun 2027</p>
                   </div>
                 )}
               </div>
@@ -2788,12 +3015,122 @@ button{display:none!important}
                       </button>
                     ))}
                   </div>
-                  <button onClick={() => { setShowQuest(true); setQStep(0); }} style={{ width: "100%", padding: "10px", background: "linear-gradient(135deg, #5C2D91, #7c3aed)", color: "white", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", marginBottom: 8 }}>🎯 Answer 8 questions - estimate AFO potential</button>
+                  <button onClick={() => { setShowQuest(true); setQStep(0); }} style={{ width: "100%", padding: "10px", background: "linear-gradient(135deg, #5C2D91, #7c3aed)", color: "white", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", marginBottom: 8 }}>🎯 Answer 8 questions - estimate funding potential</button>
                   <div style={{ fontSize: 11, color: "#999", textAlign: "center" }}>Or select workloads manually on the left</div>
                 </div>
               )}
             </div>
           </>
+        )}
+
+        {pg === "plan" && (
+          <div>
+            {C.tot === 0 ? (
+              <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 40, textAlign: "center", color: "#999", fontSize: 14 }}>
+                Select workloads in the <strong>Calculator</strong> first — the consumption plan builds from your selection.
+              </div>
+            ) : (() => {
+              const planAct = (sow.planActivities && sow.planActivities.length) ? sow.planActivities : getDefaultActivities(C.rows);
+              const setAct = (arr) => us("planActivities", arr);
+              const updAct = (i, k, v) => setAct(planAct.map((x, j) => j === i ? { ...x, [k]: v } : x));
+              const months = Math.min(Math.max(12, ...planAct.map((a) => (a.start || 1) + (a.dur || 1) - 1)), 18);
+              const monthly = new Array(months).fill(0);
+              C.rows.forEach((r) => { const start = r.startMo || 1; if (r.monthly && r.monthly.length) { for (let m = 0; m < months; m++) { const idx = m - (start - 1); if (idx >= 0 && idx < r.monthly.length) monthly[m] += r.monthly[idx]; } } else { for (let m = 0; m < months; m++) { if (m >= start - 1) monthly[m] += r.mo || 0; } } });
+              let cum = 0; const cumulative = monthly.map((v) => cum += v);
+              const mMax = Math.max(...monthly, 1), cMax = Math.max(...cumulative, 1);
+              const cw = 720, ch = 170, padB = 22, padL = 4, barW = (cw - padL) / months;
+              return (
+                <div>
+                  {/* Header */}
+                  <div style={{ background: "linear-gradient(135deg,#0a1628,#1e3a5f)", borderRadius: 12, padding: 18, color: "white", marginBottom: 12 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
+                      <div>
+                        <div style={{ fontSize: 11, color: "#a5b4fc", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Consumption Roadmap · Pre-sales (for MSX)</div>
+                        <div style={{ fontSize: 22, fontWeight: 700, marginTop: 2 }}>{sow.cn === "[CUSTOMER NAME]" ? "Your Organization" : sow.cn}</div>
+                        <div style={{ fontSize: 12, color: "#cbd5e1", marginTop: 2 }}>Prepared by RAI CHOWDHURY · {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
+                      </div>
+                      <button onClick={exportPlan} style={{ padding: "8px 14px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⬇ Export for MSX (PDF)</button>
+                    </div>
+                    <div style={{ display: "flex", gap: 18, marginTop: 12, flexWrap: "wrap" }}>
+                      {[["Y1 ACR", fmt(C.tot)], ["Run-rate", fmt(C.totAnnual / 12) + "/mo"], ["Scenario", C.sc || "TBD"], ["Funding path", C.custFundingLabel], ["Est. funding", fmt(C.custFunding)]].map(([l, v], i) => (
+                        <div key={i}><div style={{ fontSize: 10, color: "#94a3b8" }}>{l}</div><div style={{ fontSize: 15, fontWeight: 700 }}>{v}</div></div>
+                      ))}
+                    </div>
+                    <div style={{ marginTop: 10, fontSize: 11, color: "#a5b4fc", background: "rgba(255,255,255,0.06)", borderRadius: 6, padding: "6px 10px" }}>📎 Share this roadmap with your Microsoft specialist — it shows the case potential, workload mix, projected consumption ramp and delivery timeline at a glance.</div>
+                  </div>
+
+                  {/* Consumption ramp chart */}
+                  <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#333", marginBottom: 2 }}>Projected Azure consumption ramp</div>
+                    <div style={{ fontSize: 11, color: "#999", marginBottom: 10 }}>Monthly consumption (bars) and cumulative Y1 ACR (line) · <span style={{ color: "#0078D4" }}>■</span> monthly &nbsp; <span style={{ color: "#5C2D91" }}>—</span> cumulative</div>
+                    <svg viewBox={`0 0 ${cw} ${ch}`} style={{ width: "100%", height: "auto" }} preserveAspectRatio="xMidYMid meet">
+                      {[0.25, 0.5, 0.75, 1].map((g, i) => (<line key={i} x1={padL} y1={(ch - padB) * (1 - g)} x2={cw} y2={(ch - padB) * (1 - g)} stroke="#eee" strokeWidth="1" />))}
+                      {monthly.map((v, i) => { const h = (v / mMax) * (ch - padB - 6); return (<rect key={i} x={padL + i * barW + barW * 0.18} y={ch - padB - h} width={barW * 0.64} height={h} rx="2" fill="#0078D4" opacity="0.85" />); })}
+                      <polyline fill="none" stroke="#5C2D91" strokeWidth="2.5" points={cumulative.map((v, i) => `${padL + i * barW + barW / 2},${(ch - padB) - (v / cMax) * (ch - padB - 6)}`).join(" ")} />
+                      {cumulative.map((v, i) => (<circle key={i} cx={padL + i * barW + barW / 2} cy={(ch - padB) - (v / cMax) * (ch - padB - 6)} r="2.5" fill="#5C2D91" />))}
+                      {monthly.map((v, i) => (<text key={i} x={padL + i * barW + barW / 2} y={ch - padB + 12} fontSize="9" fill="#999" textAnchor="middle">M{i + 1}</text>))}
+                    </svg>
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#666", marginTop: 4 }}>
+                      <span>Peak monthly: <strong>{fmt(mMax)}</strong></span>
+                      <span>Cumulative Y1: <strong style={{ color: "#5C2D91" }}>{fmt(cumulative[months - 1])}</strong></span>
+                    </div>
+                  </div>
+
+                  {/* Workload roadmap table */}
+                  <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#333", marginBottom: 10 }}>Workloads in scope</div>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                      <thead><tr style={{ textAlign: "left", color: "#999", fontSize: 10, textTransform: "uppercase" }}>
+                        <th style={{ padding: "4px 6px" }}>Workload</th><th style={{ padding: "4px 6px" }}>Category</th><th style={{ padding: "4px 6px" }}>Go-live</th><th style={{ padding: "4px 6px", textAlign: "right" }}>Monthly</th><th style={{ padding: "4px 6px", textAlign: "right" }}>Y1 ACR</th><th style={{ padding: "4px 6px" }}>Funding</th>
+                      </tr></thead>
+                      <tbody>{C.rows.map((r, i) => { const it = ITEMS.find((x) => x.id === r.baseId) || {}; const cat = CATS.find((c) => c.key === it.cat) || {}; return (
+                        <tr key={i} style={{ borderTop: "1px solid #f0f0f0" }}>
+                          <td style={{ padding: "5px 6px", fontWeight: 600 }}>{r.name}</td>
+                          <td style={{ padding: "5px 6px" }}><span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 8, background: (cat.color || "#999") + "22", color: cat.color || "#666" }}>{cat.label || ""}</span></td>
+                          <td style={{ padding: "5px 6px" }}>M{r.startMo || 1}</td>
+                          <td style={{ padding: "5px 6px", textAlign: "right" }}>{fmt(r.mo || 0)}</td>
+                          <td style={{ padding: "5px 6px", textAlign: "right", fontWeight: 600 }}>{fmt(r.yr || 0)}</td>
+                          <td style={{ padding: "5px 6px", fontSize: 11, color: r.elig ? "#059669" : r.xcr ? "#d97706" : "#64748b" }}>{r.elig ? "Frontier" : r.xcr ? "XCR" : "Core"}</td>
+                        </tr>); })}</tbody>
+                    </table>
+                  </div>
+
+                  {/* Gantt / activities */}
+                  <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexWrap: "wrap", gap: 6 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#333" }}>Delivery roadmap (Gantt)</div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button onClick={() => setAct([...planAct, { name: "New activity", start: 1, dur: 2, color: "#64748b", phase: "Deploy" }])} style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 6, border: "1px solid #ddd", background: "white", color: "#555", cursor: "pointer" }}>+ Activity</button>
+                        <button onClick={() => setAct(getDefaultActivities(C.rows))} style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 6, border: "1px solid #ddd", background: "white", color: "#555", cursor: "pointer" }}>↺ Auto from workloads</button>
+                      </div>
+                    </div>
+                    {/* month header */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                      <div style={{ width: 172, flexShrink: 0 }} />
+                      <div style={{ flex: 1, display: "grid", gridTemplateColumns: `repeat(${months},1fr)`, gap: 2 }}>
+                        {Array.from({ length: months }).map((_, m) => (<div key={m} style={{ fontSize: 9, color: "#999", textAlign: "center" }}>M{m + 1}</div>))}
+                      </div>
+                      <div style={{ width: 96, flexShrink: 0 }} />
+                    </div>
+                    {planAct.map((a, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                        <input value={a.name} onChange={(e) => updAct(i, "name", e.target.value)} style={{ width: 172, flexShrink: 0, fontSize: 11, padding: "4px 6px", border: "1px solid #eee", borderRadius: 6, fontFamily: "inherit", outline: "none" }} />
+                        <div style={{ flex: 1, display: "grid", gridTemplateColumns: `repeat(${months},1fr)`, gap: 2, background: "#f8f9fa", borderRadius: 4, padding: 2 }}>
+                          <div style={{ gridColumn: `${Math.max(1, Math.min(a.start || 1, months))} / span ${Math.max(1, Math.min(a.dur || 1, months - (a.start || 1) + 1))}`, background: a.color || "#64748b", height: 20, borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 9, fontWeight: 600, overflow: "hidden", whiteSpace: "nowrap" }}>{a.phase || ""}</div>
+                        </div>
+                        <div style={{ width: 96, flexShrink: 0, display: "flex", gap: 3, alignItems: "center" }}>
+                          <input type="number" min="1" max={months} value={a.start || 1} onChange={(e) => updAct(i, "start", Math.max(1, parseInt(e.target.value) || 1))} title="Start month" style={{ width: 30, fontSize: 11, padding: "3px 2px", border: "1px solid #eee", borderRadius: 4, textAlign: "center", fontFamily: "inherit" }} />
+                          <input type="number" min="1" max={months} value={a.dur || 1} onChange={(e) => updAct(i, "dur", Math.max(1, parseInt(e.target.value) || 1))} title="Duration (months)" style={{ width: 30, fontSize: 11, padding: "3px 2px", border: "1px solid #eee", borderRadius: 4, textAlign: "center", fontFamily: "inherit" }} />
+                          <button onClick={() => setAct(planAct.filter((_, j) => j !== i))} title="Remove" style={{ width: 22, height: 22, border: "1px solid #fecaca", background: "#fef2f2", color: "#dc2626", borderRadius: 4, cursor: "pointer", fontSize: 11, lineHeight: 1 }}>✕</button>
+                        </div>
+                      </div>
+                    ))}
+                    <div style={{ fontSize: 10, color: "#999", marginTop: 6 }}>Edit names inline; the two number boxes are start month and duration (months). "Auto from workloads" regenerates the timeline from your current selection.</div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
         )}
 
         {pg === "sow" && (
@@ -2811,8 +3148,8 @@ button{display:none!important}
               const defaultFxB = { USD: 1, SEK: 10.5, EUR: 0.92, GBP: 0.79, NOK: 10.8, DKK: 6.85 };
               const fxRateB = parseFloat(sow.fxRate) || defaultFxB[ccyCodeB] || 1;
               // Match Calculator's "Cash to partner" logic exactly:
-              // - When AFO OK: AFO = C.ecif, MCI = only Pre-sales (post can't stack)
-              // - When AFO not OK: standard ECIF path or MCI path (separate, not stackable)
+              // - When Corp ECIF OK: Corp ECIF = C.ecif, MCI = only Pre-sales (post can't stack)
+              // - When Corp ECIF not OK: standard ECIF path or MCI path (separate, not stackable)
               const afoUsd = C.ok ? C.ecif : 0;
               const stdEcifUsd = !C.ok ? C.stdEcif : 0;
               const mciUsd = C.ok ? C.mci.pre : (C.mci.pre + C.mci.post);
@@ -2827,8 +3164,8 @@ button{display:none!important}
                     <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: "#64748b", marginBottom: 4 }}>Inherited from Calculator</div>
                     <div style={{ fontSize: 13, color: "#1a1a1a" }}>
                       Y1 ACR <strong>{C.tot > 0 ? fmt(C.tot) : "—"}</strong>
-                      {afoUsd > 0 && <>{" · "}AFO ECIF <strong style={{ color: "#dc2626" }}>{fmt(afoUsd) + fmtLocal(afoUsd)}</strong></>}
-                      {stdEcifUsd > 0 && <>{" · "}Standard ECIF <strong style={{ color: "#dc2626" }}>{fmt(stdEcifUsd) + fmtLocal(stdEcifUsd)}</strong></>}
+                      {afoUsd > 0 && <>{" · "}Corp ECIF <strong style={{ color: "#dc2626" }}>{fmt(afoUsd) + fmtLocal(afoUsd)}</strong></>}
+                      {stdEcifUsd > 0 && <>{" · "}Field ECIF <strong style={{ color: "#dc2626" }}>{fmt(stdEcifUsd) + fmtLocal(stdEcifUsd)}</strong></>}
                       {mciUsd > 0 && <>{" · "}MCI Pre-sales <strong style={{ color: "#16a34a" }}>{fmt(mciUsd) + fmtLocal(mciUsd)}</strong></>}
                       {totalUsd > 0 && <>{" · "}<span style={{ color: "#64748b" }}>Total</span> <strong>{fmt(totalUsd) + fmtLocal(totalUsd)}</strong></>}
                     </div>
@@ -2874,7 +3211,7 @@ button{display:none!important}
                     bucket: "mci",
                   });
                 }
-                // Phase 2-4: Implementation phases (AFO bucket) — fixed 3 phases
+                // Phase 2-4: Implementation phases (Corp ECIF bucket) — fixed 3 phases
                 const phases = [
                   { label: "Data Preparation & Ingestion", share: 0.25, monthOffset: 1.5, desc: "Implement data ingestion and preparation pipelines on Azure." },
                   { label: "Solution Build & Validation", share: 0.55, monthOffset: 3, desc: "Build and validate the solution with defined success metrics." },
@@ -2894,7 +3231,7 @@ button{display:none!important}
                 setSow(prev => ({ ...prev, milestones }));
               };
 
-              // Add a new milestone (defaults to AFO, blank values)
+              // Add a new milestone (defaults to Corp ECIF, blank values)
               const addMilestoneInline = () => {
                 const nextNum = sow.milestones.length + 1;
                 setSow(prev => ({
@@ -2997,7 +3334,7 @@ button{display:none!important}
                             <span style={{ color: "#475569" }}>1 USD =</span>
                             <input type="number" step="0.01" value={fxRate} onChange={(e) => setSow(p => ({ ...p, fxRate: e.target.value }))} style={{ width: 60, padding: "4px 6px", border: "1px solid #cbd5e1", borderRadius: 4, fontSize: 11, fontFamily: "inherit", textAlign: "right" }} />
                             <span style={{ color: "#475569", fontWeight: 600 }}>{ccyCode}</span>
-                            <span style={{ color: "#94a3b8", fontSize: 10, marginLeft: 6 }}>(used to convert AFO/MCI USD caps)</span>
+                            <span style={{ color: "#94a3b8", fontSize: 10, marginLeft: 6 }}>(used to convert Corp ECIF/MCI USD caps)</span>
                           </div>
                         )}
                       </div>
@@ -3049,12 +3386,12 @@ button{display:none!important}
                   <div style={cardStyle}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
                       <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#5C2D91", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700 }}>2</div>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: "#1a1a1a" }}>How should the project be split between MCI and AFO?</div>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: "#1a1a1a" }}>How should the project be split between MCI and Corp ECIF?</div>
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
                       {[
-                        { id: "auto", title: "Auto split", desc: "~18% Discovery → MCI Pre-sales. Remaining 82% Implementation → AFO ECIF.", recommended: true },
-                        { id: "all-afo", title: "All AFO", desc: "Entire scope as post-sales AFO. No MCI nomination.", recommended: false },
+                        { id: "auto", title: "Auto split", desc: "~18% Discovery → MCI Pre-sales. Remaining 82% Implementation → Corp ECIF.", recommended: true },
+                        { id: "all-afo", title: "All Corp ECIF", desc: "Entire scope as post-sales Corp ECIF. No MCI nomination.", recommended: false },
                         { id: "custom", title: "Custom %", desc: "Set your own pre-sales / post-sales split.", recommended: false },
                       ].map(opt => (
                         <button key={opt.id} onClick={() => setSow(p => ({ ...p, splitMode: opt.id }))} style={{
@@ -3146,7 +3483,7 @@ button{display:none!important}
                               return { fh, fa };
                             });
                             return (() => {
-                              // Compute ECIF SOW number per bucket (MCI gets its own M#, AFO gets its own M#)
+                              // Compute ECIF SOW number per bucket (MCI gets its own M#, Corp ECIF gets its own M#)
                               let mciNum = 0, afoNum = 0;
                               const ecifNums = sow.milestones.map(m => {
                                 const b = m.bucket || "afo";
@@ -3172,7 +3509,7 @@ button{display:none!important}
                                   const headerLabel = bucket === "mci"
                                     ? "🟢 MCI Pre-sales — separate Partner Center submission"
                                     : bucket === "afo"
-                                    ? "🔴 AFO ECIF — included in ECIF Central submission template"
+                                    ? "🔴 Corp ECIF — included in ECIF Central submission template"
                                     : "⚪ Self — customer SoW only";
                                   const headerColor = bucket === "mci" ? "#15803d" : bucket === "afo" ? "#b91c1c" : "#64748b";
                                   rows.push(
@@ -3201,7 +3538,7 @@ button{display:none!important}
                                       <td style={{ padding: "6px 10px", textAlign: "center", borderBottom: "none" }}>
                                         <select value={bucket} onChange={(e) => uMs(i, "bucket", e.target.value)} style={{ fontSize: 10, fontWeight: 700, padding: "3px 6px", border: "1px solid " + bucketColor, color: bucketColor, borderRadius: 3, background: "white", fontFamily: "inherit", cursor: "pointer" }}>
                                           <option value="mci">MCI</option>
-                                          <option value="afo">AFO</option>
+                                          <option value="afo">Corp ECIF</option>
                                           <option value="self">SELF</option>
                                         </select>
                                       </td>
@@ -3262,7 +3599,7 @@ button{display:none!important}
                           )}
                           {afoScope > 0 && (
                             <div style={{ padding: "10px", background: "#fef2f2", borderRadius: 6, borderLeft: "3px solid #dc2626" }}>
-                              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: "#dc2626", marginBottom: 3 }}>AFO ECIF</div>
+                              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: 0.4, textTransform: "uppercase", color: "#dc2626", marginBottom: 3 }}>Corp ECIF</div>
                               <div style={{ fontSize: 14, fontWeight: 700, color: "#b91c1c" }}>{fmtMoney(afoCovers)}</div>
                               <div style={{ fontSize: 10, color: "#666", marginTop: 2 }}>covers {Math.round(afoCovers/r)}h of {Math.round(afoScope/r)}h</div>
                             </div>
@@ -3291,7 +3628,7 @@ button{display:none!important}
                         )}
                         {afoScope > 0 && (
                           <div style={{ padding: "10px 12px", background: "#fef2f2", borderRadius: 6, borderLeft: "3px solid #dc2626", fontSize: 11, lineHeight: 1.5 }}>
-                            <strong style={{ color: "#b91c1c" }}>🔴 AFO ECIF</strong> — submitted via <strong>ECIF Central</strong> using the template export below. Only AFO milestones included, pro-rated to AFO cap.
+                            <strong style={{ color: "#b91c1c" }}>🔴 Corp ECIF</strong> — submitted via <strong>ECIF Central</strong> using the template export below. Only Corp ECIF milestones included, pro-rated to Corp ECIF cap.
                           </div>
                         )}
                       </div>
@@ -3453,15 +3790,15 @@ h1{page-break-after:avoid}
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 14px", borderRadius: 12, background: C.ok ? "#ecfdf5" : "#eff6ff", border: "1.5px solid " + (C.ok ? "#6ee7b7" : "#93c5fd"), marginBottom: 16 }}>
                   <span style={{ fontSize: 14 }}>✓</span>
                   <span style={{ fontSize: 13, fontWeight: 600, color: C.ok ? "#059669" : "#0078D4" }}>
-                    {C.ok ? "Qualifies for Microsoft Data & AI Acceleration Program" : "Qualifies for Microsoft Azure Accelerate Program"}
+                    {C.corpOk ? "Qualifies for Corp ECIF (Frontier Accelerate for Azure, 2:1)" : "Qualifies for Microsoft Frontier Accelerate for Azure Program"}
                   </span>
                 </div>
 
                 {/* Funding cards */}
                 <div style={{ display: "grid", gridTemplateColumns: C.mci.pre > 0 ? "1fr 1fr" : "1fr", gap: 12, marginBottom: 16 }} className="grid-2col">
                   <div style={{ background: "#f0fdf4", borderRadius: 10, padding: 20, border: "1px solid #bbf7d0" }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#059669", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Implementation Funding{!C.ok && C.mci.pre + C.mci.post >= C.stdEcif ? " (Partner-Led)" : " (Field-Led)"}</div>
-                    <div style={{ fontSize: 24, fontWeight: 700, color: "#059669" }}>{C.ok ? fmt(C.ecif) : C.mci.pre + C.mci.post >= C.stdEcif ? fmt(C.mci.post) : fmtRange(C.tot)}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#059669", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>Implementation Funding{C.corpOk || (C.ecifBand && C.stdEcif >= C.mci.post) ? " (Field-Led)" : " (Partner-Led)"}</div>
+                    <div style={{ fontSize: 24, fontWeight: 700, color: "#059669" }}>{C.corpOk ? fmt(C.ecif) : C.ecifBand ? (C.stdEcif >= C.mci.post ? fmtRange(C.tot) : fmt(C.mci.post)) : fmt(C.mci.post)}</div>
                     <div style={{ fontSize: 13, color: "#666", marginTop: 6 }}>For expert implementation services, delivered by a certified Microsoft partner.</div>
                   </div>
                   {C.mci.pre > 0 && (
@@ -3480,7 +3817,7 @@ h1{page-break-after:avoid}
                     {C.ok ? (
                       <>
                         <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#059669", flexShrink: 0 }}>✓</span><span>Minimum Azure commitment: <strong>{fmt(C.tot)}/year</strong> (Year 1 Azure Consumption)</span></div>
-                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#059669", flexShrink: 0 }}>✓</span><span>At least 50% from qualifying Data, Analytics, or AI services: <strong>{C.rows.filter(r => r.elig && !r.xcr).map(r => r.name).join(", ")}</strong></span></div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#059669", flexShrink: 0 }}>✓</span><span>At least 50% from frontier workloads (Databases, Fabric, Foundry, GitHub): <strong>{C.rows.filter(r => r.elig && !r.xcr).map(r => r.name).join(", ")}</strong></span></div>
                         <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#059669", flexShrink: 0 }}>✓</span><span>Implementation delivered by a <strong>Microsoft-certified partner</strong> (your Microsoft account team connects you)</span></div>
                         <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#059669", flexShrink: 0 }}>✓</span><span>Post-sales engagement - covers implementation, not pre-sales planning</span></div>
                         <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}><span style={{ color: "#059669", flexShrink: 0 }}>✓</span><span>License type: Enterprise Agreement (EA), MCA-E, or Modern CSP</span></div>
@@ -3614,7 +3951,7 @@ h1{page-break-after:avoid}
 
 
 
-      {/* AFO Pre-Assessment Questionnaire Modal */}
+      {/* Frontier Pre-Assessment Questionnaire Modal */}
       {showQuest && (() => {
         const qs = [
           { title: "Databases", sub: "Which database types does the customer run?", render: () => (
@@ -3692,7 +4029,7 @@ h1{page-break-after:avoid}
                   <button key={k} onClick={() => qSet("agreement", k)} style={{ flex: "1 1 45%", padding: "12px 14px", borderRadius: 8, border: "1.5px solid " + (qAns.agreement === k ? "#0078D4" : "#ddd"), background: qAns.agreement === k ? "#eff6ff" : "white", color: qAns.agreement === k ? "#0078D4" : "#555", fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "center" }}>{l}</button>
                 ))}
               </div>
-              {qAns.agreement === "CSP" && <div style={{ marginTop: 8, padding: "6px 10px", background: "#fff7ed", borderRadius: 6, border: "1px solid #fed7aa", fontSize: 11, color: "#b45309" }}>CSP = MCI Partner-Led path. AFO requires EA or MCA-E.</div>}
+              {qAns.agreement === "CSP" && <div style={{ marginTop: 8, padding: "6px 10px", background: "#fff7ed", borderRadius: 6, border: "1px solid #fed7aa", fontSize: 11, color: "#b45309" }}>CSP = MCI Partner-Led path. Corp ECIF requires EA or MCA-E.</div>}
             </Fragment>
           ), valid: () => qAns.agreement },
           { title: "Your Estimate", sub: "Based on your answers, here's what we'll populate", render: () => {
@@ -3748,7 +4085,7 @@ h1{page-break-after:avoid}
             // RTI based on realtime needs
             if (qAns.realtime === "realtime") {
               afoAcr += 3240 * 12;
-              items.push({ name: "Real-Time Intelligence (F32)", acr: 3240 * 12, afo: true, why: "F32 capacity for streaming analytics and live dashboards. AFO eligible as Fabric workload" });
+              items.push({ name: "Real-Time Intelligence (F32)", acr: 3240 * 12, afo: true, why: "F32 capacity for streaming analytics and live dashboards. Frontier eligible as Fabric workload" });
             } else if (qAns.realtime === "nearrt") {
               afoAcr += 625 * 12;
               items.push({ name: "Real-Time Intelligence (F8)", acr: 625 * 12, afo: true, why: "F8 capacity for near real-time refresh. Smaller SKU sufficient for minute-level updates" });
@@ -3780,7 +4117,7 @@ h1{page-break-after:avoid}
             return (
               <div>
                 <div style={{ background: eligible ? "#ecfdf5" : "#fffbeb", border: "1.5px solid " + (eligible ? "#6ee7b7" : "#fcd34d"), borderRadius: 10, padding: "14px 16px", marginBottom: 12, textAlign: "center" }}>
-                  <div style={{ fontSize: 20, fontWeight: 700, color: eligible ? "#059669" : "#b45309" }}>{eligible ? "AFO Eligible" : "Below AFO Threshold"}</div>
+                  <div style={{ fontSize: 20, fontWeight: 700, color: eligible ? "#059669" : "#b45309" }}>{eligible ? "Frontier Eligible" : "Below Frontier Threshold"}</div>
                   <div style={{ fontSize: 13, color: eligible ? "#059669" : "#b45309" }}>{pct.toFixed(0)}% eligible workloads {eligible ? "- qualifies for up to " + fmt(ecif) + " ECIF" : "- needs more DB/Fabric/AI to reach 50%"}</div>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 12 }}>
@@ -3789,7 +4126,7 @@ h1{page-break-after:avoid}
                     <div style={{ fontSize: 18, fontWeight: 700, color: "#0078D4" }}>{fmt(total)}</div>
                   </div>
                   <div style={{ background: "#ecfdf5", borderRadius: 8, padding: "10px", textAlign: "center" }}>
-                    <div style={{ fontSize: 10, color: "#64748b" }}>AFO Eligible ACR</div>
+                    <div style={{ fontSize: 10, color: "#64748b" }}>Frontier ACR</div>
                     <div style={{ fontSize: 18, fontWeight: 700, color: "#059669" }}>{fmt(afoAcr)}</div>
                   </div>
                 </div>
@@ -3800,14 +4137,14 @@ h1{page-break-after:avoid}
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <div style={{ width: 6, height: 6, borderRadius: 2, background: w.afo ? "#059669" : "#f59e0b", flexShrink: 0, marginTop: 1 }} />
                         <span style={{ color: "#333", fontWeight: 500 }}>{w.name}</span>
-                        {w.afo && <span style={{ fontSize: 10, padding: "1px 4px", borderRadius: 4, background: "#ecfdf5", color: "#059669", fontWeight: 600 }}>AFO</span>}
+                        {w.afo && <span style={{ fontSize: 10, padding: "1px 4px", borderRadius: 4, background: "#ecfdf5", color: "#059669", fontWeight: 600 }}>Corp ECIF</span>}
                       </div>
                       <span style={{ fontWeight: 600, color: "#666", flexShrink: 0 }}>{fmt(w.acr)}/yr</span>
                     </div>
                     <div style={{ fontSize: 10, color: "#999", marginTop: 2, paddingLeft: 12 }}>{w.why}</div>
                   </div>
                 ))}
-                {qAns.agreement === "CSP" && <div style={{ marginTop: 10, padding: "6px 10px", background: "#fff7ed", borderRadius: 6, border: "1px solid #fed7aa", fontSize: 11, color: "#b45309" }}>Note: CSP uses MCI Partner path. AFO requires EA or MCA-E.</div>}
+                {qAns.agreement === "CSP" && <div style={{ marginTop: 10, padding: "6px 10px", background: "#fff7ed", borderRadius: 6, border: "1px solid #fed7aa", fontSize: 11, color: "#b45309" }}>Note: CSP uses MCI Partner path. Corp ECIF requires EA or MCA-E.</div>}
               </div>
             );
           }, valid: () => true },
@@ -3817,7 +4154,7 @@ h1{page-break-after:avoid}
           <div style={{ position: "fixed", inset: 0, background: "rgba(10,22,40,0.7)", backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)", zIndex: 99998, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
             <div style={{ maxWidth: 520, width: "100%", background: "white", borderRadius: 12, overflow: "hidden", maxHeight: "90vh", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.3)", animation: "fadeSlide 0.25s ease" }}>
               <div style={{ background: HDR, padding: "16px 24px", color: "white" }}>
-                <div style={{ fontSize: 14, fontWeight: 600 }}>AFO Pre-Assessment</div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>Frontier Pre-Assessment</div>
                 <div style={{ fontSize: 11, opacity: 0.6 }}>Estimate funding potential in 5 questions</div>
               </div>
               <div style={{ padding: "4px 24px 0", overflowY: "auto", flex: 1 }}>
@@ -3859,25 +4196,27 @@ h1{page-break-after:avoid}
             </div>
             <div style={{ padding: "16px 24px", overflowY: "auto", flex: 1 }}>
               {[
+                { icon: "🗺️", title: "Consumption Plan tab + Strategic-account override (NEW v3.1)", desc: "New 'Consumption Plan' tab: a pre-sales roadmap for MSX built from your calculator selection — projected consumption ramp chart, workloads-in-scope table, and an editable Gantt of delivery activities/milestones — exportable to PDF to send to your Microsoft specialist (as an alternative to the SOW for early-stage cases). Also added a 'Strategic account' override that exempts a deal from the $500K ECIF floor once the partner writes a justification (with example prompts, optional AI polish using your own key, and a copy-prompt fallback for Copilot/ChatGPT/Claude)." },
+                { icon: "🚀", title: "FY27 update — Frontier Accelerate for Azure (NEW v3.0)", desc: "Rebuilt to FY27 rules. AFO → Corp ECIF (frontier: DB/Fabric/Foundry/GitHub, 50% of Y1 ACR @ 2:1, >$500K). Standard ECIF → Field/Local ECIF (up to 20% @ min 5:1). New workload-differentiated MCI rate tables (Market A/B, t-shirt XXS–L): Databases up to $150K + $37.5K Conversion Bonus, Agentic AI Platform up to $131K, Core M&M+MDC/Sentinel up to $86K, other up to $75K, VDI up to $45K. Pre-sales Assessment+POV >$50K (Std $15K / Large $25K / SMB $7.5K). Added Market A/B toggle, ACO/CACO guidance (max $500K, SS-CACO→CACO→Upfront/TACO), FY27 $500K nomination-route guidance and MCI guardrails. Investment term 1 Jul 2026 – 30 Jun 2027." },
                 { icon: "⏱️", title: "Inline Go-live month on Fabric rows (NEW v2.6)", desc: "Each Fabric row (and instance) now has a 📅 M1 dropdown next to '+ ramp'/'+ instans'. No need to scroll to Ramp Chart — set go-live month directly on the workload. Two-way synced with Ramp Chart. Default M1 (full year), turns blue when adjusted. Especially useful for new Fabric instances that aren't live from day 1." },
-                { icon: "📅", title: "Realistic Y1 ACR with go-live timing (NEW v2.5)", desc: "Y1 ACR now reflects actual months of consumption per workload. Default is M1 (full year) — use the Ramp Chart 'Consumption start per workload' dropdowns to push start months later for mid-year go-lives. ECIF auto-adjusts to match. Each month delay = ~8% lower fundable ACR on that workload. Prevents over-claiming on AFO nominations when projects deliver mid-year (e.g. milestone 2 in M6 = workload only consumes 7 months Y1, not 12)." },
-                { icon: "🧬", title: "Multi-instance Fabric (NEW v2.4)", desc: "A single Fabric workload row can now hold multiple capacities. Click '+ instans' next to '+ ramp' on any Fabric row to add a parallel capacity with its own SKU, ramp and baseline. Use it when a customer runs e.g. an existing F16 → F64 + a new F32 + a sandbox F8 in parallel. Each instance contributes independently to AFO incremental ACR, Ramp Chart, and SOW deliverables. Remove an instance with '✕'." },
-                { icon: "🌐", title: "Azure AI Translator (NEW)", desc: "Dedicated workload row under AI Foundry. Document Translation preserves formatting (PDF, PPTX, DOCX), Text Translation for real-time. AFO-eligible under 'AI: Tools - Speech (Speech, Language, Translation)'. Auto-maps from Azure Pricing Calculator import." },
-                { icon: "📄", title: "Azure AI Document Intelligence (NEW)", desc: "Dedicated workload row under AI Foundry. Extracts text, tables, and key-value pairs from PDFs and images. Essential for RAG pipelines with structured documents. AFO-eligible under 'AI: Tools - Vision'. Auto-maps from Pricing Calculator import (also matches legacy 'Form Recognizer')." },
+                { icon: "📅", title: "Realistic Y1 ACR with go-live timing (NEW v2.5)", desc: "Y1 ACR now reflects actual months of consumption per workload. Default is M1 (full year) — use the Ramp Chart 'Consumption start per workload' dropdowns to push start months later for mid-year go-lives. ECIF auto-adjusts to match. Each month delay = ~8% lower fundable ACR on that workload. Prevents over-claiming on Corp ECIF nominations when projects deliver mid-year (e.g. milestone 2 in M6 = workload only consumes 7 months Y1, not 12)." },
+                { icon: "🧬", title: "Multi-instance Fabric (NEW v2.4)", desc: "A single Fabric workload row can now hold multiple capacities. Click '+ instans' next to '+ ramp' on any Fabric row to add a parallel capacity with its own SKU, ramp and baseline. Use it when a customer runs e.g. an existing F16 → F64 + a new F32 + a sandbox F8 in parallel. Each instance contributes independently to Corp ECIF incremental ACR, Ramp Chart, and SOW deliverables. Remove an instance with '✕'." },
+                { icon: "🌐", title: "Azure AI Translator (NEW)", desc: "Dedicated workload row under AI Foundry. Document Translation preserves formatting (PDF, PPTX, DOCX), Text Translation for real-time. frontier-eligible under 'AI: Tools - Speech (Speech, Language, Translation)'. Auto-maps from Azure Pricing Calculator import." },
+                { icon: "📄", title: "Azure AI Document Intelligence (NEW)", desc: "Dedicated workload row under AI Foundry. Extracts text, tables, and key-value pairs from PDFs and images. Essential for RAG pipelines with structured documents. frontier-eligible under 'AI: Tools - Vision'. Auto-maps from Pricing Calculator import (also matches legacy 'Form Recognizer')." },
                 { icon: "📊", title: "Improved Excel Import (NEW)", desc: "Pricing Calculator import now auto-maps Translator and Document Intelligence to their dedicated workload rows instead of showing them as unmapped." },
-                { icon: "📍", title: "Existing Baseline / Incremental ACR", desc: "Per AFO rules, only INCREMENTAL Y1 ACR counts toward funding. Mark a customer's existing F-SKU baseline on Fabric rows and the tool automatically excludes it from fundable ACR. SOW shows both Total (customer-pays) and Fundable Incremental, so you nominate the right number and don't risk over-claiming on submissions." },
+                { icon: "📍", title: "Existing Baseline / Incremental ACR", desc: "Per frontier (Corp ECIF) rules, only INCREMENTAL Y1 ACR counts toward funding. Mark a customer's existing F-SKU baseline on Fabric rows and the tool automatically excludes it from fundable ACR. SOW shows both Total (customer-pays) and Fundable Incremental, so you nominate the right number and don't risk over-claiming on submissions." },
                 { icon: "📊", title: "Phased Fabric SKU Ramps (NEW)", desc: "Model F16 → F32 → F64 capacity upgrades within a single Fabric row. Click '+ ramp' next to PAYG/Reserved to add upgrade phases with start months. Auto-computes blended monthly avg + exact Y1 total. SOW shows the full ramp chain with PHASED RAMP badge and schedule line. Consumption Ramp chart now visualizes real stepping instead of flat lines." },
                 { icon: "📤", title: "ECIF Workscope Export (NEW)", desc: "One-click export of the SOW to Microsoft's Universal v2.1 .xlsx template, ready for direct upload to the ECIF Workscope app. Customer, partner, milestones, scope, and rate card all auto-mapped. Click '▸ ECIF Export' next to Export Word in the SOW. No more manual re-entry for partners." },
-                { icon: "🎯", title: "Solution Plays Auto-Mapping", desc: "Workloads auto-map to MS Solution Plays (MSX) and Azure Accelerate Scenarios (MCI). Shown on milestone deliverables and in SOW." },
-                { icon: "⚠️", title: "ODA Funding Logic Fix", desc: "Oracle Database@Azure ACR now correctly excluded from AFO and MCI calculations. ODA has its own Azure Accelerate offer via PSS nomination." },
-                { icon: "📋", title: "AFO Pre-Assessment", desc: "8 questions to estimate funding potential before the workshop" },
+                { icon: "🎯", title: "Solution Plays Auto-Mapping", desc: "Workloads auto-map to MS Solution Plays (MSX) and Frontier Accelerate for Azure Scenarios (MCI). Shown on milestone deliverables and in SOW." },
+                { icon: "⚠️", title: "ODA Funding Logic Fix", desc: "Oracle Database@Azure ACR now correctly excluded from Corp ECIF and MCI calculations. ODA has its own Frontier Accelerate for Azure offer via PSS nomination." },
+                { icon: "📋", title: "Frontier Pre-Assessment", desc: "8 questions to estimate funding potential before the workshop" },
                 { icon: "📈", title: "Consumption Ramp Timeline", desc: "Visual chart showing when each service starts consuming and monthly ACR build-up" },
                 { icon: "📋", title: "Funding Justification", desc: "Auto-generated section covering Strategic Alignment, Risk, ROI and Program fit for nominations" },
                 { icon: "⬇", title: "Export / Import Cases", desc: "Save cases as JSON files and share with colleagues or load on another device" },
                 { icon: "🔗", title: "BizTalk Migration Scenario", desc: "Logic Apps + Service Bus + APIM + Functions preset" },
                 { icon: "🔍", title: "Sentinel SIEM/SOC Scenario", desc: "Sentinel 500GB + Defender P2 + SOAR playbooks preset" },
-                { icon: "⚡", title: "3 New Workloads", desc: "Logic Apps, Service Bus, Event Grid added under Azure Accelerate" },
-                { icon: "📊", title: "Strategy-Aware SOW", desc: "Top bar adapts to show AFO or MCI path based on your workloads" },
+                { icon: "⚡", title: "3 New Workloads", desc: "Logic Apps, Service Bus, Event Grid added under Frontier Accelerate for Azure" },
+                { icon: "📊", title: "Strategy-Aware SOW", desc: "Top bar adapts to show Corp ECIF or MCI path based on your workloads" },
                 { icon: "🔒", title: "Access Code", desc: "Password protection for partner and field use" },
                 { icon: "✨", title: "Design Polish", desc: "Consolidated typography, spacing, and colors for a cleaner look" },
               ].map((item, i, arr) => (
