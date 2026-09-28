@@ -905,6 +905,8 @@ function App() {
     useCases: 2, splitMode: "auto", customMciPct: 18,
     // v3.0 strategic-account override (bypasses the $500K ECIF floor)
     strategic: false, stratText: "",
+    // v3.1 consumption plan: editable per-month narrative for MSX + editable activities
+    monthNotes: {}, planActivities: [], planTitle: "", planSummary: "",
   });
   const [showEcifExport, setShowEcifExport] = useState(false);
   // v3.0 AI polish config (partner's own key; stored only in this browser's localStorage)
@@ -960,6 +962,17 @@ function App() {
     doc.autoTable({ startY: y + 2, head: [head], body, styles: { fontSize: 7, cellPadding: 1, halign: "center" }, columnStyles: { 0: { halign: "left", cellWidth: 54 }, 1: { halign: "left", cellWidth: 20 } }, headStyles: { fillColor: [92, 45, 145], fontSize: 7 }, margin: { left: ml, right: ml },
       didParseCell: (d) => { if (d.section === "body" && d.column.index >= 2 && d.cell.raw === "|||") { d.cell.styles.fillColor = [167, 139, 250]; d.cell.styles.textColor = [167, 139, 250]; } } });
     y = doc.lastAutoTable.finalY + 6;
+    // Monthly narrative (for MSX)
+    const mMonthly = new Array(months).fill(0);
+    C.rows.forEach((r) => { const st = r.startMo || 1; if (r.monthly && r.monthly.length) { for (let m = 0; m < months; m++) { const idx = m - (st - 1); if (idx >= 0 && idx < r.monthly.length) mMonthly[m] += r.monthly[idx]; } } else { for (let m = 0; m < months; m++) { if (m >= st - 1) mMonthly[m] += r.mo || 0; } } });
+    const noteRows = [];
+    for (let m = 1; m <= months; m++) { noteRows.push(["M" + m, fmt(mMonthly[m - 1] || 0), (sow.monthNotes && sow.monthNotes["m" + m]) || ""]); }
+    if (noteRows.some((r) => r[2])) {
+      if (y > 170) { doc.addPage(); y = 14; }
+      doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(26, 26, 46); doc.text("Monthly narrative (MSX milestone updates)", ml, y); y += 2;
+      doc.autoTable({ startY: y + 2, head: [["Month", "Consumption", "What happens"]], body: noteRows, styles: { fontSize: 8, cellPadding: 1.5, valign: "top" }, columnStyles: { 0: { cellWidth: 16, fontStyle: "bold" }, 1: { cellWidth: 26, halign: "right" }, 2: { cellWidth: pw - 2 * ml - 42 } }, headStyles: { fillColor: [0, 120, 212] }, margin: { left: ml, right: ml } });
+      y = doc.lastAutoTable.finalY + 6;
+    }
     if (C.strategic && sow.stratText) { if (y > 180) { doc.addPage(); y = 14; } doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(91, 33, 182); doc.text("Strategic account justification", ml, y); y += 4; doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(80); doc.text(doc.splitTextToSize(sow.stratText, pw - 2 * ml), ml, y); }
     doc.save("Consumption_Roadmap_" + cn.replace(/[^a-zA-Z0-9_-]/g, "_") + ".pdf");
     setSaveStatus("Consumption plan exported"); setTimeout(() => setSaveStatus(""), 3000);
@@ -2110,7 +2123,6 @@ function App() {
     const corpOk = ok && ecifBand; // Corp ECIF (frontier 50% @ 2:1): >$500K, or strategic account with justification
     // Corp ECIF (frontier: DB/Fabric/Foundry/GitHub) — 50% of Y1 ACR @ 2:1, cap $500K. Field-nominated, post-sales > $500K ACR (or strategic).
     const ecif = corpOk ? Math.min(tot * 0.5, 500000) : 0;
-    const aco = 0; // ACO (Azure Credit Offers) surfaced as guidance, not calculated. FY27 ACO max $500K; lead SS-CACO → CACO → Upfront/TACO.
     // Field / Local ECIF (all scenarios) — FY27: up to 20% of Y1 ACR, min 5:1 ROI. Field-nominated, > $500K ACR.
     const stdEcif = ecifBand ? Math.min(tot * 0.2, 500000) : 0;
     const recs = getRecommendation(el, ot, tot, pct, ok, rows, mci, stdEcif, mkt, strategic);
@@ -2703,23 +2715,6 @@ button{display:none!important}
                 </div>
               )}
 
-              {/* ── FY27 AZURE CREDIT OFFERS (ACO) ── */}
-              {C.tot > 0 && (
-                <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 14, marginBottom: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#999", marginBottom: 6, letterSpacing: 0.5 }}>Azure Credit Offers (ACO) · FY27</div>
-                  <div style={{ fontSize: 11, color: "#555", lineHeight: 1.5 }}>
-                    Credits to win deals / offset dual-run. <strong>Max $500K USD.</strong> Lead with the deepest construct the deal supports:
-                    <div style={{ marginTop: 6, display: "grid", gap: 4 }}>
-                      <div style={{ display: "flex", gap: 6 }}><span style={{ flexShrink: 0, width: 74, fontWeight: 700, color: "#B4009E" }}>SS-CACO</span><span>Service-specific, MCA-E + MACC. 2–3x ROI (DB 2x · Modernization/Fabric/Agents 3x). Lead here when a priority workload qualifies.</span></div>
-                      <div style={{ display: "flex", gap: 6 }}><span style={{ flexShrink: 0, width: 74, fontWeight: 700, color: "#0027b3" }}>CACO</span><span>Conditional (targets), MCA-E + MACC. ~5x ROI. Broad MACC growth.</span></div>
-                      <div style={{ display: "flex", gap: 6 }}><span style={{ flexShrink: 0, width: 74, fontWeight: 700, color: "#0078D4" }}>TACO</span><span>Time-based (non-MACC). Frontier Accelerate Local ACO ~10x. Cover short-term dual-run.</span></div>
-                      <div style={{ display: "flex", gap: 6 }}><span style={{ flexShrink: 0, width: 74, fontWeight: 700, color: "#555" }}>Upfront</span><span>Non-MACC, applied at signing. ~5x ROI. Simplest, lowest leverage.</span></div>
-                    </div>
-                    <div style={{ marginTop: 6, fontSize: 10, color: "#999" }}>Order: SS-CACO → CACO → Upfront/TACO. ACO/credits reduce reportable incremental ACR and must be fully consumed before incremental ACR is recognized.</div>
-                  </div>
-                </div>
-              )}
-
               {/* ── YEAR 1 ACR ── */}
               <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 14, marginBottom: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", color: "#999", marginBottom: 4 }}>Year 1 ACR <span style={{ fontSize: 9, color: "#bbb", fontWeight: 600 }}>· fundable</span></div>
@@ -2996,7 +2991,7 @@ button{display:none!important}
                     <p style={{ margin: "0 0 8px" }}><strong>What it does:</strong> Estimates Azure workload costs across 47 services, calculates potential funding through Corp ECIF, Field/Local ECIF, and MCI Partner-Nominated (Frontier Accelerate for Azure) programs, generates Statements of Work, and produces customer-facing investment summaries.</p>
                     <p style={{ margin: "0 0 8px" }}><strong>Data sources:</strong> Azure list pricing (approximate, March 2026), Microsoft Commercial Partner Incentives Guide (9 March 2026, Market A), and Azure Frontier Offer partner documentation.</p>
                     <p style={{ margin: "0 0 8px" }}><strong>Limitations:</strong> All prices are planning estimates - actual Azure pricing varies by region, tier, and negotiated discounts. Funding amounts are indicative and subject to Microsoft internal approval, program availability, and eligibility verification. Always validate with Azure Pricing Calculator and your Microsoft PSS/account team before submitting nominations.</p>
-                    <p style={{ margin: "0 0 4px" }}><strong>Coverage (FY27):</strong> 58 workloads · 6 categories · 7 quick-start scenarios · Fabric F-SKU pricing (F2-F256) · Phased SKU upgrade ramps · RI and AHUB options · FY27 workload-differentiated MCI tables (Market A/B, XXS-L) incl. Databases Conversion Bonus & Agentic AI Platform · Corp ECIF 50% frontier engine · $500K nomination-route logic · ACO/CACO guidance · MCI guardrails · Smart split recommendations · Dynamic SOW with milestones · ECIF Workscope .xlsx export · Customer-facing summary view · Investment term 1 Jul 2026 – 30 Jun 2027</p>
+                    <p style={{ margin: "0 0 4px" }}><strong>Coverage (FY27):</strong> 58 workloads · 6 categories · 7 quick-start scenarios · Fabric F-SKU pricing (F2-F256) · Phased SKU upgrade ramps · RI and AHUB options · FY27 workload-differentiated MCI tables (Market A/B, XXS-L) incl. Databases Conversion Bonus & Agentic AI Platform · Corp ECIF 50% frontier engine · $500K nomination-route logic · MCI guardrails · Smart split recommendations · Dynamic SOW with milestones · ECIF Workscope .xlsx export · Customer-facing summary view · Investment term 1 Jul 2026 – 30 Jun 2027</p>
                   </div>
                 )}
               </div>
@@ -3076,6 +3071,19 @@ button{display:none!important}
                     </div>
                   </div>
 
+                  {/* Editable monthly narrative for MSX */}
+                  <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#333", marginBottom: 2 }}>Monthly narrative — for MSX milestone updates</div>
+                    <div style={{ fontSize: 11, color: "#999", marginBottom: 10 }}>Write what happens each month (activities, milestones, go-lives). This is the text you copy into MSX. The $ figure is the projected consumption that month.</div>
+                    {Array.from({ length: months }).map((_, m) => (
+                      <div key={m} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                        <div style={{ width: 34, flexShrink: 0, textAlign: "center" }}><div style={{ fontSize: 11, fontWeight: 700, color: "#0078D4" }}>M{m + 1}</div></div>
+                        <div style={{ width: 66, flexShrink: 0, fontSize: 10, color: "#64748b", textAlign: "right" }}>{fmt(monthly[m] || 0)}</div>
+                        <input value={(sow.monthNotes && sow.monthNotes["m" + (m + 1)]) || ""} onChange={(e) => us("monthNotes", { ...(sow.monthNotes || {}), ["m" + (m + 1)]: e.target.value })} placeholder={"What happens in M" + (m + 1) + "? (e.g. assessment complete, first workload live, migration wave 1…)"} style={{ flex: 1, fontSize: 12, padding: "6px 8px", border: "1px solid #eee", borderRadius: 6, fontFamily: "inherit", outline: "none" }} />
+                      </div>
+                    ))}
+                  </div>
+
                   {/* Workload roadmap table */}
                   <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: "#333", marginBottom: 10 }}>Workloads in scope</div>
@@ -3087,7 +3095,7 @@ button{display:none!important}
                         <tr key={i} style={{ borderTop: "1px solid #f0f0f0" }}>
                           <td style={{ padding: "5px 6px", fontWeight: 600 }}>{r.name}</td>
                           <td style={{ padding: "5px 6px" }}><span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 8, background: (cat.color || "#999") + "22", color: cat.color || "#666" }}>{cat.label || ""}</span></td>
-                          <td style={{ padding: "5px 6px" }}>M{r.startMo || 1}</td>
+                          <td style={{ padding: "5px 6px" }}><select value={conStart[r.id] || 1} onChange={(e) => setConStart((p) => ({ ...p, [r.id]: +e.target.value }))} title="Go-live month — when this workload starts consuming. Feeds the ramp and fundable Y1 ACR." style={{ fontSize: 11, fontWeight: 600, padding: "2px 4px", border: "1px solid " + ((r.startMo || 1) > 1 ? "#3b82f6" : "#ddd"), borderRadius: 4, background: (r.startMo || 1) > 1 ? "#dbeafe" : "white", color: (r.startMo || 1) > 1 ? "#1e40af" : "#555", cursor: "pointer", fontFamily: "inherit" }}>{Array.from({ length: 12 }).map((_, m) => (<option key={m} value={m + 1}>M{m + 1}</option>))}</select></td>
                           <td style={{ padding: "5px 6px", textAlign: "right" }}>{fmt(r.mo || 0)}</td>
                           <td style={{ padding: "5px 6px", textAlign: "right", fontWeight: 600 }}>{fmt(r.yr || 0)}</td>
                           <td style={{ padding: "5px 6px", fontSize: 11, color: r.elig ? "#059669" : r.xcr ? "#d97706" : "#64748b" }}>{r.elig ? "Frontier" : r.xcr ? "XCR" : "Core"}</td>
@@ -4196,8 +4204,8 @@ h1{page-break-after:avoid}
             </div>
             <div style={{ padding: "16px 24px", overflowY: "auto", flex: 1 }}>
               {[
-                { icon: "🗺️", title: "Consumption Plan tab + Strategic-account override (NEW v3.1)", desc: "New 'Consumption Plan' tab: a pre-sales roadmap for MSX built from your calculator selection — projected consumption ramp chart, workloads-in-scope table, and an editable Gantt of delivery activities/milestones — exportable to PDF to send to your Microsoft specialist (as an alternative to the SOW for early-stage cases). Also added a 'Strategic account' override that exempts a deal from the $500K ECIF floor once the partner writes a justification (with example prompts, optional AI polish using your own key, and a copy-prompt fallback for Copilot/ChatGPT/Claude)." },
-                { icon: "🚀", title: "FY27 update — Frontier Accelerate for Azure (NEW v3.0)", desc: "Rebuilt to FY27 rules. AFO → Corp ECIF (frontier: DB/Fabric/Foundry/GitHub, 50% of Y1 ACR @ 2:1, >$500K). Standard ECIF → Field/Local ECIF (up to 20% @ min 5:1). New workload-differentiated MCI rate tables (Market A/B, t-shirt XXS–L): Databases up to $150K + $37.5K Conversion Bonus, Agentic AI Platform up to $131K, Core M&M+MDC/Sentinel up to $86K, other up to $75K, VDI up to $45K. Pre-sales Assessment+POV >$50K (Std $15K / Large $25K / SMB $7.5K). Added Market A/B toggle, ACO/CACO guidance (max $500K, SS-CACO→CACO→Upfront/TACO), FY27 $500K nomination-route guidance and MCI guardrails. Investment term 1 Jul 2026 – 30 Jun 2027." },
+                { icon: "🗺️", title: "Consumption Plan tab + Strategic-account override (NEW v3.1)", desc: "New 'Consumption Plan' tab: a pre-sales roadmap for MSX built from your calculator selection — projected consumption ramp chart, workloads-in-scope table, and an editable Gantt of delivery activities/milestones — exportable to PDF to send to your Microsoft specialist (as an alternative to the SOW for early-stage cases). Editable go-live month per workload and a per-month narrative you type straight into for MSX milestone updates. Also added a 'Strategic account' override that exempts a deal from the $500K ECIF floor once the partner writes a justification (with example prompts, optional AI polish using your own key, and a copy-prompt fallback for Copilot/ChatGPT/Claude)." },
+                { icon: "🚀", title: "FY27 update — Frontier Accelerate for Azure (NEW v3.0)", desc: "Rebuilt to FY27 rules. AFO → Corp ECIF (frontier: DB/Fabric/Foundry/GitHub, 50% of Y1 ACR @ 2:1, >$500K). Standard ECIF → Field/Local ECIF (up to 20% @ min 5:1). New workload-differentiated MCI rate tables (Market A/B, t-shirt XXS–L): Databases up to $150K + $37.5K Conversion Bonus, Agentic AI Platform up to $131K, Core M&M+MDC/Sentinel up to $86K, other up to $75K, VDI up to $45K. Pre-sales Assessment+POV >$50K (Std $15K / Large $25K / SMB $7.5K). Added Market A/B toggle, FY27 $500K nomination-route guidance and MCI guardrails. Investment term 1 Jul 2026 – 30 Jun 2027." },
                 { icon: "⏱️", title: "Inline Go-live month on Fabric rows (NEW v2.6)", desc: "Each Fabric row (and instance) now has a 📅 M1 dropdown next to '+ ramp'/'+ instans'. No need to scroll to Ramp Chart — set go-live month directly on the workload. Two-way synced with Ramp Chart. Default M1 (full year), turns blue when adjusted. Especially useful for new Fabric instances that aren't live from day 1." },
                 { icon: "📅", title: "Realistic Y1 ACR with go-live timing (NEW v2.5)", desc: "Y1 ACR now reflects actual months of consumption per workload. Default is M1 (full year) — use the Ramp Chart 'Consumption start per workload' dropdowns to push start months later for mid-year go-lives. ECIF auto-adjusts to match. Each month delay = ~8% lower fundable ACR on that workload. Prevents over-claiming on Corp ECIF nominations when projects deliver mid-year (e.g. milestone 2 in M6 = workload only consumes 7 months Y1, not 12)." },
                 { icon: "🧬", title: "Multi-instance Fabric (NEW v2.4)", desc: "A single Fabric workload row can now hold multiple capacities. Click '+ instans' next to '+ ramp' on any Fabric row to add a parallel capacity with its own SKU, ramp and baseline. Use it when a customer runs e.g. an existing F16 → F64 + a new F32 + a sandbox F8 in parallel. Each instance contributes independently to Corp ECIF incremental ACR, Ramp Chart, and SOW deliverables. Remove an instance with '✕'." },
