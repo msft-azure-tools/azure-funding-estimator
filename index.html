@@ -907,6 +907,18 @@ function App() {
     strategic: false, stratText: "",
     // v3.1 consumption plan: editable per-month narrative for MSX + editable activities
     monthNotes: {}, planActivities: [], planTitle: "", planSummary: "",
+    // v3.2 specialist deal brief (maps to FY27 CAIP Specialist Playbook — what a specialist needs to manage pipeline)
+    brief: {
+      tpid: "", segment: "Enterprise", industry: "", country: "Sweden", agreement: "EA",
+      oppId: "", mcem: "Inspire & Design", closePeriod: "", commit: "Pipeline", valueDriver: "Modernization-led",
+      outcome: "", conversation: "", valueProp: "", macc: "",
+      netNew: false, competitor: "None", competeNotes: "",
+      assessDone: false, povDone: false, archDone: false, consentDone: false,
+      caf: false, fde: false, unified: false, isd: false, specPartner: false,
+      risks: "", asks: "", nextStep: "",
+      stakeholders: [],
+      partnerName: "", spec: "", partnerOneId: "", contact: "",
+    },
   });
   const [showEcifExport, setShowEcifExport] = useState(false);
   // v3.0 AI polish config (partner's own key; stored only in this browser's localStorage)
@@ -939,6 +951,7 @@ function App() {
     } finally { setAiBusy(false); }
   };
   const us = (k, v) => setSow((p) => ({ ...p, [k]: v }));
+  const ub = (k, v) => setSow((p) => ({ ...p, brief: { ...(p.brief || {}), [k]: v } }));
   const exportPlan = () => {
     if (!window.jspdf) { alert("PDF library not loaded. Refresh and try again."); return; }
     const { jsPDF } = window.jspdf;
@@ -952,6 +965,20 @@ function App() {
     doc.text("Pre-sales roadmap for MSX · Prepared by RAI CHOWDHURY · " + new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }), ml, y); y += 5;
     doc.setTextColor(30);
     doc.text("Y1 ACR: " + fmt(C.tot) + "    Run-rate: " + fmt(C.totAnnual / 12) + "/mo    Scenario: " + (C.sc || "TBD") + "    Funding: " + C.custFundingLabel + " " + fmt(C.custFunding), ml, y); y += 6;
+    const b = sow.brief || {};
+    const dash = (v) => v && String(v).trim() ? v : "—";
+    const addPara = (label, text) => { if (!text || !String(text).trim()) return; if (y > 185) { doc.addPage(); y = 14; } doc.setFont("helvetica", "bold"); doc.setFontSize(9); doc.setTextColor(30, 30, 30); doc.text(label, ml, y); y += 4; doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(70, 70, 70); const ls = doc.splitTextToSize(String(text), pw - 2 * ml); doc.text(ls, ml, y); y += ls.length * 3.6 + 4; };
+    doc.autoTable({ startY: y, theme: "grid", head: [["Deal snapshot", "", "", ""]],
+      body: [
+        ["Opp ID (if known): " + dash(b.oppId), "Segment: " + dash(b.segment), "Industry: " + dash(b.industry), "Country: " + dash(b.country)],
+        ["Agreement: " + dash(b.agreement), "Target close: " + dash(b.closePeriod), "Value driver: " + dash(b.valueDriver), "Net-new to Azure: " + (b.netNew ? "Yes" : "No")],
+        ["Compete: " + dash(b.competitor), "MACC: " + dash(b.macc), "", ""],
+      ],
+      styles: { fontSize: 8, cellPadding: 1.5 }, headStyles: { fillColor: [30, 58, 95] }, margin: { left: ml, right: ml } });
+    y = doc.lastAutoTable.finalY + 4;
+    addPara("Priority business outcome" + (b.conversation ? " · " + b.conversation : ""), b.outcome);
+    addPara("Value proposition / BVI", b.valueProp);
+    addPara("Compete notes", b.competeNotes);
     doc.autoTable({ startY: y, head: [["Workload", "Category", "Go-live", "Monthly", "Y1 ACR", "Funding"]],
       body: C.rows.map((r) => { const it = ITEMS.find((i) => i.id === r.baseId) || {}; const cat = CATS.find((c) => c.key === it.cat) || {}; return [r.name, cat.label || "", "M" + (r.startMo || 1), fmt(r.mo || 0), fmt(r.yr || 0), r.elig ? "Frontier" : r.xcr ? "XCR" : "Core"]; }),
       styles: { fontSize: 8, cellPadding: 1.5 }, headStyles: { fillColor: [0, 120, 212] }, margin: { left: ml, right: ml } });
@@ -973,7 +1000,20 @@ function App() {
       doc.autoTable({ startY: y + 2, head: [["Month", "Consumption", "What happens"]], body: noteRows, styles: { fontSize: 8, cellPadding: 1.5, valign: "top" }, columnStyles: { 0: { cellWidth: 16, fontStyle: "bold" }, 1: { cellWidth: 26, halign: "right" }, 2: { cellWidth: pw - 2 * ml - 42 } }, headStyles: { fillColor: [0, 120, 212] }, margin: { left: ml, right: ml } });
       y = doc.lastAutoTable.finalY + 6;
     }
-    if (C.strategic && sow.stratText) { if (y > 180) { doc.addPage(); y = 14; } doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(91, 33, 182); doc.text("Strategic account justification", ml, y); y += 4; doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(80); doc.text(doc.splitTextToSize(sow.stratText, pw - 2 * ml), ml, y); }
+    // Readiness & delivery engines
+    const readi = [b.assessDone && "Assessment", b.povDone && "POV", b.archDone && "Architecture", b.consentDone && "Customer consent"].filter(Boolean).join(", ") || "—";
+    const deliv = [b.caf && "Cloud Accelerate Factory", b.fde && "FDE", b.unified && "Unified", b.isd && "ISD", b.specPartner && "Specialized partner"].filter(Boolean).join(", ") || "—";
+    if (y > 178) { doc.addPage(); y = 14; }
+    doc.autoTable({ startY: y, theme: "grid", head: [["Readiness & delivery", ""]], body: [["Readiness complete", readi], ["Delivery engines attached", deliv], ["Funding path", C.custFundingLabel + " · " + fmt(C.custFunding) + " · " + (C.tot > 500000 || C.strategic ? "Field-nominated (ECIF)" : "Partner-nominated (MCI)")]], styles: { fontSize: 8, cellPadding: 1.5 }, columnStyles: { 0: { cellWidth: 55, fontStyle: "bold" } }, headStyles: { fillColor: [16, 124, 16] }, margin: { left: ml, right: ml } });
+    y = doc.lastAutoTable.finalY + 4;
+    const stk = Array.isArray(b.stakeholders) ? b.stakeholders.filter((s) => s.name || s.role) : [];
+    if (stk.length) { if (y > 172) { doc.addPage(); y = 14; } doc.autoTable({ startY: y, head: [["Stakeholder", "Role", "Type"]], body: stk.map((s) => [s.name || "", s.role || "", s.type || ""]), styles: { fontSize: 8, cellPadding: 1.5 }, headStyles: { fillColor: [0, 120, 212] }, margin: { left: ml, right: ml } }); y = doc.lastAutoTable.finalY + 4; }
+    addPara("Risks / blockers", b.risks);
+    addPara("Asks of Microsoft", b.asks);
+    addPara("Next step", b.nextStep);
+    const partnerLine = [b.partnerName, b.spec, b.partnerOneId, b.contact].filter((x) => x && String(x).trim()).join("  ·  ");
+    addPara("Partner", partnerLine);
+    if (C.strategic && sow.stratText) { if (y > 180) { doc.addPage(); y = 14; } doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.setTextColor(91, 33, 182); doc.text("Strategic account justification", ml, y); y += 4; doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(80, 80, 80); doc.text(doc.splitTextToSize(sow.stratText, pw - 2 * ml), ml, y); }
     doc.save("Consumption_Roadmap_" + cn.replace(/[^a-zA-Z0-9_-]/g, "_") + ".pdf");
     setSaveStatus("Consumption plan exported"); setTimeout(() => setSaveStatus(""), 3000);
   };
@@ -3028,6 +3068,17 @@ button{display:none!important}
               const planAct = (sow.planActivities && sow.planActivities.length) ? sow.planActivities : getDefaultActivities(C.rows);
               const setAct = (arr) => us("planActivities", arr);
               const updAct = (i, k, v) => setAct(planAct.map((x, j) => j === i ? { ...x, [k]: v } : x));
+              const b = sow.brief || {};
+              const lblS = { fontSize: 10, color: "#64748b", fontWeight: 600 };
+              const inS = { fontSize: 12, padding: "5px 7px", border: "1px solid #e0e0e0", borderRadius: 6, fontFamily: "inherit", outline: "none", boxSizing: "border-box" };
+              const fTI = (label, k, ph) => (<label style={{ display: "flex", flexDirection: "column", gap: 2, flex: "1 1 150px", minWidth: 120 }}><span style={lblS}>{label}</span><input value={b[k] || ""} onChange={(e) => ub(k, e.target.value)} placeholder={ph || ""} style={inS} /></label>);
+              const fSEL = (label, k, opts) => (<label style={{ display: "flex", flexDirection: "column", gap: 2, flex: "1 1 150px", minWidth: 120 }}><span style={lblS}>{label}</span><select value={b[k] || opts[0]} onChange={(e) => ub(k, e.target.value)} style={{ ...inS, background: "white" }}>{opts.map((o) => <option key={o} value={o}>{o}</option>)}</select></label>);
+              const fTA = (label, k, ph, rows2) => (<label style={{ display: "flex", flexDirection: "column", gap: 2, width: "100%" }}><span style={lblS}>{label}</span><textarea value={b[k] || ""} onChange={(e) => ub(k, e.target.value)} placeholder={ph || ""} rows={rows2 || 2} style={{ ...inS, resize: "vertical" }} /></label>);
+              const fCK = (label, k) => (<label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, cursor: "pointer" }}><input type="checkbox" checked={!!b[k]} onChange={(e) => ub(k, e.target.checked)} />{label}</label>);
+              const card = { background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" };
+              const cardH = { fontSize: 12, fontWeight: 700, color: "#333", marginBottom: 10 };
+              const stakeholders = Array.isArray(b.stakeholders) ? b.stakeholders : [];
+              const setStake = (arr) => ub("stakeholders", arr);
               const months = Math.min(Math.max(12, ...planAct.map((a) => (a.start || 1) + (a.dur || 1) - 1)), 18);
               const monthly = new Array(months).fill(0);
               C.rows.forEach((r) => { const start = r.startMo || 1; if (r.monthly && r.monthly.length) { for (let m = 0; m < months; m++) { const idx = m - (start - 1); if (idx >= 0 && idx < r.monthly.length) monthly[m] += r.monthly[idx]; } } else { for (let m = 0; m < months; m++) { if (m >= start - 1) monthly[m] += r.mo || 0; } } });
@@ -3040,18 +3091,77 @@ button{display:none!important}
                   <div style={{ background: "linear-gradient(135deg,#0a1628,#1e3a5f)", borderRadius: 12, padding: 18, color: "white", marginBottom: 12 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
                       <div>
-                        <div style={{ fontSize: 11, color: "#a5b4fc", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Consumption Roadmap · Pre-sales (for MSX)</div>
+                        <div style={{ fontSize: 11, color: "#a5b4fc", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Specialist Deal Brief & Consumption Roadmap · for MSX / MCEM handoff</div>
                         <div style={{ fontSize: 22, fontWeight: 700, marginTop: 2 }}>{sow.cn === "[CUSTOMER NAME]" ? "Your Organization" : sow.cn}</div>
                         <div style={{ fontSize: 12, color: "#cbd5e1", marginTop: 2 }}>Prepared by RAI CHOWDHURY · {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
                       </div>
                       <button onClick={exportPlan} style={{ padding: "8px 14px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⬇ Export for MSX (PDF)</button>
                     </div>
                     <div style={{ display: "flex", gap: 18, marginTop: 12, flexWrap: "wrap" }}>
-                      {[["Y1 ACR", fmt(C.tot)], ["Run-rate", fmt(C.totAnnual / 12) + "/mo"], ["Scenario", C.sc || "TBD"], ["Funding path", C.custFundingLabel], ["Est. funding", fmt(C.custFunding)]].map(([l, v], i) => (
+                      {[["Y1 ACR", fmt(C.tot)], ["Run-rate", fmt(C.totAnnual / 12) + "/mo"], ["Funding path", C.custFundingLabel], ["Est. funding", fmt(C.custFunding)], ["Segment", b.segment || "—"], ["Value driver", b.valueDriver || "—"]].map(([l, v], i) => (
                         <div key={i}><div style={{ fontSize: 10, color: "#94a3b8" }}>{l}</div><div style={{ fontSize: 15, fontWeight: 700 }}>{v}</div></div>
                       ))}
                     </div>
                     <div style={{ marginTop: 10, fontSize: 11, color: "#a5b4fc", background: "rgba(255,255,255,0.06)", borderRadius: 6, padding: "6px 10px" }}>📎 Share this roadmap with your Microsoft specialist — it shows the case potential, workload mix, projected consumption ramp and delivery timeline at a glance.</div>
+                  </div>
+
+                  {/* Deal qualification */}
+                  <div style={card}>
+                    <div style={cardH}>Deal qualification <span style={{ fontWeight: 400, color: "#999", fontSize: 10 }}>· what the specialist needs to forecast & manage the opportunity</span></div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {fTI("MSX Opportunity ID (if known)", "oppId", "optional")}
+                      {fSEL("Segment", "segment", ["Enterprise", "SMC-Corporate", "SMB", "Strategic"])}
+                      {fTI("Industry", "industry", "e.g. Manufacturing")}
+                      {fTI("Country / region", "country", "")}
+                      {fSEL("Agreement", "agreement", ["EA", "MCA-E", "CSP", "Other"])}
+                      {fTI("Target close (Qtr/FY)", "closePeriod", "e.g. Q3 FY27")}
+                      {fSEL("Dominant value driver", "valueDriver", ["Modernization-led", "Greenfield", "Expansion", "Displacement"])}
+                    </div>
+                  </div>
+
+                  {/* Business outcome & CAIP conversation */}
+                  <div style={card}>
+                    <div style={cardH}>Business outcome & CAIP conversation</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {fTA("Priority business outcome (lead with the outcome, not products)", "outcome", "What business result is the customer trying to achieve? Why now?", 2)}
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        {fSEL("Lead CAIP conversation", "conversation", ["", "AI in the flow of human ambition", "Ubiquitous Innovation", "Amplify your intelligence", "Establish a trusted & secure platform for AI", "Modernize with confidence", "Build a unified, governed data & AI estate", "Agentify your business processes", "AI-ready productivity & security"])}
+                        {fTI("MACC / commitment context", "macc", "e.g. new MACC, existing MACC $X, none")}
+                      </div>
+                      {fTA("Value proposition / Business Value Insight (quantified impact)", "valueProp", "e.g. 30% faster time-to-insight; $X saved; risk reduced…", 2)}
+                    </div>
+                  </div>
+
+                  {/* Compete & readiness */}
+                  <div style={{ ...card, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }} className="grid-2col">
+                    <div>
+                      <div style={cardH}>Compete situation</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>{fCK("Net-new to Azure", "netNew")}</div>
+                        {fSEL("Displacing competitor", "competitor", ["None", "AWS", "Google Cloud / GCP", "Google BigQuery", "AWS Aurora", "AWS RDS", "On-premises", "Oracle", "Other"])}
+                        {fTA("Compete notes", "competeNotes", "Incumbent, why now, what's at risk…", 2)}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={cardH}>Technical readiness & delivery engines</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600 }}>Readiness</div>
+                        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>{fCK("Assessment done", "assessDone")}{fCK("POV done", "povDone")}{fCK("Architecture defined", "archDone")}{fCK("Customer consent", "consentDone")}</div>
+                        <div style={{ fontSize: 10, color: "#64748b", fontWeight: 600, marginTop: 4 }}>Delivery engines attached</div>
+                        <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>{fCK("Cloud Accelerate Factory", "caf")}{fCK("FDE", "fde")}{fCK("Unified", "unified")}{fCK("ISD", "isd")}{fCK("Specialized partner", "specPartner")}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Funding & commercial path (auto) */}
+                  <div style={{ ...card, background: "linear-gradient(135deg,#f0f9ff,#eef2ff)" }}>
+                    <div style={cardH}>Funding & commercial path <span style={{ fontWeight: 400, color: "#999", fontSize: 10 }}>· auto from the Calculator</span></div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 18 }}>
+                      {[["Recommended path", C.custFundingLabel], ["Est. funding (cash)", fmt(C.custFunding)], ["Corp ECIF (2:1)", C.corpOk ? fmt(C.ecif) : "n/a (≤$500K / non-frontier)"], ["Field ECIF (5:1)", C.ecifBand ? fmt(C.stdEcif) : "n/a (≤$500K)"], ["MCI " + (ENGAGEMENT_LABEL[C.mci.type] || ""), fmt(C.mci.pre + C.mci.post)], ["Nomination", C.tot > 500000 || C.strategic ? "Field-nominated (ECIF)" : "Partner-nominated (MCI)"]].map(([l, v], i) => (
+                        <div key={i}><div style={{ fontSize: 10, color: "#64748b" }}>{l}</div><div style={{ fontSize: 14, fontWeight: 700, color: "#1e3a5f" }}>{v}</div></div>
+                      ))}
+                    </div>
+                    {C.strategic && <div style={{ marginTop: 8, fontSize: 11, color: "#5b21b6", background: "#faf5ff", border: "1px solid #e9d5ff", borderRadius: 6, padding: "6px 10px" }}><strong>Strategic account:</strong> {sow.stratText}</div>}
                   </div>
 
                   {/* Consumption ramp chart */}
@@ -3065,7 +3175,14 @@ button{display:none!important}
                       {cumulative.map((v, i) => (<circle key={i} cx={padL + i * barW + barW / 2} cy={(ch - padB) - (v / cMax) * (ch - padB - 6)} r="2.5" fill="#5C2D91" />))}
                       {monthly.map((v, i) => (<text key={i} x={padL + i * barW + barW / 2} y={ch - padB + 12} fontSize="9" fill="#999" textAnchor="middle">M{i + 1}</text>))}
                     </svg>
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#666", marginTop: 4 }}>
+                    {Object.keys(sow.monthNotes || {}).some((k) => (sow.monthNotes[k] || "").trim()) && (
+                      <div style={{ display: "grid", gridTemplateColumns: `repeat(${months},1fr)`, gap: 4, marginTop: 2 }}>
+                        {Array.from({ length: months }).map((_, i) => { const n = (sow.monthNotes || {})["m" + (i + 1)] || ""; return (
+                          <div key={i} style={{ fontSize: 8.5, color: "#334155", textAlign: "center", lineHeight: 1.25, padding: "3px 2px 0", borderTop: "2px solid " + (n.trim() ? "#0078D4" : "#eee") }}>{n}</div>
+                        ); })}
+                      </div>
+                    )}
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#666", marginTop: 6 }}>
                       <span>Peak monthly: <strong>{fmt(mMax)}</strong></span>
                       <span>Cumulative Y1: <strong style={{ color: "#5C2D91" }}>{fmt(cumulative[months - 1])}</strong></span>
                     </div>
@@ -3074,7 +3191,7 @@ button{display:none!important}
                   {/* Editable monthly narrative for MSX */}
                   <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                     <div style={{ fontSize: 12, fontWeight: 700, color: "#333", marginBottom: 2 }}>Monthly narrative — for MSX milestone updates</div>
-                    <div style={{ fontSize: 11, color: "#999", marginBottom: 10 }}>Write what happens each month (activities, milestones, go-lives). This is the text you copy into MSX. The $ figure is the projected consumption that month.</div>
+                    <div style={{ fontSize: 11, color: "#999", marginBottom: 10 }}>Write what happens each month (activities, milestones, go-lives). This is the text you copy into MSX, and it appears under each bar in the ramp chart above. The $ figure is the projected consumption that month.</div>
                     {Array.from({ length: months }).map((_, m) => (
                       <div key={m} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
                         <div style={{ width: 34, flexShrink: 0, textAlign: "center" }}><div style={{ fontSize: 11, fontWeight: 700, color: "#0078D4" }}>M{m + 1}</div></div>
@@ -3134,6 +3251,44 @@ button{display:none!important}
                       </div>
                     ))}
                     <div style={{ fontSize: 10, color: "#999", marginTop: 6 }}>Edit names inline; the two number boxes are start month and duration (months). "Auto from workloads" regenerates the timeline from your current selection.</div>
+                  </div>
+
+                  {/* Stakeholders */}
+                  <div style={card}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                      <div style={cardH}>Key stakeholders</div>
+                      <button onClick={() => setStake([...stakeholders, { name: "", role: "", type: "Business" }])} style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 6, border: "1px solid #ddd", background: "white", color: "#555", cursor: "pointer" }}>+ Stakeholder</button>
+                    </div>
+                    {stakeholders.length === 0 && <div style={{ fontSize: 11, color: "#999" }}>Add the executive, business and technical decision-makers the specialist should know.</div>}
+                    {stakeholders.map((s, i) => (
+                      <div key={i} style={{ display: "flex", gap: 8, marginBottom: 6, alignItems: "center" }}>
+                        <input value={s.name || ""} onChange={(e) => setStake(stakeholders.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} placeholder="Name" style={{ ...inS, flex: "1 1 140px" }} />
+                        <input value={s.role || ""} onChange={(e) => setStake(stakeholders.map((x, j) => j === i ? { ...x, role: e.target.value } : x))} placeholder="Title / role" style={{ ...inS, flex: "1 1 140px" }} />
+                        <select value={s.type || "Business"} onChange={(e) => setStake(stakeholders.map((x, j) => j === i ? { ...x, type: e.target.value } : x))} style={{ ...inS, background: "white", width: 120, flexShrink: 0 }}>{["Executive", "Business", "Technical", "Champion", "Blocker"].map((o) => <option key={o} value={o}>{o}</option>)}</select>
+                        <button onClick={() => setStake(stakeholders.filter((_, j) => j !== i))} style={{ width: 22, height: 22, border: "1px solid #fecaca", background: "#fef2f2", color: "#dc2626", borderRadius: 4, cursor: "pointer", fontSize: 11, flexShrink: 0 }}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Risks, asks & next step */}
+                  <div style={card}>
+                    <div style={cardH}>Risks, asks of Microsoft & next step</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {fTA("Risks / blockers", "risks", "What could slow or stop this deal? Dependencies, approvals, budget, competition…", 2)}
+                      {fTA("Asks of Microsoft (what you need from the specialist)", "asks", "e.g. ECIF nomination, co-sell, FDE/Factory support, technical validation, exec sponsorship…", 2)}
+                      {fTA("Next step / action & owner & date", "nextStep", "e.g. Architecture workshop w/ SE — 15 Oct — owner: Rai", 1)}
+                    </div>
+                  </div>
+
+                  {/* Partner details */}
+                  <div style={card}>
+                    <div style={cardH}>Partner details</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {fTI("Partner name", "partnerName", "")}
+                      {fTI("Azure specialization(s)", "spec", "e.g. Analytics on Azure, Infra & DB Migration")}
+                      {fTI("PartnerOneID / MPN ID", "partnerOneId", "")}
+                      {fTI("Partner contact (name, email)", "contact", "")}
+                    </div>
                   </div>
                 </div>
               );
@@ -4204,6 +4359,7 @@ h1{page-break-after:avoid}
             </div>
             <div style={{ padding: "16px 24px", overflowY: "auto", flex: 1 }}>
               {[
+                { icon: "🎯", title: "Specialist Deal Brief — Consumption Plan upgraded (NEW v3.2)", desc: "The Consumption Plan is now a full pre-sales handoff mapped to the FY27 CAIP Specialist Playbook (what a specialist needs to run pipeline). Added editable Deal qualification (MSX Opportunity ID, segment, industry, agreement, MCEM stage, target close, commit level, dominant value driver), Business outcome + lead CAIP conversation + value proposition/BVI, Compete situation, Technical readiness & delivery engines (CAF/FDE/Unified/ISD/partner), auto Funding & commercial path, Key stakeholders, Risks/Asks of Microsoft/Next step, and Partner details — all flowing into a structured PDF handoff for MSX/MCEM." },
                 { icon: "🗺️", title: "Consumption Plan tab + Strategic-account override (NEW v3.1)", desc: "New 'Consumption Plan' tab: a pre-sales roadmap for MSX built from your calculator selection — projected consumption ramp chart, workloads-in-scope table, and an editable Gantt of delivery activities/milestones — exportable to PDF to send to your Microsoft specialist (as an alternative to the SOW for early-stage cases). Editable go-live month per workload and a per-month narrative you type straight into for MSX milestone updates. Also added a 'Strategic account' override that exempts a deal from the $500K ECIF floor once the partner writes a justification (with example prompts, optional AI polish using your own key, and a copy-prompt fallback for Copilot/ChatGPT/Claude)." },
                 { icon: "🚀", title: "FY27 update — Frontier Accelerate for Azure (NEW v3.0)", desc: "Rebuilt to FY27 rules. AFO → Corp ECIF (frontier: DB/Fabric/Foundry/GitHub, 50% of Y1 ACR @ 2:1, >$500K). Standard ECIF → Field/Local ECIF (up to 20% @ min 5:1). New workload-differentiated MCI rate tables (Market A/B, t-shirt XXS–L): Databases up to $150K + $37.5K Conversion Bonus, Agentic AI Platform up to $131K, Core M&M+MDC/Sentinel up to $86K, other up to $75K, VDI up to $45K. Pre-sales Assessment+POV >$50K (Std $15K / Large $25K / SMB $7.5K). Added Market A/B toggle, FY27 $500K nomination-route guidance and MCI guardrails. Investment term 1 Jul 2026 – 30 Jun 2027." },
                 { icon: "⏱️", title: "Inline Go-live month on Fabric rows (NEW v2.6)", desc: "Each Fabric row (and instance) now has a 📅 M1 dropdown next to '+ ramp'/'+ instans'. No need to scroll to Ramp Chart — set go-live month directly on the workload. Two-way synced with Ramp Chart. Default M1 (full year), turns blue when adjusted. Especially useful for new Fabric instances that aren't live from day 1." },
