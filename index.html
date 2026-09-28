@@ -730,7 +730,7 @@ function getMilestoneDeliverables(rows, cust) {
   const cats = new Set();
   const ids = new Set();
   rows.forEach(r => { const itm = ITEMS.find(i => i.id === r.baseId); if (itm) { cats.add(itm.cat); ids.add(r.baseId); } });
-  const cn = cust === "[CUSTOMER NAME]" ? "the customer" : cust;
+  const cn = !cust ? "the customer" : cust;
   const deliverables = [];
 
   const getPlay = (wIds) => {
@@ -891,7 +891,7 @@ function App() {
   const [showSaves, setShowSaves] = useState(false);
   const ref = useRef(null);
   const [sow, setSow] = useState({
-    cn: "[CUSTOMER NAME]", on: "FY27 - [CUSTOMER]", req: "[Name, email]",
+    cn: "", on: "FY27 - Azure Frontier", req: "[Name, email]",
     cc: "[Name, email]", sup: "[Partner] (External)", sc: "[Name, email]",
     scope: "", sd: "", ed: "", rate: 200,
     milestones: [
@@ -906,7 +906,7 @@ function App() {
     // v3.0 strategic-account override (bypasses the $500K ECIF floor)
     strategic: false, stratText: "",
     // v3.1 consumption plan: editable per-month narrative for MSX + editable activities
-    monthNotes: {}, planActivities: [], planTitle: "", planSummary: "",
+    monthNotes: {}, monthAmounts: {}, planActivities: [], planTitle: "", planSummary: "",
     // v3.2 specialist deal brief (maps to FY27 CAIP Specialist Playbook — what a specialist needs to manage pipeline)
     brief: {
       tpid: "", segment: "Enterprise", industry: "", country: "Sweden", agreement: "EA",
@@ -928,7 +928,7 @@ function App() {
   const [showAiCfg, setShowAiCfg] = useState(false);
   const [aiBusy, setAiBusy] = useState(false);
   const saveAiCfg = (c) => { setAiCfg(c); try { localStorage.setItem("afe_ai", JSON.stringify(c)); } catch (e) {} };
-  const stratPrompt = () => "You are a Microsoft partner incentives specialist. Rewrite the following justification into a concise, professional business case (120-180 words) for why this customer should be treated as a STRATEGIC ACCOUNT and funded via Microsoft field-nominated ECIF without the $500K ACR threshold minimum (FY27 Frontier Accelerate for Azure). Use crisp, executive language. Anchor on strategic value: net-new-to-Azure / competitive displacement, multi-year growth trajectory, lighthouse/reference potential, industry or regional significance, and downstream frontier workload expansion (Databases, Fabric, Foundry, GitHub). Do not invent facts not present; tighten and elevate what is written. Return only the rewritten justification.\n\nCustomer: " + (sow.cn === "[CUSTOMER NAME]" ? "the customer" : sow.cn) + "\nY1 ACR: " + fmt(C.tot) + "\nWorkloads: " + (C.rows.map(r => r.name).join(", ") || "TBD") + "\n\nPartner's draft justification:\n" + (sow.stratText || "");
+  const stratPrompt = () => "You are a Microsoft partner incentives specialist. Rewrite the following justification into a concise, professional business case (120-180 words) for why this customer should be treated as a STRATEGIC ACCOUNT and funded via Microsoft field-nominated ECIF without the $500K ACR threshold minimum (FY27 Frontier Accelerate for Azure). Use crisp, executive language. Anchor on strategic value: net-new-to-Azure / competitive displacement, multi-year growth trajectory, lighthouse/reference potential, industry or regional significance, and downstream frontier workload expansion (Databases, Fabric, Foundry, GitHub). Do not invent facts not present; tighten and elevate what is written. Return only the rewritten justification.\n\nCustomer: " + (!sow.cn ? "the customer" : sow.cn) + "\nY1 ACR: " + fmt(C.tot) + "\nWorkloads: " + (C.rows.map(r => r.name).join(", ") || "TBD") + "\n\nPartner's draft justification:\n" + (sow.stratText || "");
   const polishStrategic = async () => {
     const draft = (sow.stratText || "").trim();
     if (draft.length < 10) { alert("Write a few sentences of justification first, then I'll polish it."); return; }
@@ -959,7 +959,7 @@ function App() {
     const months = Math.min(Math.max(12, ...planAct.map((a) => (a.start || 1) + (a.dur || 1) - 1)), 18);
     const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "landscape" });
     const pw = 297, ml = 12; let y = 14;
-    const cn = sow.cn === "[CUSTOMER NAME]" ? "Customer" : sow.cn;
+    const cn = !sow.cn ? "Customer" : sow.cn;
     doc.setFontSize(16); doc.setFont("helvetica", "bold"); doc.setTextColor(26, 26, 46); doc.text("Azure Consumption Roadmap — " + cn, ml, y); y += 6;
     doc.setFontSize(9); doc.setFont("helvetica", "normal"); doc.setTextColor(110);
     doc.text("Pre-sales roadmap for MSX · Prepared by RAI CHOWDHURY · " + new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }), ml, y); y += 5;
@@ -990,8 +990,12 @@ function App() {
       didParseCell: (d) => { if (d.section === "body" && d.column.index >= 2 && d.cell.raw === "|||") { d.cell.styles.fillColor = [167, 139, 250]; d.cell.styles.textColor = [167, 139, 250]; } } });
     y = doc.lastAutoTable.finalY + 6;
     // Monthly narrative (for MSX)
-    const mMonthly = new Array(months).fill(0);
-    C.rows.forEach((r) => { const st = r.startMo || 1; if (r.monthly && r.monthly.length) { for (let m = 0; m < months; m++) { const idx = m - (st - 1); if (idx >= 0 && idx < r.monthly.length) mMonthly[m] += r.monthly[idx]; } } else { for (let m = 0; m < months; m++) { if (m >= st - 1) mMonthly[m] += r.mo || 0; } } });
+    const mFlat = new Array(months).fill(0);
+    C.rows.forEach((r) => { const st = r.startMo || 1; if (r.monthly && r.monthly.length) { for (let m = 0; m < months; m++) { const idx = m - (st - 1); if (idx >= 0 && idx < r.monthly.length) mFlat[m] += r.monthly[idx]; } } else { for (let m = 0; m < months; m++) { if (m >= st - 1) mFlat[m] += r.mo || 0; } } });
+    const mTot = mFlat.reduce((a, v) => a + v, 0); const mW = months * (months - 1) / 2 || 1;
+    const mAuto = mFlat.map((_, i) => Math.round(mTot * i / mW));
+    const ovA = sow.monthAmounts || {};
+    const mMonthly = mAuto.map((v, i) => { const o = ovA["m" + (i + 1)]; return (o !== "" && o != null && !isNaN(parseFloat(o))) ? parseFloat(o) : v; });
     const noteRows = [];
     for (let m = 1; m <= months; m++) { noteRows.push(["M" + m, fmt(mMonthly[m - 1] || 0), (sow.monthNotes && sow.monthNotes["m" + m]) || ""]); }
     if (noteRows.some((r) => r[2])) {
@@ -1406,7 +1410,7 @@ function App() {
 
   // ── Save / Load via persistent storage ──
   const saveProject = async (customName) => {
-    const defaultName = sow.cn === "[CUSTOMER NAME]" ? "Untitled-" + Date.now() : sow.cn;
+    const defaultName = !sow.cn ? "Untitled-" + Date.now() : sow.cn;
     const name = customName || prompt("Name this save:", defaultName);
     if (!name) return;
     const key = "afo:" + name.replace(/[^a-zA-Z0-9_-]/g, "_").substring(0, 80);
@@ -1464,7 +1468,7 @@ function App() {
 
   // ── Export / Import JSON file ──
   const exportJSON = () => {
-    const name = sow.cn === "[CUSTOMER NAME]" ? "untitled" : sow.cn.replace(/[^a-zA-Z0-9_-]/g, "_");
+    const name = !sow.cn ? "untitled" : sow.cn.replace(/[^a-zA-Z0-9_-]/g, "_");
     const payload = { sow, sel, conStart, ts: new Date().toISOString(), name: sow.cn, version: "2.7" };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -1528,7 +1532,7 @@ function App() {
       return ccyCode === "USD" ? rounded.toLocaleString("en-US") : rounded.toLocaleString("sv-SE");
     };
 
-    const cn = sow.cn === "[CUSTOMER NAME]" ? "Customer" : sow.cn;
+    const cn = !sow.cn ? "Customer" : sow.cn;
     const partner = (sow.sup || "Partner").replace(/ \(External\)| \(Internal\)/g, "");
     const today = new Date().toLocaleDateString("en-GB", { month: "short", year: "numeric" });
 
@@ -1927,7 +1931,7 @@ function App() {
     };
     const trow = (cells) => '<w:tr>' + cells.join('') + '</w:tr>';
 
-    const cn = sow.cn === "[CUSTOMER NAME]" ? "Customer" : sow.cn;
+    const cn = !sow.cn ? "Customer" : sow.cn;
     const partner = (sow.sup || "").replace(/ \(External\)| \(Internal\)/g, "") || "Partner";
 
     try {
@@ -2254,12 +2258,12 @@ function App() {
 
   const partnerMail = useMemo(() => {
     const wl = C.rows.map((r) => "  - " + r.name + (r.sku ? " (" + r.sku + ")" : "") + ": ~" + fmt(r.mo) + "/mo").join("\n");
-    return "Subject: Azure Funding Opportunity - " + sow.cn + " (" + fmt(C.tot) + " Y1 ACR)\n\nHi [Partner],\n\nOPPORTUNITY\n- Customer: " + sow.cn + "\n- Y1 ACR: " + fmt(C.tot) + "\n- Scenario: " + (C.sc || "TBD") + "\n- Frontier Eligible: " + C.pct.toFixed(0) + "%\n\nWORKLOADS\n" + (wl || "  [None]") + "\n\nFIELD-LED FUNDING\n- ECIF (cash to partner): up to " + fmt(C.ok ? C.ecif : C.stdEcif) + (C.ok ? " (Corp ECIF, 2:1 ROI)" : " (Field/Local, min 5:1 ROI)") + "\n- Nominated by MS field seller via Azure Offer Navigator\n\nPARTNER-LED (MCI Frontier Accelerate for Azure)\n- Pre-sales (Assessment+POV): " + (C.mci.pre > 0 ? fmt(C.mci.pre) + " (" + C.mci.preL + ")" : "N/A (ACR < $50K)") + "\n- Post-sales (Deployment): " + (C.mci.post > 0 ? fmt(C.mci.post) + " (" + C.mci.ts + ", " + C.mci.days + " days)" : "N/A") + "\n- Partner self-serve via Partner Center\n- Note: ECIF and MCI cannot be used on same customer + project\n\nNEXT STEPS\n1. Confirm scope with customer\n2. Prepare SOW\n3. Submit nomination via Azure Offer Navigator (field-led)\n4. Submit MCI pre-sales claim via Partner Center (partner-led)\n\nFirst come, first served - limited funding.\n\n[Your name]";
+    return "Subject: Azure Funding Opportunity - " + (sow.cn || "Azure opportunity") + " (" + fmt(C.tot) + " Y1 ACR)\n\nHi [Partner],\n\nOPPORTUNITY\n- Reference: " + (sow.cn || "TBD") + "\n- Y1 ACR: " + fmt(C.tot) + "\n- Scenario: " + (C.sc || "TBD") + "\n- Frontier Eligible: " + C.pct.toFixed(0) + "%\n\nWORKLOADS\n" + (wl || "  [None]") + "\n\nFIELD-LED FUNDING\n- ECIF (cash to partner): up to " + fmt(C.ok ? C.ecif : C.stdEcif) + (C.ok ? " (Corp ECIF, 2:1 ROI)" : " (Field/Local, min 5:1 ROI)") + "\n- Nominated by MS field seller via Azure Offer Navigator\n\nPARTNER-LED (MCI Frontier Accelerate for Azure)\n- Pre-sales (Assessment+POV): " + (C.mci.pre > 0 ? fmt(C.mci.pre) + " (" + C.mci.preL + ")" : "N/A (ACR < $50K)") + "\n- Post-sales (Deployment): " + (C.mci.post > 0 ? fmt(C.mci.post) + " (" + C.mci.ts + ", " + C.mci.days + " days)" : "N/A") + "\n- Partner self-serve via Partner Center\n- Note: ECIF and MCI cannot be used on same customer + project\n\nNEXT STEPS\n1. Confirm scope with customer\n2. Prepare SOW\n3. Submit nomination via Azure Offer Navigator (field-led)\n4. Submit MCI pre-sales claim via Partner Center (partner-led)\n\nFirst come, first served - limited funding.\n\n[Your name]";
   }, [C, sow.cn]);
 
   const custMail = useMemo(() => {
     const wl = C.rows.map((r) => "  - " + r.name + ": ~" + fmt(r.mo) + "/mo").join("\n");
-    return "Subject: Azure Data & AI Platform - " + sow.cn + "\n\nHi [Customer],\n\nPROPOSAL\n" + (C.db ? "- Modernize databases on Azure\n" : "") + (C.fab ? "- Unified analytics with Microsoft Fabric\n" : "") + (C.fo ? "- Enterprise AI with Azure AI Foundry\n" : "") + "\nINVESTMENT\n" + (wl || "  [TBD]") + "\n- Total: ~" + fmt(C.totAnnual / 12) + "/mo at full run-rate (" + fmt(C.totAnnual) + "/yr annualized)\n\nMICROSOFT CO-INVESTMENT\n- Implementation services (ECIF): up to " + fmt(C.ecif) + "\n\nNEXT STEPS\n1. Confirm priorities\n2. Introduce delivery partner\n3. Kick off\n\nLimited funding. Happy to discuss.\n\n[Your name]";
+    return "Subject: Azure Data & AI Platform - " + (sow.cn || "Azure opportunity") + "\n\nHi [Customer],\n\nPROPOSAL\n" + (C.db ? "- Modernize databases on Azure\n" : "") + (C.fab ? "- Unified analytics with Microsoft Fabric\n" : "") + (C.fo ? "- Enterprise AI with Azure AI Foundry\n" : "") + "\nINVESTMENT\n" + (wl || "  [TBD]") + "\n- Total: ~" + fmt(C.totAnnual / 12) + "/mo at full run-rate (" + fmt(C.totAnnual) + "/yr annualized)\n\nMICROSOFT CO-INVESTMENT\n- Implementation services (ECIF): up to " + fmt(C.ecif) + "\n\nNEXT STEPS\n1. Confirm priorities\n2. Introduce delivery partner\n3. Kick off\n\nLimited funding. Happy to discuss.\n\n[Your name]";
   }, [C, sow.cn]);
 
   const copy = (t, l) => { navigator.clipboard.writeText(t); setCp(l); setTimeout(() => setCp(""), 2000); };
@@ -2289,7 +2293,7 @@ function App() {
       h.setAttribute("style", s + ";page-break-after:avoid");
     });
     const w = window.open("", "_blank");
-    w.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>SOW - ${sow.cn}</title><style>
+    w.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>SOW - ${sow.cn || "Azure Frontier"}</title><style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',Calibri,sans-serif;padding:40px 50px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white}
 table{width:100%;border-collapse:collapse;page-break-inside:auto}
@@ -2359,8 +2363,8 @@ button{display:none!important}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }} className="header-actions">
               <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.12)", borderRadius: 6, padding: "4px 10px" }}>
-                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>Customer:</span>
-                <input value={sow.cn} onChange={(e) => us("cn", e.target.value)} placeholder="Enter name..." aria-label="Customer name" style={{ background: "transparent", border: "none", color: "white", fontSize: 12, fontWeight: 600, fontFamily: "inherit", outline: "none", width: 160 }} />
+                <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)" }}>Reference:</span>
+                <input value={sow.cn} onChange={(e) => us("cn", e.target.value)} placeholder="Opportunity ID / codename" aria-label="Deal reference (no customer name)" title="Use an Opportunity ID or a codename — do not enter a customer name" style={{ background: "transparent", border: "none", color: "white", fontSize: 12, fontWeight: 600, fontFamily: "inherit", outline: "none", width: 180 }} />
               </div>
               {saveStatus && <span style={{ fontSize: 12, padding: "3px 8px", background: "rgba(255,255,255,0.2)", borderRadius: 4 }}>{saveStatus}</span>}
               <div style={{ display: "flex", alignItems: "center", gap: 4, background: "rgba(255,255,255,0.12)", borderRadius: 6, padding: "4px 8px" }} title="FY27 MCI payout rate market. Sweden/Nordics = Market A.">
@@ -3080,8 +3084,16 @@ button{display:none!important}
               const stakeholders = Array.isArray(b.stakeholders) ? b.stakeholders : [];
               const setStake = (arr) => ub("stakeholders", arr);
               const months = Math.min(Math.max(12, ...planAct.map((a) => (a.start || 1) + (a.dur || 1) - 1)), 18);
-              const monthly = new Array(months).fill(0);
-              C.rows.forEach((r) => { const start = r.startMo || 1; if (r.monthly && r.monthly.length) { for (let m = 0; m < months; m++) { const idx = m - (start - 1); if (idx >= 0 && idx < r.monthly.length) monthly[m] += r.monthly[idx]; } } else { for (let m = 0; m < months; m++) { if (m >= start - 1) monthly[m] += r.mo || 0; } } });
+              const autoFlat = new Array(months).fill(0);
+              C.rows.forEach((r) => { const start = r.startMo || 1; if (r.monthly && r.monthly.length) { for (let m = 0; m < months; m++) { const idx = m - (start - 1); if (idx >= 0 && idx < r.monthly.length) autoFlat[m] += r.monthly[idx]; } } else { for (let m = 0; m < months; m++) { if (m >= start - 1) autoFlat[m] += r.mo || 0; } } });
+              // Default projection ramps from ~0 in M1 up to a peak, summing to the same Y1 total (realistic adoption curve).
+              const flatTot = autoFlat.reduce((a, v) => a + v, 0);
+              const wSum = months * (months - 1) / 2 || 1;
+              const autoMonthly = autoFlat.map((_, i) => Math.round(flatTot * i / wSum));
+              // Per-month override: partner can type exact numbers. Empty = the default ramp value.
+              const ovAmt = sow.monthAmounts || {};
+              const hasOv = Object.keys(ovAmt).some((k) => ovAmt[k] !== "" && ovAmt[k] != null && !isNaN(parseFloat(ovAmt[k])));
+              const monthly = autoMonthly.map((v, i) => { const o = ovAmt["m" + (i + 1)]; return (o !== "" && o != null && !isNaN(parseFloat(o))) ? parseFloat(o) : v; });
               let cum = 0; const cumulative = monthly.map((v) => cum += v);
               const mMax = Math.max(...monthly, 1), cMax = Math.max(...cumulative, 1);
               const cw = 720, ch = 170, padB = 22, padL = 4, barW = (cw - padL) / months;
@@ -3092,7 +3104,7 @@ button{display:none!important}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
                       <div>
                         <div style={{ fontSize: 11, color: "#a5b4fc", fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5 }}>Specialist Deal Brief & Consumption Roadmap · for MSX / MCEM handoff</div>
-                        <div style={{ fontSize: 22, fontWeight: 700, marginTop: 2 }}>{sow.cn === "[CUSTOMER NAME]" ? "Your Organization" : sow.cn}</div>
+                        <div style={{ fontSize: 22, fontWeight: 700, marginTop: 2 }}>{!sow.cn ? "Your Organization" : sow.cn}</div>
                         <div style={{ fontSize: 12, color: "#cbd5e1", marginTop: 2 }}>Prepared by RAI CHOWDHURY · {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</div>
                       </div>
                       <button onClick={exportPlan} style={{ padding: "8px 14px", background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>⬇ Export for MSX (PDF)</button>
@@ -3190,15 +3202,29 @@ button{display:none!important}
 
                   {/* Editable monthly narrative for MSX */}
                   <div style={{ background: "white", borderRadius: 12, border: "1px solid #e8e8ec", padding: 16, marginBottom: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#333", marginBottom: 2 }}>Monthly narrative — for MSX milestone updates</div>
-                    <div style={{ fontSize: 11, color: "#999", marginBottom: 10 }}>Write what happens each month (activities, milestones, go-lives). This is the text you copy into MSX, and it appears under each bar in the ramp chart above. The $ figure is the projected consumption that month.</div>
-                    {Array.from({ length: months }).map((_, m) => (
-                      <div key={m} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
-                        <div style={{ width: 34, flexShrink: 0, textAlign: "center" }}><div style={{ fontSize: 11, fontWeight: 700, color: "#0078D4" }}>M{m + 1}</div></div>
-                        <div style={{ width: 66, flexShrink: 0, fontSize: 10, color: "#64748b", textAlign: "right" }}>{fmt(monthly[m] || 0)}</div>
-                        <input value={(sow.monthNotes && sow.monthNotes["m" + (m + 1)]) || ""} onChange={(e) => us("monthNotes", { ...(sow.monthNotes || {}), ["m" + (m + 1)]: e.target.value })} placeholder={"What happens in M" + (m + 1) + "? (e.g. assessment complete, first workload live, migration wave 1…)"} style={{ flex: 1, fontSize: 12, padding: "6px 8px", border: "1px solid #eee", borderRadius: 6, fontFamily: "inherit", outline: "none" }} />
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 2, flexWrap: "wrap", gap: 6 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#333" }}>Monthly ramp & narrative — for MSX milestone updates</div>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <button onClick={() => { const next = {}; for (let i = 0; i < months; i++) next["m" + (i + 1)] = String(autoMonthly[i] || 0); us("monthAmounts", next); }} style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 6, border: "1px solid #ddd", background: "white", color: "#555", cursor: "pointer" }} title="Fill the editable boxes with the default ramp (starts at 0, grows) — then fine-tune">✎ Fill ramp values</button>
+                        <button onClick={() => { const next = {}; for (let i = 0; i < months; i++) next["m" + (i + 1)] = String(Math.round(autoFlat[i] || 0)); us("monthAmounts", next); }} style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 6, border: "1px solid #ddd", background: "white", color: "#555", cursor: "pointer" }} title="Fill with flat run-rate (same every month)">▬ Flat run-rate</button>
+                        <button onClick={() => us("monthAmounts", {})} style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 6, border: "1px solid #ddd", background: "white", color: "#555", cursor: "pointer" }}>↺ Reset (auto ramp)</button>
                       </div>
-                    ))}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#999", marginBottom: 10 }}>Edit the <strong>$ amount per month</strong> to show a realistic ramp (empty = auto run-rate). Write what happens each month — this is the text you copy into MSX, and it appears under each bar in the ramp chart above.</div>
+                    {Array.from({ length: months }).map((_, m) => { const ovK = "m" + (m + 1); const ovv = ovAmt[ovK]; const hasV = ovv !== "" && ovv != null; return (
+                      <div key={m} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5 }}>
+                        <div style={{ width: 30, flexShrink: 0, textAlign: "center" }}><div style={{ fontSize: 11, fontWeight: 700, color: "#0078D4" }}>M{m + 1}</div></div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 2, width: 96, flexShrink: 0 }}>
+                          <span style={{ fontSize: 11, color: "#94a3b8" }}>$</span>
+                          <input type="number" value={hasV ? ovv : ""} onChange={(e) => us("monthAmounts", { ...(sow.monthAmounts || {}), [ovK]: e.target.value })} placeholder={Math.round(autoMonthly[m] || 0).toLocaleString("en-US")} title="Projected consumption this month — edit for a realistic ramp" style={{ width: 84, fontSize: 11, padding: "5px 6px", border: "1px solid " + (hasV ? "#3b82f6" : "#eee"), borderRadius: 6, fontFamily: "inherit", outline: "none", color: hasV ? "#1e40af" : "#334155", background: hasV ? "#eff6ff" : "white" }} />
+                        </div>
+                        <input value={(sow.monthNotes && sow.monthNotes[ovK]) || ""} onChange={(e) => us("monthNotes", { ...(sow.monthNotes || {}), [ovK]: e.target.value })} placeholder={"What happens in M" + (m + 1) + "? (e.g. assessment complete, first workload live, migration wave 1…)"} style={{ flex: 1, fontSize: 12, padding: "6px 8px", border: "1px solid #eee", borderRadius: 6, fontFamily: "inherit", outline: "none" }} />
+                      </div>
+                    ); })}
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 16, fontSize: 11, color: "#666", marginTop: 6, borderTop: "1px solid #f0f0f0", paddingTop: 6 }}>
+                      <span>Planned Y1 total (sum of months): <strong style={{ color: "#5C2D91" }}>{fmt(cumulative[months - 1] || 0)}</strong></span>
+                      <span>Calculator Y1 ACR: <strong>{fmt(C.tot)}</strong></span>
+                    </div>
                   </div>
 
                   {/* Workload roadmap table */}
@@ -3453,8 +3479,8 @@ button{display:none!important}
                     </div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
                       <div>
-                        <label style={labelStyle}>Customer name</label>
-                        <input value={sow.cn === "[CUSTOMER NAME]" ? "" : sow.cn} placeholder="Customer name" onChange={(e) => setSow(p => ({ ...p, cn: e.target.value || "[CUSTOMER NAME]" }))} style={inputStyle} />
+                        <label style={labelStyle}>Deal reference (Opportunity ID / codename)</label>
+                        <input value={sow.cn} placeholder="Opportunity ID / codename — no customer name" onChange={(e) => setSow(p => ({ ...p, cn: e.target.value }))} style={inputStyle} />
                       </div>
                       <div>
                         <label style={labelStyle}>Partner</label>
@@ -3858,7 +3884,7 @@ button{display:none!important}
                     h.setAttribute("style", s + ";page-break-after:avoid");
                   });
                   const w = window.open("", "_blank");
-                  w.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Azure Investment Overview - ${sow.cn}</title><style>
+                  w.document.write(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><title>Azure Investment Overview - ${sow.cn || "Azure Frontier"}</title><style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',Calibri,sans-serif;padding:40px 50px;color:#1a1a2e;font-size:12px;line-height:1.6;background:white}
 h2{color:#0078D4;font-size:15px;margin:24px 0 10px;padding-bottom:4px;border-bottom:2px solid #0078D4;page-break-after:avoid}
@@ -3895,7 +3921,7 @@ h1{page-break-after:avoid}
                   const blob = new Blob(["\ufeff" + html], { type: "application/msword;charset=utf-8" });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement("a");
-                  a.href = url; a.download = "Azure-Investment-" + sow.cn.replace(/[^a-zA-Z0-9]/g, "_") + ".doc"; a.click();
+                  a.href = url; a.download = "Azure-Investment-" + (sow.cn || "opportunity").replace(/[^a-zA-Z0-9]/g, "_") + ".doc"; a.click();
                   URL.revokeObjectURL(url);
                 }} style={{ padding: "5px 14px", background: "#5C2D91", color: "white", border: "none", borderRadius: 6, fontSize: 13, cursor: "pointer" }}>Export Word</button>
               </div>
@@ -3908,7 +3934,7 @@ h1{page-break-after:avoid}
                   <svg width="24" height="24" viewBox="0 0 20 20"><rect width="9" height="9" fill="#f25022" rx="1" /><rect x="11" width="9" height="9" fill="#7fba00" rx="1" /><rect y="11" width="9" height="9" fill="#00a4ef" rx="1" /><rect x="11" y="11" width="9" height="9" fill="#ffb900" rx="1" /></svg>
                   <span style={{ fontSize: 12, color: "#999", letterSpacing: 1.5, textTransform: "uppercase" }}>Azure Investment Overview</span>
                 </div>
-                <h1 style={{ fontSize: 24, fontWeight: 600, color: "#1a1a2e", margin: "0 0 4px" }}>{sow.cn === "[CUSTOMER NAME]" || !sow.cn ? "Your Organization" : sow.cn}</h1>
+                <h1 style={{ fontSize: 24, fontWeight: 600, color: "#1a1a2e", margin: "0 0 4px" }}>{!sow.cn || !sow.cn ? "Your Organization" : sow.cn}</h1>
                 <div style={{ fontSize: 13, color: "#999" }}>Prepared {new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}</div>
               </div>
 
